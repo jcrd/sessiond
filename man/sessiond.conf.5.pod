@@ -1,0 +1,96 @@
+=head1 NAME
+
+sessiond.conf - sessiond configuration file format
+
+=head1 SYNOPSIS
+
+I<XDG_CONFIG_HOME>/sessiond/sessiond.conf or
+I<HOME>/.config/sessiond/sessiond.conf
+
+=head1 DESCRIPTION
+
+This file configures the X session manager B<sessiond>(1).
+
+=head1 OPTIONS
+
+=head2 [Idle]
+
+=over
+
+=item I<Inputs=>
+
+A list (separated by ",") of input event types used to determine activity.
+Values are "motion", "button-press", "button-release", "key-press",
+"key-release".
+
+=item I<IdleSec=>
+
+Seconds the session must be inactive before considered idle.
+
+=back
+
+=head2 [Lock]
+
+=over
+
+=item I<OnIdle=>
+
+If "true", lock the session when it becomes idle.
+
+=item I<OnSleep=>
+
+If "true", lock the session when B<systemd-logind>(8) sends the
+"PrepareForSleep" signal.
+
+=back
+
+=head2 [Backlight]
+
+=over
+
+=item I<Enable=>
+
+If "true", dim backlight after DimSec seconds of inactivity.
+
+=item I<Name=>
+
+Name of backlight as listed in I</sys/class/backlight>. Defaults to the first
+name found.
+
+=item I<DimSec=>
+
+Seconds the session must be inactive before the backlight is dimmed.
+
+=item I<DimPercent=>
+
+Percentage to lower backlight brightness when dimming.
+
+=back
+
+=head2 [DPMS]
+
+=over
+
+=item I<Enable=>
+
+If "true", apply DPMS settings.
+
+=item I<StandbySec=>
+
+DPMS standby timeout in seconds. Must occur before or simultaneously with
+Suspend timeout.
+
+=item I<SuspendSec=>
+
+DPMS suspend timeout in seconds. Must occur before or simultaneously with
+Off timeout.
+
+=item I<OffSec=>
+
+DPMS off timeout in seconds.
+
+=back
+
+=head1 SEE ALSO
+
+B<sessiond>(1), B<systemd-logind>(8)

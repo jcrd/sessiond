@@ -1,0 +1,55 @@
+=head1 NAME
+
+sessiond - standalone X session manager
+
+=head1 SYNOPSIS
+
+B<sessiond> [OPTIONS]
+
+=head1 DESCRIPTION
+
+sessiond is a standalone X session manager that reports the idle status of a
+session to B<systemd-logind>(8) and handles its lock, unlock, sleep, and
+shutdown signals. sessiond also provides hooks triggered by inactivity or a
+signal, automatic backlight dimming on idle, and optional management of DPMS
+settings.
+
+=head1 OPTIONS
+
+=over
+
+=item B<-h>, B<--help>
+
+Show help options.
+
+=item B<-c>, B<--config>=I<CONFIG>
+
+Path to config file. See B<sessiond.conf>(5) for configuration options.
+
+=item B<-i>, B<--idle-sec>=I<SEC>
+
+Seconds the session must be inactive before considered idle.
+
+=back
+
+=head1 DEBUGGING
+
+Running sessiond with the environment variable I<G_MESSAGES_DEBUG> set to "all"
+will print debug messages.
+
+=head1 AUTHOR
+
+James Reed E<lt>jcrd@tuta.ioE<gt>
+
+=head1 REPORTING BUGS
+
+Bugs and issues can be reported here: L<https://github.com/jcrd/sessiond/issues>
+
+=head1 COPYRIGHT
+
+Copyright 2018 James Reed. sessiond is licensed under the
+GNU General Public License v3.0 or later.
+
+=head1 SEE ALSO
+
+B<sessiond.conf>(5), B<sessiond-hooks>(5), B<systemd-logind>(8)

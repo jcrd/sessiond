@@ -1,0 +1,4 @@
+[Unit]
+Description=sessiond session
+Requires=sessiond.service
+BindsTo=graphical-session.target

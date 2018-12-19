@@ -1,0 +1,9 @@
+[Unit]
+Description=Standalone X session manager
+Requires=dbus.socket
+After=dbus.socket
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/sessiond
+ExecReload=/usr/bin/kill -HUP $MAINPID

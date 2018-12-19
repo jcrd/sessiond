@@ -1,0 +1,1 @@
+option('dpms', type : 'feature', value : 'enabled')

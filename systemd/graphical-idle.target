@@ -1,0 +1,3 @@
+[Unit]
+Description=Graphical session idle
+Conflicts=graphical-unidle.target

@@ -1,0 +1,4 @@
+[Unit]
+Description=Graphical session unidle
+Conflicts=graphical-idle.target
+StopWhenUnneeded=yes

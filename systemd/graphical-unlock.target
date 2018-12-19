@@ -1,0 +1,4 @@
+[Unit]
+Description=Graphical session unlock
+Conflicts=graphical-lock.target
+StopWhenUnneeded=yes
