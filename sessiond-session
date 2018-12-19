@@ -31,26 +31,32 @@ status() {
     active="$(isActive $target)"
     r=$?
 
-    echo "$target: $active"
-
-    if [ $r -eq 0 ]; then
-        units="$(consistsOf graphical-session.target)"
-        if [ -n "$units" ]; then
-            i=0
-            pad=${#target}
-            for unit in $units; do
-                i=$((i + 1))
-                [ ${#unit} -gt $pad ] && pad=${#unit}
-            done
-            for unit in $units; do
-                i=$((i - 1))
-                [ $i -eq 0 ] && s='└' || s='├'
-                printf "$s─%-${pad}s%s\n" "$unit:" "$(isActive "$unit")"
-            done
-        fi
+    if [ $r -ne 0 ]; then
+        echo "$target: $active"
+        exit $r
     fi
 
-    exit $r
+    units="$(consistsOf graphical-session.target)"
+
+    if [ -n "$units" ]; then
+        i=0
+        pad=${#target}
+        for unit in $units; do
+            i=$((i + 1))
+            [ ${#unit} -gt $pad ] && pad=${#unit}
+        done
+        # account for colon
+        pad=$((pad + 1))
+        # account for bars
+        printf "%-$((pad + 2))s %s\n" "$target:" "$active"
+        for unit in $units; do
+            i=$((i - 1))
+            [ $i -eq 0 ] && s='└' || s='├'
+            printf "$s─%-${pad}s %s\n" "$unit:" "$(isActive "$unit")"
+        done
+    fi
+
+    exit
 }
 
 [ $# -eq 0 ] && status
