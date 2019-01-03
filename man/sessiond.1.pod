@@ -30,6 +30,10 @@ Path to config file. See B<sessiond.conf>(5) for configuration options.
 
 Seconds the session must be inactive before considered idle.
 
+=item B<-v>, B<--version>
+
+Show version.
+
 =back
 
 =head1 DEBUGGING
