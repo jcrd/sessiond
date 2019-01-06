@@ -27,7 +27,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
     X("Backlight", "Enable", bool, bl_enable) \
     X("Backlight", "Name", str, bl_name) \
     X("Backlight", "DimSec", uint, dim_sec) \
-    X("Backlight", "Percent", uint, dim_percent)
+    X("Backlight", "DimPercent", uint, dim_percent)
 
 #ifdef DPMS
 #define DPMS_MAP_LIST \
