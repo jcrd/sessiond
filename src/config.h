@@ -19,8 +19,6 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <glib-2.0/glib.h>
 
-#include "configure.h"
-
 #define CONFIG_MAP_LIST \
     X("Idle", "Input", input_mask, input_mask) \
     X("Idle", "IdleSec", uint, idle_sec) \

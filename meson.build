@@ -10,11 +10,8 @@ dpms = get_option('dpms')
 
 if dpms.enabled()
   deps += dependency('xext')
+  add_project_arguments('-DDPMS', language : 'c')
 endif
-
-c = configuration_data()
-c.set('DPMS', dpms.enabled())
-configure_target = configure_file(output : 'configure.h', configuration : c)
 
 # alternative to vcs_tag that allows reuse of version
 # see https://github.com/mesonbuild/meson/issues/3903
@@ -25,13 +22,9 @@ else
   version = meson.project_version()
 endif
 
-v = configuration_data()
-v.set('VERSION', version)
-version_target = configure_file(output : 'version.h', configuration : v)
+add_project_arguments('-DVERSION="@0@"'.format(version), language : 'c')
 
 srcs = [
-  configure_target,
-  version_target,
   'src/backlight.c',
   'src/common.c',
   'src/config.c',

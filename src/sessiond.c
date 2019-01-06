@@ -36,8 +36,9 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include <X11/extensions/dpms.h>
 #endif /* DPMS */
 
-#include "configure.h"
-#include "version.h"
+#ifndef VERSION
+#define VERSION "unknown"
+#endif /* VERSION */
 
 static Config config;
 static Timeline timeline;
