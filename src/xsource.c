@@ -153,6 +153,9 @@ xsource_new(GMainContext *ctx, guint input_mask, GSourceFunc func,
 void
 xsource_free(XSource *self)
 {
+    if (!self)
+        return;
+
     XCloseDisplay(self->dpy);
 
     GSource *source = (GSource *)self;

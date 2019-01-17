@@ -149,6 +149,9 @@ timeline_stop(Timeline *tl)
 void
 timeline_free(Timeline *tl)
 {
+    if (!tl)
+        return;
     timeline_stop(tl);
-    g_array_free(tl->timeouts, TRUE);
+    if (tl->timeouts)
+        g_array_free(tl->timeouts, TRUE);
 }

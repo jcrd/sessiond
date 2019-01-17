@@ -320,6 +320,8 @@ dbus_new(void)
 void
 dbus_free(DBusContext *dc)
 {
+    if (!dc)
+        return;
     logind_free(dc);
     systemd_free(dc);
     g_free(dc);

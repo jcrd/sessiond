@@ -115,5 +115,7 @@ config_load(Config *c, const gchar *path)
 void
 config_free(Config *c)
 {
+    if (!c)
+        return;
     g_free(c->bl_name);
 }
