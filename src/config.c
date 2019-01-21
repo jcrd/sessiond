@@ -89,7 +89,7 @@ config_load(Config *c, const gchar *path)
     g_key_file_load_from_file(kf, path, G_KEY_FILE_NONE, &err);
 
     if (err) {
-        g_warning("%s", err->message);
+        g_warning("%s: %s", path, err->message);
         g_error_free(err);
         return FALSE;
     }
