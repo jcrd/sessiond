@@ -39,11 +39,13 @@ kf_load_input_mask(GKeyFile *kf, const gchar *g, const gchar *k, guint *opt)
         return ret;
     }
 
+    guint mask = 0;
+
     for (guint i = 0; i < len; i++) {
         gchar *str = input[i];
 #define X(t, n) \
         if (g_strcmp0(str, n) == 0) { \
-            *opt |= INPUT_TYPE_MASK(t); \
+            mask |= INPUT_TYPE_MASK(t); \
             continue; \
         }
         INPUT_TYPE_LIST
@@ -51,6 +53,9 @@ kf_load_input_mask(GKeyFile *kf, const gchar *g, const gchar *k, guint *opt)
     }
 
     g_strfreev(input);
+
+    if (mask)
+        *opt = mask;
 
     return TRUE;
 }
