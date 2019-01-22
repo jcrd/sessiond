@@ -108,3 +108,15 @@ test(
     ], dependencies : deps),
   env : g_test_env,
   )
+
+test(
+  'test hooks',
+  executable('hooks_test', [
+    'test/hooks_test.c',
+    'src/hooks.c',
+    'src/keyfile.c',
+    'src/timeline.c',
+    'src/common.c',
+    ], dependencies : deps),
+  env : g_test_env,
+  )
