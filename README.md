@@ -30,6 +30,10 @@ meson configure -Ddpms=disabled
 
 Finally, run `ninja` to build sessiond.
 
+### Testing
+
+Run tests with `meson test`.
+
 ### Installing
 
 After building sessiond, `ninja install` can be used to install it.
