@@ -101,6 +101,9 @@ kf_load_exec(GKeyFile *kf, const gchar *g, const gchar *k, gchar ***opt)
     if (!kf_load_str(kf, g, k, &str))
         return FALSE;
 
+    if (!str)
+        return TRUE;
+
     GError *err = NULL;
     gchar **argv;
     g_shell_parse_argv(str, NULL, &argv, &err);
