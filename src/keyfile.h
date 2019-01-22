@@ -27,3 +27,7 @@ extern gboolean
 kf_load_int(GKeyFile *kf, const gchar *g, const gchar *k, gint *opt);
 extern gboolean
 kf_load_uint(GKeyFile *kf, const gchar *g, const gchar *k, guint *opt);
+extern gboolean
+kf_load_exec(GKeyFile *kf, const gchar *g, const gchar *k, gchar ***opt);
+extern gboolean
+kf_load_input_mask(GKeyFile *kf, const gchar *g, const gchar *k, guint *opt);

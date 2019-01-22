@@ -16,6 +16,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "keyfile.h"
+#include "xsource.h"
 
 #include <glib-2.0/glib.h>
 
@@ -90,5 +91,68 @@ kf_load_uint(GKeyFile *kf, const gchar *g, const gchar *k, guint *opt)
         return FALSE;
     if (i > -1)
         *opt = i;
+    return TRUE;
+}
+
+gboolean
+kf_load_exec(GKeyFile *kf, const gchar *g, const gchar *k, gchar ***opt)
+{
+    gchar *str = NULL;
+    if (!kf_load_str(kf, g, k, &str))
+        return FALSE;
+
+    GError *err = NULL;
+    gchar **argv;
+    g_shell_parse_argv(str, NULL, &argv, &err);
+
+    if (err) {
+        g_warning("%s", err->message);
+        g_error_free(err);
+        g_free(str);
+        return FALSE;
+    }
+
+    g_free(str);
+    *opt = argv;
+
+    return TRUE;
+}
+
+gboolean
+kf_load_input_mask(GKeyFile *kf, const gchar *g, const gchar *k, guint *opt)
+{
+    GError *err = NULL;
+    gsize len;
+    gchar **input = g_key_file_get_string_list(kf, g, k, &len, &err);
+
+    if (err) {
+        gboolean ret = FALSE;
+        if (err->code == G_KEY_FILE_ERROR_KEY_NOT_FOUND ||
+            err->code == G_KEY_FILE_ERROR_GROUP_NOT_FOUND)
+            ret = TRUE;
+        else
+            g_warning("%s", err->message);
+        g_error_free(err);
+        return ret;
+    }
+
+    guint mask = 0;
+
+    for (guint i = 0; i < len; i++) {
+        gchar *str = input[i];
+#define X(t, n) \
+        if (g_strcmp0(str, n) == 0) { \
+            mask |= INPUT_TYPE_MASK(t); \
+            continue; \
+        }
+        INPUT_TYPE_LIST
+#undef X
+    }
+
+    g_strfreev(input);
+
+    if (mask)
+        *opt = mask;
+
     return TRUE;
 }

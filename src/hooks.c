@@ -22,30 +22,6 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <glib-2.0/glib.h>
 
-static gboolean
-kf_load_exec(GKeyFile *kf, const gchar *g, const gchar *k, gchar ***opt)
-{
-    gchar *str = NULL;
-    if (!kf_load_str(kf, g, k, &str))
-        return FALSE;
-
-    GError *err = NULL;
-    gchar **argv;
-    g_shell_parse_argv(str, NULL, &argv, &err);
-
-    if (err) {
-        g_warning("%s", err->message);
-        g_error_free(err);
-        g_free(str);
-        return FALSE;
-    }
-
-    g_free(str);
-    *opt = argv;
-
-    return TRUE;
-}
-
 static HookType
 get_hook_type(const gchar *name)
 {
