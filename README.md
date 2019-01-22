@@ -1,4 +1,4 @@
-# sessiond
+# sessiond [![Build Status](https://travis-ci.org/jcrd/sessiond.svg?branch=master)](https://travis-ci.org/jcrd/sessiond)
 
 sessiond is a standalone X session manager that reports the idle status of a
 graphical session to **systemd-logind**. It can be used alongside a window

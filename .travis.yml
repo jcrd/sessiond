@@ -1,0 +1,3 @@
+language: c
+
+script: meson setup . builddir && meson test --print-errorlogs -C builddir
