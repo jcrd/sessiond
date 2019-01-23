@@ -1,3 +1,10 @@
 language: c
 
-script: meson setup . builddir && meson test --print-errorlogs -C builddir
+services:
+  - docker
+
+before_install:
+  - docker build -t sessiond .
+
+script:
+  - docker run sessiond /bin/sh -c "cd /root/sessiond && meson builddir && meson test -C builddir --print-errorlogs"
