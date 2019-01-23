@@ -20,24 +20,25 @@ hooks_fixture_tear_down(HooksFixture *f, gconstpointer user_data)
 }
 
 static void
-test_load(HooksFixture *f, gconstpointer user_data)
+test_load_inactive(HooksFixture *f, gconstpointer user_data)
 {
     g_assert_nonnull(f->hooks);
 
-    const Hook *h1 = g_ptr_array_index(f->hooks, 0);
-    g_assert_cmpuint(h1->type, ==, HOOK_TYPE_INACTIVE);
-    g_assert_cmpuint(h1->inactive_sec, ==, 10);
-    g_assert_cmpstr(h1->exec_start[0], ==, "/usr/bin/touch");
-    g_assert_cmpstr(h1->exec_start[1], ==, "/tmp/test_run_inactive");
-    g_assert_cmpstr(h1->exec_stop[0], ==, "/usr/bin/rm");
-    g_assert_cmpstr(h1->exec_stop[1], ==, "/tmp/test_run_inactive");
+    gboolean hook_found = FALSE;
+    for (guint i = 0; i < f->hooks->len; i++) {
+        const Hook *h = g_ptr_array_index(f->hooks, i);
+        if (h->type != HOOK_TYPE_INACTIVE)
+            continue;
+        g_assert_cmpuint(h->inactive_sec, ==, 10);
+        g_assert_cmpstr(h->exec_start[0], ==, "/usr/bin/touch");
+        g_assert_cmpstr(h->exec_start[1], ==, "/tmp/test_run_inactive");
+        g_assert_cmpstr(h->exec_stop[0], ==, "/usr/bin/rm");
+        g_assert_cmpstr(h->exec_stop[1], ==, "/tmp/test_run_inactive");
+        hook_found = TRUE;
+        break;
+    }
 
-    const Hook *h2 = g_ptr_array_index(f->hooks, 1);
-    g_assert_cmpuint(h2->type, ==, HOOK_TYPE_LOCK);
-    g_assert_cmpstr(h2->exec_start[0], ==, "/usr/bin/touch");
-    g_assert_cmpstr(h2->exec_start[1], ==, "/tmp/test_run_lock");
-    g_assert_cmpstr(h2->exec_stop[0], ==, "/usr/bin/rm");
-    g_assert_cmpstr(h2->exec_stop[1], ==, "/tmp/test_run_lock");
+    g_assert_true(hook_found);
 }
 
 static void
@@ -103,7 +104,7 @@ main(int argc, char *argv[])
     gchar *path = g_test_build_filename(G_TEST_DIST, "test", "hooks.d", NULL);
 
     g_test_add("/hooks/load", HooksFixture, path,
-            hooks_fixture_set_up, test_load, hooks_fixture_tear_down);
+            hooks_fixture_set_up, test_load_inactive, hooks_fixture_tear_down);
 
     g_test_add("/hooks/run-lock/start", HooksFixture, path,
             hooks_fixture_set_up, test_run_lock_start, hooks_fixture_tear_down);
