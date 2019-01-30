@@ -88,6 +88,8 @@ static void
 xsource_finalize(GSource *source)
 {
     XSource *self = (XSource *)source;
+
+    XCloseDisplay(self->dpy);
     self->connected = FALSE;
 }
 
@@ -155,8 +157,6 @@ xsource_free(XSource *self)
 {
     if (!self)
         return;
-
-    XCloseDisplay(self->dpy);
 
     GSource *source = (GSource *)self;
     g_source_destroy(source);
