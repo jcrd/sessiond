@@ -52,7 +52,7 @@ main(int argc, char *argv[])
     g_test_init(&argc, &argv, NULL);
 
     gchar *conf_load = g_test_build_filename(G_TEST_DIST,
-            "test", "config_load.conf", NULL);
+            "config_load.conf", NULL);
 
     g_test_add("/config/load", ConfigFixture, conf_load,
             config_fixture_set_up, test_load, config_fixture_tear_down);

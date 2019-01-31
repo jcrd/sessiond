@@ -101,7 +101,7 @@ main(int argc, char *argv[])
 
     g_test_init(&argc, &argv, NULL);
 
-    gchar *path = g_test_build_filename(G_TEST_DIST, "test", "hooks.d", NULL);
+    gchar *path = g_test_build_filename(G_TEST_DIST, "hooks.d", NULL);
 
     g_test_add("/hooks/load", HooksFixture, path,
             hooks_fixture_set_up, test_load_inactive, hooks_fixture_tear_down);
