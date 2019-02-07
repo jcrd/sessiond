@@ -54,8 +54,8 @@ on_timeout(gpointer user_data)
     guint timeout = get_timeout(tl);
 
     if (inactive >= timeout) {
-        tl->func(timeout, TRUE, tl->user_data);
         tl->index++;
+        tl->func(timeout, TRUE, tl->user_data);
         if (tl->index < tl->timeouts->len)
             add_timeout(tl, get_timeout(tl) - inactive);
         else
@@ -145,6 +145,12 @@ timeline_stop(Timeline *tl)
         tl->running = FALSE;
     tl->inactive_since = -1;
     remove_source(tl);
+}
+
+guint
+timeline_pending_timeouts(Timeline *tl)
+{
+    return tl->timeouts->len - tl->index;
 }
 
 void

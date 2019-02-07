@@ -41,5 +41,7 @@ extern void
 timeline_start(Timeline *tl);
 extern void
 timeline_stop(Timeline *tl);
+extern guint
+timeline_pending_timeouts(Timeline *tl);
 extern void
 timeline_free(Timeline *tl);
