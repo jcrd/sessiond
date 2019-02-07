@@ -26,3 +26,12 @@ test(
     ], dependencies : deps),
   env : g_test_env,
   )
+
+test(
+  'test timeline',
+  executable('timeline_test', [
+    'timeline_test.c',
+    '../src/timeline.c',
+    ], dependencies : deps),
+  env : g_test_env,
+  )
