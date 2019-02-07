@@ -54,7 +54,7 @@ on_timeout(gpointer user_data)
     guint timeout = get_timeout(tl);
 
     if (inactive >= timeout) {
-        tl->func(timeout, TRUE);
+        tl->func(timeout, TRUE, tl->user_data);
         tl->index++;
         if (tl->index < tl->timeouts->len)
             add_timeout(tl, get_timeout(tl) - inactive);
@@ -90,7 +90,7 @@ add_timeout(Timeline *tl, guint timeout)
 }
 
 Timeline
-timeline_new(GMainContext *ctx, TimelineFunc func)
+timeline_new(GMainContext *ctx, TimelineFunc func, gconstpointer user_data)
 {
     Timeline tl;
     tl.running = FALSE;
@@ -100,6 +100,7 @@ timeline_new(GMainContext *ctx, TimelineFunc func)
     tl.index = 0;
     tl.inactive_since = -1;
     tl.func = func;
+    tl.user_data = user_data;
     return tl;
 }
 
@@ -121,7 +122,7 @@ timeline_start(Timeline *tl)
     if (tl->running) {
         while (tl->index) {
             tl->index--;
-            tl->func(get_timeout(tl), FALSE);
+            tl->func(get_timeout(tl), FALSE, tl->user_data);
         }
     } else if (tl->timeouts->len > 0) {
         g_array_sort(tl->timeouts, compare_timeouts);

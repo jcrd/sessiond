@@ -19,7 +19,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <glib-2.0/glib.h>
 
-typedef void (*TimelineFunc)(guint timeout, gboolean state);
+typedef void (*TimelineFunc)(guint timeout, gboolean state,
+        gconstpointer user_data);
 
 typedef struct {
     gboolean running;
@@ -29,10 +30,11 @@ typedef struct {
     guint index;
     gint64 inactive_since;
     TimelineFunc func;
+    gconstpointer user_data;
 } Timeline;
 
 extern Timeline
-timeline_new(GMainContext *ctx, TimelineFunc func);
+timeline_new(GMainContext *ctx, TimelineFunc func, gconstpointer user_data);
 extern gboolean
 timeline_add_timeout(Timeline *tl, guint timeout);
 extern void

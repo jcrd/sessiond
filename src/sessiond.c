@@ -208,7 +208,7 @@ set_backlight(gboolean state)
 }
 
 static void
-on_timeout(guint timeout, gboolean state)
+on_timeout(guint timeout, gboolean state, gconstpointer user_data)
 {
     if (timeout == config.idle_sec)
         set_idle(state);
@@ -298,7 +298,7 @@ init_backlight(void)
 static void
 init_timeline(Timeline *tl)
 {
-    *tl = timeline_new(main_ctx, on_timeout);
+    *tl = timeline_new(main_ctx, on_timeout, NULL);
 
     timeline_add_timeout(tl, config.idle_sec);
 
