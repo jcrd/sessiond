@@ -7,4 +7,4 @@ before_install:
   - docker build -t sessiond .
 
 script:
-  - docker run -v "$PWD":/root/sessiond sessiond /bin/sh -c "cd /root/sessiond && meson builddir && meson test -C builddir --print-errorlogs"
+  - docker run --rm -v "$PWD":/root/sessiond sessiond /bin/sh -c "cd /root/sessiond && meson builddir && meson test -C builddir --print-errorlogs"
