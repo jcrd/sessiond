@@ -60,12 +60,8 @@ load_hook(const gchar *path)
     Hook *hook = NULL;
     gchar *str = NULL;
 
-    if (!kf_load_str(kf, "Hook", "Trigger", &str)) {
-    error:
-        g_key_file_free(kf);
-        free_hook(hook);
-        return NULL;
-    }
+    if (!kf_load_str(kf, "Hook", "Trigger", &str))
+        goto error;
 
     if (!str) {
         g_warning("'Trigger' key is missing in %s", path);
@@ -105,6 +101,11 @@ load_hook(const gchar *path)
     g_key_file_free(kf);
 
     return hook;
+
+error:
+    g_key_file_free(kf);
+    free_hook(hook);
+    return NULL;
 }
 
 static void
