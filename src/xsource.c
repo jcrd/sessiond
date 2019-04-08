@@ -18,6 +18,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "xsource.h"
 #include "common.h"
 
+#include <stdlib.h>
 #include <glib-2.0/glib.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/XInput.h>
