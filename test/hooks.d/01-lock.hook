@@ -1,4 +1,4 @@
 [Hook]
 Trigger=Lock
 ExecStart=/usr/bin/touch /tmp/test_run_lock
-ExecStop=/usr/bin/rm /tmp/test_run_lock
+ExecStop=/bin/rm /tmp/test_run_lock

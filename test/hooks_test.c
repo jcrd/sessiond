@@ -32,7 +32,7 @@ test_load_inactive(HooksFixture *f, gconstpointer user_data)
         g_assert_cmpuint(h->inactive_sec, ==, 10);
         g_assert_cmpstr(h->exec_start[0], ==, "/usr/bin/touch");
         g_assert_cmpstr(h->exec_start[1], ==, "/tmp/test_run_inactive");
-        g_assert_cmpstr(h->exec_stop[0], ==, "/usr/bin/rm");
+        g_assert_cmpstr(h->exec_stop[0], ==, "/bin/rm");
         g_assert_cmpstr(h->exec_stop[1], ==, "/tmp/test_run_inactive");
         hook_found = TRUE;
         break;
