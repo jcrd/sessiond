@@ -1,4 +1,4 @@
-# sessiond
+# sessiond [![CircleCI](https://circleci.com/gh/jcrd/sessiond.svg?style=svg)](https://circleci.com/gh/jcrd/sessiond)
 
 sessiond is a standalone X session manager that reports the idle status of a
 graphical session to **systemd-logind**. It can be used alongside a window
