@@ -18,7 +18,6 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "backlight.h"
 #include "common.h"
 
-#include <errno.h>
 #include <stdio.h>
 #include <glib-2.0/glib.h>
 
@@ -72,7 +71,7 @@ backlight_get(const gchar *iface)
     unsigned int v;
 
     if (!f) {
-        perror("Failed to open backlight interface");
+        perror("Failed to open backlight interface: ");
         return -1;
     }
 
