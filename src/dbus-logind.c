@@ -164,10 +164,12 @@ logind_set_idle_hint(LogindContext *c, gboolean state)
         g_warning("%s", err->message);
         g_error_free(err);
     } else {
+        c->idle_hint = state;
         g_debug("IdleHint set to %s", BOOLSTR(state));
     }
 }
 
+/* Locking session automatically updates logind LockedHint. */
 void
 logind_lock_session(LogindContext *c, gboolean state)
 {
@@ -187,12 +189,14 @@ logind_lock_session(LogindContext *c, gboolean state)
         g_warning("%s", err->message);
         g_error_free(err);
     } else {
+        c->locked_hint = state;
         g_debug("%sed session", STR(state));
     }
 
 #undef STR
 }
 
+/* Set LockedHint manually when responding to Lock signal. */
 void
 logind_set_locked_hint(LogindContext *c, gboolean state)
 {
@@ -210,6 +214,7 @@ logind_set_locked_hint(LogindContext *c, gboolean state)
         g_warning("%s", err->message);
         g_error_free(err);
     } else {
+        c->locked_hint = state;
         g_debug("LockedHint set to %s", BOOLSTR(state));
     }
 }

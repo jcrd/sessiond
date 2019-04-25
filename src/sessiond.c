@@ -51,8 +51,6 @@ static GMainContext *main_ctx = NULL;
 static GPtrArray *hooks = NULL;
 static gchar *bl_iface = NULL;
 static gint bl_value = -1;
-static gboolean idle = FALSE;
-static gboolean locked = FALSE;
 static gchar *config_path = NULL;
 static guint idle_sec = 0;
 #ifdef DPMS
@@ -62,14 +60,14 @@ static gboolean no_dpms = FALSE;
 static void
 set_idle(gboolean state)
 {
-    if (state == idle)
+    if (state == lc->idle_hint)
         return;
 
     logind_set_idle_hint(lc, state);
 
     if (state) {
         systemd_start_unit(sc, "graphical-idle.target");
-        if (config.on_idle && !locked)
+        if (config.on_idle && !lc->locked_hint)
             logind_lock_session(lc, TRUE);
     } else {
         systemd_start_unit(sc, "graphical-unidle.target");
@@ -79,13 +77,12 @@ set_idle(gboolean state)
         hooks_run(hooks, HOOK_TYPE_IDLE, state);
 
     g_message("Idle: %s", BOOLSTR(state));
-    idle = state;
 }
 
 static void
 lock_func(gboolean state)
 {
-    if (state == locked)
+    if (state == lc->locked_hint)
         return;
 
     logind_set_locked_hint(lc, state);
@@ -101,7 +98,6 @@ lock_func(gboolean state)
         hooks_run(hooks, HOOK_TYPE_LOCK, state);
 
     g_message("Locked: %s", BOOLSTR(state));
-    locked = state;
 }
 
 static void
@@ -110,7 +106,7 @@ sleep_func(gboolean state)
     if (state) {
         g_message("Preparing for sleep...");
         systemd_start_unit(sc, "user-sleep.target");
-        if (config.on_sleep && !locked)
+        if (config.on_sleep && !lc->locked_hint)
             logind_lock_session(lc, TRUE);
     }
 

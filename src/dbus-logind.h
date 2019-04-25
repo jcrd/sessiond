@@ -23,6 +23,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 typedef void (*SignalFunc)(gboolean state);
 
 typedef struct {
+    gboolean idle_hint;
+    gboolean locked_hint;
     guint logind_watcher;
     GDBusProxy *logind_session;
     GDBusProxy *logind_manager;
