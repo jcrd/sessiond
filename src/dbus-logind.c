@@ -66,7 +66,7 @@ logind_on_manager_signal(UNUSED GDBusProxy *proxy, UNUSED gchar *sender,
 }
 
 static gchar *
-logind_get_session_path(GDBusConnection *conn)
+logind_get_session(GDBusConnection *conn, gchar **id)
 {
     GError *err = NULL;
     GDBusProxy *proxy = g_dbus_proxy_new_sync(
@@ -79,21 +79,29 @@ logind_get_session_path(GDBusConnection *conn)
         return NULL;
     }
 
+    gchar *path = NULL;
     GVariant *display = g_dbus_proxy_get_cached_property(proxy, "Display");
 
     if (!display) {
         g_warning("%s does not have Display property", LOGIND_USER_IFACE);
-        g_object_unref(proxy);
-        return NULL;
+        goto error;
     }
 
-    gchar *path = NULL;
+    g_variant_get_child(display, 0, "s", id);
+
+    if (!*id) {
+        g_warning("Failed to read Display session Id");
+        goto error;
+    }
+
     g_variant_get_child(display, 1, "o", &path);
 
     if (!path)
         g_warning("Failed to read Display session object path");
 
-    g_variant_unref(display);
+error:
+    if (display)
+        g_variant_unref(display);
     g_object_unref(proxy);
 
     return path;
@@ -106,15 +114,13 @@ logind_on_appear(GDBusConnection *conn, const gchar *name, const gchar *owner,
     g_debug("%s appeared (owned by %s)", name, owner);
 
     LogindContext *c = (LogindContext *)user_data;
-    gchar *path = logind_get_session_path(conn);
+    gchar *path = logind_get_session(conn, &c->session_id);
     GError *err = NULL;
 
     if (path) {
         c->logind_session = g_dbus_proxy_new_sync(
             conn, G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES, NULL, LOGIND_NAME,
             path, LOGIND_SESSION_IFACE, NULL, &err);
-
-        g_free(path);
 
         if (err) {
             g_warning("%s", err->message);
@@ -123,7 +129,9 @@ logind_on_appear(GDBusConnection *conn, const gchar *name, const gchar *owner,
         } else {
             g_signal_connect(c->logind_session, "g-signal",
                              G_CALLBACK(logind_on_session_signal), user_data);
+            g_debug("Using logind session %s: %s", c->session_id, path);
         }
+        g_free(path);
     }
 
     c->logind_manager = g_dbus_proxy_new_sync(
@@ -236,6 +244,8 @@ logind_free(LogindContext *c)
 {
     if (!c)
         return;
+    if (c->session_id)
+        g_free(c->session_id);
     if (c->logind_watcher) {
         g_bus_unwatch_name(c->logind_watcher);
         c->logind_watcher = 0;
