@@ -65,7 +65,7 @@ set_idle(gboolean state)
     if (state == idle)
         return;
 
-    logind_set_idle(lc, state);
+    logind_set_idle_hint(lc, state);
 
     if (state) {
         systemd_start_unit(sc, "graphical-idle.target");

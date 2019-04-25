@@ -32,7 +32,7 @@ typedef struct {
 } LogindContext;
 
 extern void
-logind_set_idle(LogindContext *c, gboolean state);
+logind_set_idle_hint(LogindContext *c, gboolean state);
 extern void
 logind_lock_session(LogindContext *c, gboolean state);
 extern void

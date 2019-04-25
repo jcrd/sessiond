@@ -148,7 +148,7 @@ logind_on_vanish(UNUSED GDBusConnection *conn, const gchar *name,
 }
 
 void
-logind_set_idle(LogindContext *c, gboolean state)
+logind_set_idle_hint(LogindContext *c, gboolean state)
 {
     if (!c->logind_session) {
         g_warning("Cannot set IdleHint: %s does not exist", LOGIND_NAME);
