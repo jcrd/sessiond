@@ -18,7 +18,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "backlight.h"
 #include "common.h"
 #include "config.h"
-#include "dbus.h"
+#include "dbus-logind.h"
+#include "dbus-systemd.h"
 #include "hooks.h"
 #include "timeline.h"
 #include "xsource.h"
@@ -42,7 +43,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 static Config config;
 static Timeline timeline;
-static DBusContext *dc = NULL;
+static LogindContext *lc = NULL;
+static SystemdContext *sc = NULL;
 static XSource *xsource = NULL;
 static GMainLoop *main_loop = NULL;
 static GMainContext *main_ctx = NULL;
@@ -63,14 +65,14 @@ set_idle(gboolean state)
     if (state == idle)
         return;
 
-    logind_set_idle(dc, state);
+    logind_set_idle(lc, state);
 
     if (state) {
-        systemd_start_unit(dc, "graphical-idle.target");
+        systemd_start_unit(sc, "graphical-idle.target");
         if (config.on_idle && !locked)
-            logind_lock_session(dc, TRUE);
+            logind_lock_session(lc, TRUE);
     } else {
-        systemd_start_unit(dc, "graphical-unidle.target");
+        systemd_start_unit(sc, "graphical-unidle.target");
     }
 
     if (hooks)
@@ -86,13 +88,13 @@ lock_func(gboolean state)
     if (state == locked)
         return;
 
-    logind_set_locked_hint(dc, state);
+    logind_set_locked_hint(lc, state);
 
     if (state) {
-        systemd_start_unit(dc, "graphical-lock.target");
+        systemd_start_unit(sc, "graphical-lock.target");
     } else {
         timeline_start(&timeline);
-        systemd_start_unit(dc, "graphical-unlock.target");
+        systemd_start_unit(sc, "graphical-unlock.target");
     }
 
     if (hooks)
@@ -107,9 +109,9 @@ sleep_func(gboolean state)
 {
     if (state) {
         g_message("Preparing for sleep...");
-        systemd_start_unit(dc, "user-sleep.target");
+        systemd_start_unit(sc, "user-sleep.target");
         if (config.on_sleep && !locked)
-            logind_lock_session(dc, TRUE);
+            logind_lock_session(lc, TRUE);
     }
 
     if (hooks)
@@ -121,7 +123,7 @@ shutdown_func(gboolean state)
 {
     if (state) {
         g_message("Preparing for shutdown...");
-        systemd_start_unit(dc, "user-shutdown.target");
+        systemd_start_unit(sc, "user-shutdown.target");
     }
 
     if (hooks)
@@ -325,12 +327,15 @@ init_xsource(XSource **source)
 static void
 init_dbus(void)
 {
-    if (!dc) {
-        dc = dbus_new();
-        dc->logind_lock_func = lock_func;
-        dc->logind_sleep_func = sleep_func;
-        dc->logind_shutdown_func = shutdown_func;
+    if (!lc) {
+        lc = logind_new();
+        lc->logind_lock_func = lock_func;
+        lc->logind_sleep_func = sleep_func;
+        lc->logind_shutdown_func = shutdown_func;
     }
+
+    if (!sc)
+        sc = systemd_new();
 }
 
 static gboolean
@@ -375,7 +380,8 @@ cleanup(void)
     g_free(config_path);
     hooks_free(hooks);
     timeline_free(&timeline);
-    dbus_free(dc);
+    logind_free(lc);
+    systemd_free(sc);
     xsource_free(xsource);
     g_main_context_unref(main_ctx);
     g_main_loop_unref(main_loop);

@@ -29,19 +29,15 @@ typedef struct {
     SignalFunc logind_lock_func;
     SignalFunc logind_sleep_func;
     SignalFunc logind_shutdown_func;
-    guint systemd_watcher;
-    GDBusProxy *systemd_manager;
-} DBusContext;
+} LogindContext;
 
 extern void
-systemd_start_unit(DBusContext *dc, const gchar *name);
+logind_set_idle(LogindContext *c, gboolean state);
 extern void
-logind_set_idle(DBusContext *dc, gboolean state);
+logind_lock_session(LogindContext *c, gboolean state);
 extern void
-logind_lock_session(DBusContext *dc, gboolean state);
+logind_set_locked_hint(LogindContext *c, gboolean state);
+extern LogindContext *
+logind_new(void);
 extern void
-logind_set_locked_hint(DBusContext *dc, gboolean state);
-extern DBusContext *
-dbus_new(void);
-extern void
-dbus_free(DBusContext *dc);
+logind_free(LogindContext *c);
