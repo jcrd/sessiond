@@ -325,9 +325,9 @@ init_dbus(void)
 {
     if (!lc) {
         lc = logind_context_new();
-        g_signal_connect(lc, "lock", (GCallback)lock_callback, NULL);
-        g_signal_connect(lc, "sleep", (GCallback)sleep_callback, NULL);
-        g_signal_connect(lc, "shutdown", (GCallback)shutdown_callback, NULL);
+        g_signal_connect(lc, "lock", G_CALLBACK(lock_callback), NULL);
+        g_signal_connect(lc, "sleep", G_CALLBACK(sleep_callback), NULL);
+        g_signal_connect(lc, "shutdown", G_CALLBACK(shutdown_callback), NULL);
     }
 
     if (!sc)
