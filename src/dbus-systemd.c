@@ -51,7 +51,7 @@ systemd_on_vanish(UNUSED GDBusConnection *conn, const gchar *name,
                   gpointer user_data)
 {
     g_debug("%s vanished", name);
-    systemd_free((SystemdContext *)user_data);
+    systemd_context_free((SystemdContext *)user_data);
 }
 
 void
