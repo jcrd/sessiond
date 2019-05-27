@@ -29,6 +29,17 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #define LOGIND_PATH "/org/freedesktop/login1"
 #define LOGIND_USER_PATH LOGIND_PATH "/user/self"
 
+G_DEFINE_TYPE(LogindContext, logind_context, G_TYPE_OBJECT);
+
+enum {
+    LOCK_SIGNAL,
+    SLEEP_SIGNAL,
+    SHUTDOWN_SIGNAL,
+    LAST_SIGNAL,
+};
+
+static guint signals[LAST_SIGNAL] = {0};
+
 static void
 logind_on_session_signal(UNUSED GDBusProxy *proxy, UNUSED gchar *sender,
                          gchar *signal, UNUSED GVariant *params,
@@ -36,13 +47,13 @@ logind_on_session_signal(UNUSED GDBusProxy *proxy, UNUSED gchar *sender,
 {
     LogindContext *c = (LogindContext *)user_data;
 
-    if (!c->logind_lock_func)
-        return;
-
-    if (g_strcmp0(signal, "Lock") == 0)
-        c->logind_lock_func(TRUE);
-    else if (g_strcmp0(signal, "Unlock") == 0)
-        c->logind_lock_func(FALSE);
+    if (g_strcmp0(signal, "Lock") == 0) {
+        g_debug("Lock signal received");
+        g_signal_emit(c, signals[LOCK_SIGNAL], 0, TRUE);
+    } else if (g_strcmp0(signal, "Unlock") == 0) {
+        g_debug("Unlock signal received");
+        g_signal_emit(c, signals[LOCK_SIGNAL], 0, FALSE);
+    }
 }
 
 static void
@@ -50,18 +61,16 @@ logind_on_manager_signal(UNUSED GDBusProxy *proxy, UNUSED gchar *sender,
                          gchar *signal, GVariant *params, gpointer user_data)
 {
     LogindContext *c = (LogindContext *)user_data;
+
     gboolean state;
+    g_variant_get(params, "(b)", &state);
 
     if (g_strcmp0(signal, "PrepareForSleep") == 0) {
-        if (!c->logind_sleep_func)
-            return;
-        g_variant_get(params, "(b)", &state);
-        c->logind_sleep_func(state);
+        g_debug("PrepareForSleep signal received: %s", BOOLSTR(state));
+        g_signal_emit(c, signals[SLEEP_SIGNAL], 0, state);
     } else if (g_strcmp0(signal, "PrepareForShutdown") == 0) {
-        if (!c->logind_shutdown_func)
-            return;
-        g_variant_get(params, "(b)", &state);
-        c->logind_shutdown_func(state);
+        g_debug("PrepareForShutdown signal received: %s", BOOLSTR(state));
+        g_signal_emit(c, signals[SHUTDOWN_SIGNAL], 0, state);
     }
 }
 
@@ -152,7 +161,31 @@ logind_on_vanish(UNUSED GDBusConnection *conn, const gchar *name,
                  gpointer user_data)
 {
     g_debug("%s vanished", name);
-    logind_free((LogindContext *)user_data);
+    logind_context_free((LogindContext *)user_data);
+}
+
+static void
+logind_context_class_init(LogindContextClass *c)
+{
+    GType type = G_OBJECT_CLASS_TYPE(c);
+
+    signals[LOCK_SIGNAL] = g_signal_new("lock",
+            type, G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL, G_TYPE_NONE, 1,
+            G_TYPE_BOOLEAN);
+    signals[SLEEP_SIGNAL] = g_signal_new("sleep",
+            type, G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL, G_TYPE_NONE, 1,
+            G_TYPE_BOOLEAN);
+    signals[SHUTDOWN_SIGNAL] = g_signal_new("shutdown",
+            type, G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL, G_TYPE_NONE, 1,
+            G_TYPE_BOOLEAN);
+}
+
+static void
+logind_context_init(LogindContext *self)
+{
+    self->logind_watcher = g_bus_watch_name(
+        G_BUS_TYPE_SYSTEM, LOGIND_NAME, G_BUS_NAME_WATCHER_FLAGS_NONE,
+        logind_on_appear, logind_on_vanish, self, NULL);
 }
 
 void
@@ -228,19 +261,13 @@ logind_set_locked_hint(LogindContext *c, gboolean state)
 }
 
 LogindContext *
-logind_new(void)
+logind_context_new(void)
 {
-    LogindContext *c = g_malloc0(sizeof(LogindContext));
-
-    c->logind_watcher = g_bus_watch_name(
-        G_BUS_TYPE_SYSTEM, LOGIND_NAME, G_BUS_NAME_WATCHER_FLAGS_NONE,
-        logind_on_appear, logind_on_vanish, c, NULL);
-
-    return c;
+    return g_object_new(LOGIND_TYPE_CONTEXT, 0);
 }
 
 void
-logind_free(LogindContext *c)
+logind_context_free(LogindContext *c)
 {
     if (!c)
         return;
@@ -258,5 +285,5 @@ logind_free(LogindContext *c)
         g_object_unref(c->logind_manager);
         c->logind_manager = NULL;
     }
-    g_free(c);
+    g_object_unref(c);
 }

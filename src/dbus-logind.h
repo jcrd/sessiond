@@ -20,19 +20,18 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include <glib-2.0/glib.h>
 #include <glib-2.0/gio/gio.h>
 
-typedef void (*SignalFunc)(gboolean state);
+#define LOGIND_TYPE_CONTEXT logind_context_get_type()
+G_DECLARE_FINAL_TYPE(LogindContext, logind_context, LOGIND, CONTEXT, GObject);
 
-typedef struct {
+struct _LogindContext {
+    GObject parent;
     gchar *session_id;
     gboolean idle_hint;
     gboolean locked_hint;
     guint logind_watcher;
     GDBusProxy *logind_session;
     GDBusProxy *logind_manager;
-    SignalFunc logind_lock_func;
-    SignalFunc logind_sleep_func;
-    SignalFunc logind_shutdown_func;
-} LogindContext;
+};
 
 extern void
 logind_set_idle_hint(LogindContext *c, gboolean state);
@@ -41,6 +40,6 @@ logind_lock_session(LogindContext *c, gboolean state);
 extern void
 logind_set_locked_hint(LogindContext *c, gboolean state);
 extern LogindContext *
-logind_new(void);
+logind_context_new(void);
 extern void
-logind_free(LogindContext *c);
+logind_context_free(LogindContext *c);

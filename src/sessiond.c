@@ -80,12 +80,12 @@ set_idle(gboolean state)
 }
 
 static void
-lock_func(gboolean state)
+lock_callback(LogindContext *c, gboolean state, UNUSED gpointer data)
 {
-    if (state == lc->locked_hint)
+    if (state == c->locked_hint)
         return;
 
-    logind_set_locked_hint(lc, state);
+    logind_set_locked_hint(c, state);
 
     if (state) {
         systemd_start_unit(sc, "graphical-lock.target");
@@ -101,13 +101,13 @@ lock_func(gboolean state)
 }
 
 static void
-sleep_func(gboolean state)
+sleep_callback(LogindContext *c, gboolean state, UNUSED gpointer data)
 {
     if (state) {
         g_message("Preparing for sleep...");
         systemd_start_unit(sc, "user-sleep.target");
-        if (config.on_sleep && !lc->locked_hint)
-            logind_lock_session(lc, TRUE);
+        if (config.on_sleep && !c->locked_hint)
+            logind_lock_session(c, TRUE);
     }
 
     if (hooks)
@@ -115,7 +115,7 @@ sleep_func(gboolean state)
 }
 
 static void
-shutdown_func(gboolean state)
+shutdown_callback(UNUSED LogindContext *c, gboolean state, UNUSED gpointer data)
 {
     if (state) {
         g_message("Preparing for shutdown...");
@@ -324,10 +324,10 @@ static void
 init_dbus(void)
 {
     if (!lc) {
-        lc = logind_new();
-        lc->logind_lock_func = lock_func;
-        lc->logind_sleep_func = sleep_func;
-        lc->logind_shutdown_func = shutdown_func;
+        lc = logind_context_new();
+        g_signal_connect(lc, "lock", (GCallback)lock_callback, NULL);
+        g_signal_connect(lc, "sleep", (GCallback)sleep_callback, NULL);
+        g_signal_connect(lc, "shutdown", (GCallback)shutdown_callback, NULL);
     }
 
     if (!sc)
@@ -376,7 +376,7 @@ cleanup(void)
     g_free(config_path);
     hooks_free(hooks);
     timeline_free(&timeline);
-    logind_free(lc);
+    logind_context_free(lc);
     systemd_free(sc);
     xsource_free(xsource);
     g_main_context_unref(main_ctx);
