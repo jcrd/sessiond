@@ -77,7 +77,7 @@ systemd_start_unit(SystemdContext *c, const gchar *name)
 }
 
 SystemdContext *
-systemd_new(void)
+systemd_context_new(void)
 {
     SystemdContext *c = g_malloc0(sizeof(SystemdContext));
 
@@ -89,7 +89,7 @@ systemd_new(void)
 }
 
 void
-systemd_free(SystemdContext *c)
+systemd_context_free(SystemdContext *c)
 {
     if (!c)
         return;

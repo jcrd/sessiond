@@ -28,6 +28,6 @@ typedef struct {
 extern void
 systemd_start_unit(SystemdContext *c, const gchar *name);
 extern SystemdContext *
-systemd_new(void);
+systemd_context_new(void);
 extern void
-systemd_free(SystemdContext *c);
+systemd_context_free(SystemdContext *c);

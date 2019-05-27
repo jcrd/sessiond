@@ -331,7 +331,7 @@ init_dbus(void)
     }
 
     if (!sc)
-        sc = systemd_new();
+        sc = systemd_context_new();
 }
 
 static gboolean
@@ -377,7 +377,7 @@ cleanup(void)
     hooks_free(hooks);
     timeline_free(&timeline);
     logind_context_free(lc);
-    systemd_free(sc);
+    systemd_context_free(sc);
     xsource_free(xsource);
     g_main_context_unref(main_ctx);
     g_main_loop_unref(main_loop);
