@@ -111,6 +111,15 @@ and false respectively.
 
 =back
 
+=over
+
+=item For complete introspection data, use B<gdbus>(1):
+
+B<gdbus> introspect --session --dest I<org.sessiond.session1> --object-path
+I</org/sessiond/session1>
+
+=back
+
 =head1 DEBUGGING
 
 Running sessiond with the environment variable I<G_MESSAGES_DEBUG> set to "all"
@@ -131,4 +140,4 @@ GNU General Public License v3.0 or later.
 
 =head1 SEE ALSO
 
-B<sessiond.conf>(5), B<sessiond-hooks>(5), B<systemd-logind>(8)
+B<sessiond.conf>(5), B<sessiond-hooks>(5), B<systemd-logind>(8), B<gdbus>(1)
