@@ -96,14 +96,12 @@ logind_get_session(GDBusConnection *conn, gchar **id)
         goto error;
     }
 
-    g_variant_get_child(display, 0, "s", id);
+    g_variant_get(display, "(so)", id, &path);
 
     if (!*id) {
         g_warning("Failed to read Display session Id");
         goto error;
     }
-
-    g_variant_get_child(display, 1, "o", &path);
 
     if (!path)
         g_warning("Failed to read Display session object path");
