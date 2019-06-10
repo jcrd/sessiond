@@ -26,8 +26,6 @@ G_DECLARE_FINAL_TYPE(LogindContext, logind_context, LOGIND, CONTEXT, GObject);
 struct _LogindContext {
     GObject parent;
     gchar *session_id;
-    gboolean idle_hint;
-    gboolean locked_hint;
     guint logind_watcher;
     GDBusProxy *logind_session;
     GDBusProxy *logind_manager;
@@ -39,6 +37,14 @@ extern void
 logind_lock_session(LogindContext *c, gboolean state);
 extern void
 logind_set_locked_hint(LogindContext *c, gboolean state);
+extern gboolean
+logind_get_locked_hint(LogindContext *c);
+extern gboolean
+logind_get_idle_hint(LogindContext *c);
+extern guint64
+logind_get_idle_since_hint(LogindContext *c);
+extern guint64
+logind_get_idle_since_hint_monotonic(LogindContext *c);
 extern LogindContext *
 logind_context_new(void);
 extern void

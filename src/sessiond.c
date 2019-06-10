@@ -60,14 +60,14 @@ static gboolean no_dpms = FALSE;
 static void
 set_idle(gboolean state)
 {
-    if (state == lc->idle_hint)
+    if (state == logind_get_idle_hint(lc))
         return;
 
     logind_set_idle_hint(lc, state);
 
     if (state) {
         systemd_start_unit(sc, "graphical-idle.target");
-        if (config.on_idle && !lc->locked_hint)
+        if (config.on_idle && !logind_get_locked_hint(lc))
             logind_lock_session(lc, TRUE);
     } else {
         systemd_start_unit(sc, "graphical-unidle.target");
@@ -82,7 +82,7 @@ set_idle(gboolean state)
 static void
 lock_callback(LogindContext *c, gboolean state, UNUSED gpointer data)
 {
-    if (state == c->locked_hint)
+    if (state == logind_get_locked_hint(c))
         return;
 
     logind_set_locked_hint(c, state);
@@ -106,7 +106,7 @@ sleep_callback(LogindContext *c, gboolean state, UNUSED gpointer data)
     if (state) {
         g_message("Preparing for sleep...");
         systemd_start_unit(sc, "user-sleep.target");
-        if (config.on_sleep && !c->locked_hint)
+        if (config.on_sleep && !logind_get_locked_hint(c))
             logind_lock_session(c, TRUE);
     }
 

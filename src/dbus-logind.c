@@ -117,6 +117,51 @@ error:
 }
 
 static void
+logind_get_property(LogindContext *c, const gchar *prop, const gchar *fmt,
+        gpointer out)
+{
+    GVariant *v = g_dbus_proxy_get_cached_property(c->logind_session,
+            prop);
+    if (v)
+        g_variant_get(v, fmt, out);
+    else
+        g_warning("Failed to get logind %s", prop);
+    g_variant_unref(v);
+}
+
+gboolean
+logind_get_locked_hint(LogindContext *c)
+{
+    gboolean b = FALSE;
+    logind_get_property(c, "LockedHint", "b", &b);
+    return b;
+}
+
+gboolean
+logind_get_idle_hint(LogindContext *c)
+{
+    gboolean b = FALSE;
+    logind_get_property(c, "IdleHint", "b", &b);
+    return b;
+}
+
+guint64
+logind_get_idle_since_hint(LogindContext *c)
+{
+    guint64 i = 0;
+    logind_get_property(c, "IdleSinceHint", "t", &i);
+    return i;
+}
+
+guint64
+logind_get_idle_since_hint_monotonic(LogindContext *c)
+{
+    guint64 i = 0;
+    logind_get_property(c, "IdleSinceHintMonotonic", "t", &i);
+    return i;
+}
+
+static void
 logind_on_appear(GDBusConnection *conn, const gchar *name, const gchar *owner,
                  gpointer user_data)
 {
@@ -128,7 +173,7 @@ logind_on_appear(GDBusConnection *conn, const gchar *name, const gchar *owner,
 
     if (path) {
         c->logind_session = g_dbus_proxy_new_sync(
-            conn, G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES, NULL, LOGIND_NAME,
+            conn, G_DBUS_PROXY_FLAGS_NONE, NULL, LOGIND_NAME,
             path, LOGIND_SESSION_IFACE, NULL, &err);
 
         if (err) {
@@ -205,7 +250,6 @@ logind_set_idle_hint(LogindContext *c, gboolean state)
         g_warning("%s", err->message);
         g_error_free(err);
     } else {
-        c->idle_hint = state;
         g_debug("IdleHint set to %s", BOOLSTR(state));
     }
 }
@@ -230,7 +274,6 @@ logind_lock_session(LogindContext *c, gboolean state)
         g_warning("%s", err->message);
         g_error_free(err);
     } else {
-        c->locked_hint = state;
         g_debug("%sed session", STR(state));
     }
 
@@ -255,7 +298,6 @@ logind_set_locked_hint(LogindContext *c, gboolean state)
         g_warning("%s", err->message);
         g_error_free(err);
     } else {
-        c->locked_hint = state;
         g_debug("LockedHint set to %s", BOOLSTR(state));
     }
 }
