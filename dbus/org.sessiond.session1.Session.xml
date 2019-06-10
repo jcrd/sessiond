@@ -1,0 +1,20 @@
+<node>
+  <interface name='org.sessiond.session1.Session'>
+    <method name='Lock'/>
+    <method name='Unlock'/>
+    <property name='LockedHint' type='b' access='read'/>
+    <property name='IdleHint' type='b' access='read'/>
+    <property name='IdleSinceHint' type='t' access='read'/>
+    <property name='IdleSinceHintMonotonic' type='t' access='read'/>
+    <signal name='Lock'/>
+    <signal name='Unlock'/>
+    <signal name='Idle'/>
+    <signal name='Active'/>
+    <signal name='PrepareForSleep'>
+      <arg name='state' type='b'/>
+    </signal>
+    <signal name='PrepareForShutdown'>
+      <arg name='state' type='b'/>
+    </signal>
+  </interface>
+</node>

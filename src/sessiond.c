@@ -19,6 +19,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "common.h"
 #include "config.h"
 #include "dbus-logind.h"
+#include "dbus-server.h"
 #include "dbus-systemd.h"
 #include "hooks.h"
 #include "timeline.h"
@@ -45,6 +46,7 @@ static Config config;
 static Timeline timeline;
 static LogindContext *lc = NULL;
 static SystemdContext *sc = NULL;
+static DBusServer *server = NULL;
 static XSource *xsource = NULL;
 static GMainLoop *main_loop = NULL;
 static GMainContext *main_ctx = NULL;
@@ -332,6 +334,9 @@ init_dbus(void)
 
     if (!sc)
         sc = systemd_context_new();
+
+    if (!server)
+        server = dbus_server_init(lc);
 }
 
 static gboolean

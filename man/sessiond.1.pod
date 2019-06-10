@@ -36,6 +36,81 @@ Show version.
 
 =back
 
+=head1 DBUS SERVICE
+
+sessiond provides a DBus service on the session bus at the well-known name
+I<org.sessiond.session1>.
+The B<org.sessiond.session1.Session> interface exposes the following methods,
+properties, and signals:
+
+=head2 Methods
+
+=over
+
+=item B<Lock>
+
+Lock the session. Returns an error if the session is already locked.
+
+=item B<Unlock>
+
+Unlock the session.
+
+=back
+
+=head2 Properties
+
+=over
+
+=item B<LockedHint>
+
+The locked state of the session.
+
+=item B<IdleHint>
+
+The idle state of the session.
+
+=item B<IdleSinceHint>
+
+The timestamp of the last change to B<IdleHint>.
+
+=item B<IdleSinceHintMonotonic>
+
+The timestamp of the last change to B<IdleHint> in monotonic time.
+
+=back
+
+=head2 Signals
+
+=over
+
+=item B<Lock>
+
+Emitted when the session is locked. B<LockedHint> will be true.
+
+=item B<Unlock>
+
+Emitted when the session is unlocked. B<LockedHint> will be false.
+
+=item B<Idle>
+
+Emitted when the session becomes idle. B<IdleHint> will be true.
+
+=item B<Active>
+
+Emitted when activity resumes in an idle session. B<IdleHint> will be false.
+
+=item B<PrepareForSleep> B<state>
+
+Emitted before and after system sleep, with the B<state> argument being true
+and false respectively.
+
+=item B<PrepareForShutdown> B<state>
+
+Emitted before and after system shutdown, with the B<state> argument being true
+and false respectively.
+
+=back
+
 =head1 DEBUGGING
 
 Running sessiond with the environment variable I<G_MESSAGES_DEBUG> set to "all"

@@ -2,6 +2,7 @@ project('sessiond', 'c', version : '0.1.0')
 
 deps = [
   dependency('gio-2.0'),
+  dependency('gio-unix-2.0'),
   dependency('x11'),
   dependency('xi'),
   ]
@@ -24,12 +25,26 @@ endif
 
 add_project_arguments('-DVERSION="@0@"'.format(version), language : 'c')
 
+# generate dbus sources
+gdbus_codegen = find_program('gdbus-codegen')
+
+dbus_srcs = custom_target('dbus sources',
+  command : [gdbus_codegen,
+    '--generate-c-code', 'dbus-gen',
+    '--interface-prefix', 'org.sessiond.session1.',
+    '--c-namespace', 'DBus',
+    '@INPUT@'],
+  input : ['dbus/org.sessiond.session1.Session.xml'],
+  output : ['dbus-gen.c', 'dbus-gen.h'])
+
 srcs = [
+  dbus_srcs,
   'src/backlight.c',
   'src/common.c',
   'src/config.c',
   'src/dbus-logind.c',
   'src/dbus-systemd.c',
+  'src/dbus-server.c',
   'src/hooks.c',
   'src/keyfile.c',
   'src/sessiond.c',
