@@ -97,7 +97,16 @@ Emitted when the session becomes idle. B<IdleHint> will be true.
 
 =item B<Active>
 
-Emitted when activity resumes in an idle session. B<IdleHint> will be false.
+Emitted when activity resumes in an inactive session.
+B<IdleHint> will be false.
+
+=item B<Inactive> B<seconds>
+
+Emitted when the session becomes inactive, with the B<seconds> argument being
+the number of seconds since activity. Its value will be equal to either the
+I<IdleSec> or I<DimSec> configuration option (see B<sessiond.conf>(5)), or the
+I<InactiveSec> option of a hook with an B<Inactive> trigger
+(see B<sessiond-hooks>(5)).
 
 =item B<PrepareForSleep> B<state>
 

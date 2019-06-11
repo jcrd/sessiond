@@ -13,5 +13,9 @@ typedef struct {
 
 extern void
 dbus_server_free(DBusServer *s);
+extern void
+dbus_server_emit_active(DBusServer *s);
+extern void
+dbus_server_emit_inactive(DBusServer *s, guint i);
 extern DBusServer *
 dbus_server_init(LogindContext *c);

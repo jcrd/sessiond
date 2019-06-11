@@ -87,8 +87,6 @@ on_properties_changed(UNUSED GDBusProxy *proxy, GVariant *props,
             dbus_session_set_idle_hint(s->session, idle);
             if (idle)
                 dbus_session_emit_idle(s->session);
-            else
-                dbus_session_emit_active(s->session);
         } else if (g_strcmp0(prop, "IdleSinceHint") == 0) {
             dbus_session_set_idle_since_hint(s->session,
                     logind_get_idle_since_hint(c));
@@ -158,6 +156,18 @@ dbus_server_free(DBusServer *s)
     g_bus_unown_name(s->bus_id);
     g_object_unref(s->session);
     g_free(s);
+}
+
+void
+dbus_server_emit_active(DBusServer *s)
+{
+    dbus_session_emit_active(s->session);
+}
+
+void
+dbus_server_emit_inactive(DBusServer *s, guint i)
+{
+    dbus_session_emit_inactive(s->session, i);
 }
 
 DBusServer *

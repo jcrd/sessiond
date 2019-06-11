@@ -10,6 +10,9 @@
     <signal name='Unlock'/>
     <signal name='Idle'/>
     <signal name='Active'/>
+    <signal name='Inactive'>
+      <arg name='seconds' type='u'/>
+    </signal>
     <signal name='PrepareForSleep'>
       <arg name='state' type='b'/>
     </signal>

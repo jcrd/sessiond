@@ -48,6 +48,7 @@ static LogindContext *lc = NULL;
 static SystemdContext *sc = NULL;
 static DBusServer *server = NULL;
 static XSource *xsource = NULL;
+static gboolean inactive = FALSE;
 static GMainLoop *main_loop = NULL;
 static GMainContext *main_ctx = NULL;
 static GPtrArray *hooks = NULL;
@@ -217,6 +218,13 @@ on_timeout(guint timeout, gboolean state, gconstpointer user_data)
 
     if (hooks)
         hooks_on_timeout(hooks, timeout, state);
+
+    if (state)
+        dbus_server_emit_inactive(server, timeout);
+    else if (inactive)
+        dbus_server_emit_active(server);
+
+    inactive = state;
 }
 
 static void
