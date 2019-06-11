@@ -177,7 +177,8 @@ dbus_server_init(LogindContext *c)
     s->ctx = c;
 
     s->bus_id = g_bus_own_name(G_BUS_TYPE_SESSION, DBUS_NAME,
-            G_BUS_NAME_OWNER_FLAGS_DO_NOT_QUEUE,
+            G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT |
+            G_BUS_NAME_OWNER_FLAGS_REPLACE,
             NULL, on_name_acquired, on_name_lost,
             s, (GDestroyNotify)dbus_server_free);
 
