@@ -33,7 +33,6 @@ dbus_srcs = custom_target('dbus sources',
     '--generate-c-code', 'dbus-gen',
     '--interface-prefix', 'org.sessiond.session1.',
     '--c-namespace', 'DBus',
-    '--pragma-once',
     '@INPUT@'],
   input : ['dbus/org.sessiond.session1.Session.xml'],
   output : ['dbus-gen.c', 'dbus-gen.h'])
