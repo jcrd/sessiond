@@ -12,6 +12,8 @@
 #define DBUS_ERROR DBUS_NAME ".Error"
 #define DBUS_PATH "/org/sessiond/session1"
 
+G_DEFINE_TYPE(DBusServer, dbus_server, G_TYPE_OBJECT);
+
 static gboolean
 on_handle_lock(DBusSession *session, GDBusMethodInvocation *i,
         gpointer user_data)
@@ -155,7 +157,17 @@ dbus_server_free(DBusServer *s)
 {
     g_bus_unown_name(s->bus_id);
     g_object_unref(s->session);
-    g_free(s);
+    g_object_unref(s);
+}
+
+static void
+dbus_server_class_init(DBusServerClass *s)
+{
+}
+
+static void
+dbus_server_init(DBusServer *self)
+{
 }
 
 void
@@ -171,9 +183,9 @@ dbus_server_emit_inactive(DBusServer *s, guint i)
 }
 
 DBusServer *
-dbus_server_init(LogindContext *c)
+dbus_server_new(LogindContext *c)
 {
-    DBusServer *s = g_malloc0(sizeof(DBusServer));
+    DBusServer *s = g_object_new(DBUS_TYPE_SERVER, NULL);
     s->ctx = c;
 
     s->bus_id = g_bus_own_name(G_BUS_TYPE_SESSION, DBUS_NAME,

@@ -344,7 +344,7 @@ init_dbus(void)
         sc = systemd_context_new();
 
     if (!server)
-        server = dbus_server_init(lc);
+        server = dbus_server_new(lc);
 }
 
 static gboolean
