@@ -10,6 +10,7 @@ G_DECLARE_FINAL_TYPE(DBusServer, dbus_server, DBUS, SERVER, GObject);
 
 struct _DBusServer {
     GObject parent;
+    gboolean exported;
     guint bus_id;
     DBusSession *session;
     LogindContext *ctx;

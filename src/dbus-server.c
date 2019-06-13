@@ -49,6 +49,8 @@ static void
 lock_callback(LogindContext *c, gboolean state, gpointer data)
 {
     DBusServer *s = (DBusServer *)data;
+    if (!s->exported)
+        return;
     if (state)
         dbus_session_emit_lock(s->session);
     else
@@ -59,6 +61,8 @@ static void
 sleep_callback(UNUSED LogindContext *c, gboolean state, gpointer data)
 {
     DBusServer *s = (DBusServer *)data;
+    if (!s->exported)
+        return;
     dbus_session_emit_prepare_for_sleep(s->session, state);
 }
 
@@ -66,6 +70,8 @@ static void
 shutdown_callback(UNUSED LogindContext *c, gboolean state, gpointer data)
 {
     DBusServer *s = (DBusServer *)data;
+    if (!s->exported)
+        return;
     dbus_session_emit_prepare_for_shutdown(s->session, state);
 }
 
@@ -74,6 +80,8 @@ on_properties_changed(UNUSED GDBusProxy *proxy, GVariant *props,
         UNUSED GStrv inv_props, gpointer user_data)
 {
     DBusServer *s = (DBusServer *)user_data;
+    if (!s->exported)
+        return;
     LogindContext *c = s->ctx;
     gchar *prop = NULL;
     GVariantIter iter;
@@ -139,8 +147,10 @@ on_name_acquired(GDBusConnection *conn, const gchar *name, gpointer user_data)
     init_properties(s);
 
     GError *err = NULL;
-    if (!g_dbus_interface_skeleton_export(G_DBUS_INTERFACE_SKELETON(session),
-                conn, DBUS_PATH, &err)) {
+    s->exported = g_dbus_interface_skeleton_export(
+            G_DBUS_INTERFACE_SKELETON(session),
+            conn, DBUS_PATH, &err);
+    if (err) {
         g_error("Failed to export DBus interface: %s", err->message);
         g_free(err);
     }
@@ -150,13 +160,28 @@ static void
 on_name_lost(GDBusConnection *conn, const gchar *name, gpointer user_data)
 {
     g_debug("%s lost", DBUS_NAME);
+
+    DBusServer *s = (DBusServer *)user_data;
+
+    g_dbus_interface_skeleton_unexport(G_DBUS_INTERFACE_SKELETON(s->session));
+    s->exported = FALSE;
+    s->bus_id = 0;
+}
+
+static void
+dbus_server_destroy(DBusServer *s)
+{
+    g_object_unref(s->session);
+    s->session = NULL;
 }
 
 void
 dbus_server_free(DBusServer *s)
 {
-    g_bus_unown_name(s->bus_id);
-    g_object_unref(s->session);
+    if (s->bus_id)
+        g_bus_unown_name(s->bus_id);
+    if (s->session)
+        g_object_unref(s->session);
     g_object_unref(s);
 }
 
@@ -173,12 +198,16 @@ dbus_server_init(DBusServer *self)
 void
 dbus_server_emit_active(DBusServer *s)
 {
+    if (!s->exported)
+        return;
     dbus_session_emit_active(s->session);
 }
 
 void
 dbus_server_emit_inactive(DBusServer *s, guint i)
 {
+    if (!s->exported)
+        return;
     dbus_session_emit_inactive(s->session, i);
 }
 
@@ -187,12 +216,13 @@ dbus_server_new(LogindContext *c)
 {
     DBusServer *s = g_object_new(DBUS_TYPE_SERVER, NULL);
     s->ctx = c;
+    s->exported = FALSE;
 
     s->bus_id = g_bus_own_name(G_BUS_TYPE_SESSION, DBUS_NAME,
             G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT |
             G_BUS_NAME_OWNER_FLAGS_REPLACE,
             NULL, on_name_acquired, on_name_lost,
-            s, (GDestroyNotify)dbus_server_free);
+            s, (GDestroyNotify)dbus_server_destroy);
 
     return s;
 }

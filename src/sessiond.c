@@ -391,6 +391,7 @@ cleanup(void)
     timeline_free(&timeline);
     logind_context_free(lc);
     systemd_context_free(sc);
+    dbus_server_free(server);
     xsource_free(xsource);
     g_main_context_unref(main_ctx);
     g_main_loop_unref(main_loop);
