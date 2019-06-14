@@ -303,7 +303,7 @@ logind_set_locked_hint(LogindContext *c, gboolean state)
 LogindContext *
 logind_context_new(void)
 {
-    return g_object_new(LOGIND_TYPE_CONTEXT, 0);
+    return g_object_new(LOGIND_TYPE_CONTEXT, NULL);
 }
 
 void
