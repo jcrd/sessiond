@@ -122,7 +122,7 @@ init_properties(DBusServer *s)
 static void
 on_name_acquired(GDBusConnection *conn, const gchar *name, gpointer user_data)
 {
-    g_debug("%s acquired", DBUS_NAME);
+    g_debug("%s acquired", name);
 
     DBusSession *session = dbus_session_skeleton_new();
 
@@ -159,7 +159,7 @@ on_name_acquired(GDBusConnection *conn, const gchar *name, gpointer user_data)
 static void
 on_name_lost(GDBusConnection *conn, const gchar *name, gpointer user_data)
 {
-    g_debug("%s lost", DBUS_NAME);
+    g_debug("%s lost", name);
 
     DBusServer *s = (DBusServer *)user_data;
 
