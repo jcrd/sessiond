@@ -129,6 +129,20 @@ shutdown_callback(UNUSED LogindContext *c, gboolean state, UNUSED gpointer data)
         hooks_run(hooks, HOOK_TYPE_SHUTDOWN, state);
 }
 
+static void
+appear_callback(UNUSED LogindContext *c, UNUSED gpointer data)
+{
+    if (!server)
+        server = dbus_server_new(lc);
+}
+
+static void
+vanish_callback(UNUSED LogindContext *c, UNUSED gpointer data)
+{
+    dbus_server_free(server);
+    server = NULL;
+}
+
 #ifdef DPMS
 static gboolean
 set_dpms(Config c)
@@ -338,13 +352,12 @@ init_dbus(void)
         g_signal_connect(lc, "lock", G_CALLBACK(lock_callback), NULL);
         g_signal_connect(lc, "sleep", G_CALLBACK(sleep_callback), NULL);
         g_signal_connect(lc, "shutdown", G_CALLBACK(shutdown_callback), NULL);
+        g_signal_connect(lc, "appear", G_CALLBACK(appear_callback), NULL);
+        g_signal_connect(lc, "vanish", G_CALLBACK(vanish_callback), NULL);
     }
 
     if (!sc)
         sc = systemd_context_new();
-
-    if (!server)
-        server = dbus_server_new(lc);
 }
 
 static gboolean

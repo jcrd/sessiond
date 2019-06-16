@@ -12,6 +12,8 @@
 #define DBUS_ERROR DBUS_NAME ".Error"
 #define DBUS_PATH "/org/sessiond/session1"
 
+#define IS_EXPORTED(s) (s && s->exported)
+
 G_DEFINE_TYPE(DBusServer, dbus_server, G_TYPE_OBJECT);
 
 static gboolean
@@ -49,7 +51,7 @@ static void
 lock_callback(LogindContext *c, gboolean state, gpointer data)
 {
     DBusServer *s = (DBusServer *)data;
-    if (!s->exported)
+    if (!IS_EXPORTED(s))
         return;
     if (state)
         dbus_session_emit_lock(s->session);
@@ -61,7 +63,7 @@ static void
 sleep_callback(UNUSED LogindContext *c, gboolean state, gpointer data)
 {
     DBusServer *s = (DBusServer *)data;
-    if (!s->exported)
+    if (!IS_EXPORTED(s))
         return;
     dbus_session_emit_prepare_for_sleep(s->session, state);
 }
@@ -70,7 +72,7 @@ static void
 shutdown_callback(UNUSED LogindContext *c, gboolean state, gpointer data)
 {
     DBusServer *s = (DBusServer *)data;
-    if (!s->exported)
+    if (!IS_EXPORTED(s))
         return;
     dbus_session_emit_prepare_for_shutdown(s->session, state);
 }
@@ -80,7 +82,7 @@ on_properties_changed(UNUSED GDBusProxy *proxy, GVariant *props,
         UNUSED GStrv inv_props, gpointer user_data)
 {
     DBusServer *s = (DBusServer *)user_data;
-    if (!s->exported)
+    if (!IS_EXPORTED(s))
         return;
     LogindContext *c = s->ctx;
     gchar *prop = NULL;
@@ -198,7 +200,7 @@ dbus_server_init(DBusServer *self)
 void
 dbus_server_emit_active(DBusServer *s)
 {
-    if (!s->exported)
+    if (!IS_EXPORTED(s))
         return;
     dbus_session_emit_active(s->session);
 }
@@ -206,7 +208,7 @@ dbus_server_emit_active(DBusServer *s)
 void
 dbus_server_emit_inactive(DBusServer *s, guint i)
 {
-    if (!s->exported)
+    if (!IS_EXPORTED(s))
         return;
     dbus_session_emit_inactive(s->session, i);
 }

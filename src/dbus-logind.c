@@ -35,6 +35,8 @@ enum {
     LOCK_SIGNAL,
     SLEEP_SIGNAL,
     SHUTDOWN_SIGNAL,
+    APPEAR_SIGNAL,
+    VANISH_SIGNAL,
     LAST_SIGNAL,
 };
 
@@ -197,6 +199,8 @@ logind_on_appear(GDBusConnection *conn, const gchar *name, const gchar *owner,
         g_signal_connect(c->logind_manager, "g-signal",
                          G_CALLBACK(logind_on_manager_signal), user_data);
     }
+
+    g_signal_emit(c, signals[APPEAR_SIGNAL], 0);
 }
 
 static void
@@ -204,7 +208,10 @@ logind_on_vanish(UNUSED GDBusConnection *conn, const gchar *name,
                  gpointer user_data)
 {
     g_debug("%s vanished", name);
-    logind_context_free((LogindContext *)user_data);
+
+    LogindContext *c = (LogindContext *)user_data;
+    g_signal_emit(c, signals[VANISH_SIGNAL], 0);
+    logind_context_free(c);
 }
 
 static void
@@ -221,6 +228,10 @@ logind_context_class_init(LogindContextClass *c)
     signals[SHUTDOWN_SIGNAL] = g_signal_new("shutdown",
             type, G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL, G_TYPE_NONE, 1,
             G_TYPE_BOOLEAN);
+    signals[APPEAR_SIGNAL] = g_signal_new("appear",
+            type, G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL, G_TYPE_NONE, 0);
+    signals[VANISH_SIGNAL] = g_signal_new("vanish",
+            type, G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL, G_TYPE_NONE, 0);
 }
 
 static void
