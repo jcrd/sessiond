@@ -395,7 +395,7 @@ reload_signal(UNUSED gpointer user_data)
     return TRUE;
 }
 
-void
+static void
 cleanup(void)
 {
     g_free(bl_iface);
