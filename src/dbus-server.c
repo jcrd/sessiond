@@ -16,6 +16,14 @@
 
 G_DEFINE_TYPE(DBusServer, dbus_server, G_TYPE_OBJECT);
 
+enum {
+    INHIBIT_SIGNAL,
+    UNINHIBIT_SIGNAL,
+    LAST_SIGNAL,
+};
+
+static guint signals[LAST_SIGNAL] = {0};
+
 static gboolean
 on_handle_lock(DBusSession *session, GDBusMethodInvocation *i,
         gpointer user_data)
@@ -44,6 +52,91 @@ on_handle_unlock(DBusSession *session, GDBusMethodInvocation *i,
     DBusServer *s = (DBusServer *)user_data;
     logind_lock_session(s->ctx, FALSE);
     dbus_session_complete_unlock(session, i);
+    return TRUE;
+}
+
+static gboolean
+on_handle_inhibit(DBusSession *session, GDBusMethodInvocation *i,
+        const gchar *who, const gchar *why, gpointer user_data)
+{
+    DBusServer *s = (DBusServer *)user_data;
+    gchar *id = g_uuid_string_random();
+
+    GVariant *inhibit = g_variant_new("(ss)", who, why);
+    g_variant_ref_sink(inhibit);
+    g_hash_table_insert(s->inhibitors, id, inhibit);
+
+    dbus_session_complete_inhibit(session, i, id);
+
+    g_signal_emit(s, signals[INHIBIT_SIGNAL], 0, who, why,
+            g_hash_table_size(s->inhibitors));
+
+    return TRUE;
+}
+
+static gboolean
+on_handle_uninhibit(DBusSession *session, GDBusMethodInvocation *i,
+        const gchar *id, gpointer user_data)
+{
+    if (!g_uuid_string_is_valid(id)) {
+        g_dbus_method_invocation_return_dbus_error(i,
+                DBUS_ERROR ".Uninhibit", "Inhibitor ID is not valid");
+        return FALSE;
+    }
+
+    DBusServer *s = (DBusServer *)user_data;
+
+    const gchar *who;
+    const gchar *why;
+    GVariant *v = g_hash_table_lookup(s->inhibitors, id);
+    if (!v) {
+        g_dbus_method_invocation_return_dbus_error(i,
+                DBUS_ERROR ".Uninhibit", "Inhibitor ID does not exist");
+        return FALSE;
+    }
+    g_variant_get(v, "(ss)", &who, &why);
+
+    dbus_session_complete_uninhibit(session, i);
+
+    g_signal_emit(s, signals[UNINHIBIT_SIGNAL], 0, who, why,
+            g_hash_table_size(s->inhibitors) - 1);
+
+    g_hash_table_remove(s->inhibitors, id);
+
+    return TRUE;
+}
+
+static gboolean
+on_handle_list_inhibitors(DBusSession *session, GDBusMethodInvocation *i,
+        gpointer user_data)
+{
+    DBusServer *s = (DBusServer *)user_data;
+    guint n = g_hash_table_size(s->inhibitors);
+
+    if (n == 0) {
+        GVariant *arr = g_variant_new_array(G_VARIANT_TYPE("(ss)"), NULL, 0);
+        dbus_session_complete_list_inhibitors(session, i, arr);
+        g_variant_ref_sink(arr);
+        g_variant_unref(arr);
+        return TRUE;
+    }
+
+    GList *list = g_hash_table_get_values(s->inhibitors);
+    GVariant **vs = g_malloc0_n(n, sizeof(GVariant *));
+
+    GList *ls = list;
+    GVariant **v = vs;
+    for (; ls; ls = ls->next)
+        *(v++) = ls->data;
+
+    GVariant *arr = g_variant_new_array(NULL, vs, n);
+    dbus_session_complete_list_inhibitors(session, i, arr);
+
+    g_variant_ref_sink(arr);
+    g_variant_unref(arr);
+    g_free(vs);
+    g_list_free(list);
+
     return TRUE;
 }
 
@@ -139,6 +232,12 @@ on_name_acquired(GDBusConnection *conn, const gchar *name, gpointer user_data)
 
     g_signal_connect(session, "handle-lock", G_CALLBACK(on_handle_lock), s);
     g_signal_connect(session, "handle-unlock", G_CALLBACK(on_handle_unlock), s);
+    g_signal_connect(session, "handle-inhibit",
+            G_CALLBACK(on_handle_inhibit), s);
+    g_signal_connect(session, "handle-uninhibit",
+            G_CALLBACK(on_handle_uninhibit), s);
+    g_signal_connect(session, "handle-list-inhibitors",
+            G_CALLBACK(on_handle_list_inhibitors), s);
 
     g_signal_connect_after(c, "lock", G_CALLBACK(lock_callback), s);
     g_signal_connect_after(c, "sleep", G_CALLBACK(sleep_callback), s);
@@ -184,12 +283,21 @@ dbus_server_free(DBusServer *s)
         g_bus_unown_name(s->bus_id);
     if (s->session)
         g_object_unref(s->session);
+    g_hash_table_destroy(s->inhibitors);
     g_object_unref(s);
 }
 
 static void
 dbus_server_class_init(DBusServerClass *s)
 {
+    GType type = G_OBJECT_CLASS_TYPE(s);
+
+    signals[INHIBIT_SIGNAL] = g_signal_new("inhibit",
+            type, G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL, G_TYPE_NONE, 3,
+            G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT);
+    signals[UNINHIBIT_SIGNAL] = g_signal_new("uninhibit",
+            type, G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL, G_TYPE_NONE, 3,
+            G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT);
 }
 
 static void
@@ -219,6 +327,8 @@ dbus_server_new(LogindContext *c)
     DBusServer *s = g_object_new(DBUS_TYPE_SERVER, NULL);
     s->ctx = c;
     s->exported = FALSE;
+    s->inhibitors = g_hash_table_new_full(g_str_hash, g_str_equal, NULL,
+            (GDestroyNotify)g_variant_unref);
 
     s->bus_id = g_bus_own_name(G_BUS_TYPE_SESSION, DBUS_NAME,
             G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT |

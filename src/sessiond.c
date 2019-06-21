@@ -48,6 +48,7 @@ static LogindContext *lc = NULL;
 static SystemdContext *sc = NULL;
 static DBusServer *server = NULL;
 static XSource *xsource = NULL;
+static gboolean inhibited = FALSE;
 static gboolean inactive = FALSE;
 static GMainLoop *main_loop = NULL;
 static GMainContext *main_ctx = NULL;
@@ -130,10 +131,37 @@ shutdown_callback(UNUSED LogindContext *c, gboolean state, UNUSED gpointer data)
 }
 
 static void
+inhibit_callback(UNUSED DBusServer *s, const gchar *who, const gchar *why,
+        UNUSED guint n, UNUSED gpointer data)
+{
+    g_message("Inhibitor added: %s (%s)", who, why);
+
+    inhibited = TRUE;
+    timeline_stop(&timeline);
+}
+
+static void
+uninhibit_callback(UNUSED DBusServer *s, const gchar *who, const gchar *why,
+        guint n, UNUSED gpointer data)
+{
+    g_message("Inhibitor removed: %s (%s)", who, why);
+
+    if (n > 0)
+        return;
+    inhibited = FALSE;
+    timeline_start(&timeline);
+}
+
+static void
 appear_callback(UNUSED LogindContext *c, UNUSED gpointer data)
 {
-    if (!server)
+    if (!server) {
         server = dbus_server_new(lc);
+        g_signal_connect(server, "inhibit", G_CALLBACK(inhibit_callback),
+                NULL);
+        g_signal_connect(server, "uninhibit", G_CALLBACK(uninhibit_callback),
+                NULL);
+    }
 }
 
 static void
@@ -193,7 +221,8 @@ xsource_cb(UNUSED gpointer user_data)
         return G_SOURCE_REMOVE;
     }
 
-    timeline_start(&timeline);
+    if (!inhibited)
+        timeline_start(&timeline);
 
     return G_SOURCE_CONTINUE;
 }

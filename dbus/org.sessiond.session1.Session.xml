@@ -2,6 +2,17 @@
   <interface name='org.sessiond.session1.Session'>
     <method name='Lock'/>
     <method name='Unlock'/>
+    <method name='Inhibit'>
+      <arg name='who' type='s' direction='in'/>
+      <arg name='why' type='s' direction='in'/>
+      <arg name='id' type='s' direction='out'/>
+    </method>
+    <method name='Uninhibit'>
+      <arg name='id' type='s' direction='in'/>
+    </method>
+    <method name='ListInhibitors'>
+      <arg name='inhibitors' type='a(ss)' direction='out'/>
+    </method>
     <property name='LockedHint' type='b' access='read'/>
     <property name='IdleHint' type='b' access='read'/>
     <property name='IdleSinceHint' type='t' access='read'/>

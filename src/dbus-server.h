@@ -14,6 +14,7 @@ struct _DBusServer {
     guint bus_id;
     DBusSession *session;
     LogindContext *ctx;
+    GHashTable *inhibitors;
 };
 
 extern void
