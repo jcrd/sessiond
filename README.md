@@ -16,7 +16,19 @@ manager or desktop environment that does not provide its own session management.
 
 ## Building
 
-[meson][1] is required to build sessiond.
+### Dependencies
+
+* sh
+* perl
+* awk
+* meson >= 0.47.0
+* glib >= 2.52
+* libx11
+* libxi
+* libxext (optional, for DPMS support)
+
+Ensure the above dependencies are satisfied and configure the build with
+**meson**:
 
 ```
 meson builddir && cd builddir
