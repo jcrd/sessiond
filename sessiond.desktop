@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=sessiond session
-Comment=Starts sessiond-session
-TryExec=sessiond-session start
-Exec=sessiond-session start
+Comment=Runs a sessiond session
+TryExec=sessionctl run
+Exec=sessionctl run
 Type=Application

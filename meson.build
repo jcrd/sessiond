@@ -62,7 +62,7 @@ meson.add_install_script('scripts/install_sysfs_writer.sh')
 install_data('sessiond.conf',
   install_dir : join_paths(get_option('datadir'), meson.project_name()))
 
-install_data('sessiond-session', install_dir : get_option('bindir'))
+install_data('sessionctl', install_dir : get_option('bindir'))
 
 install_data('sessiond.desktop',
   install_dir : join_paths(get_option('datadir'), 'xsessions'))

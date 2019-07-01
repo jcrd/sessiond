@@ -19,16 +19,33 @@ set -eu
 
 readonly target=sessiond-session.target
 
-isActive() {
+is_active() {
     systemctl --user is-active "$1"
 }
 
-consistsOf() {
+consists_of() {
     systemctl --user show -p ConsistsOf --value "$1"
 }
 
+session_call() {
+    method="$1"
+    shift
+    gdbus call --session \
+        --dest org.sessiond.session1 \
+        --object-path /org/sessiond/session1 \
+        --method org.sessiond.session1.Session."$method" "$@"
+}
+
+session_properties() {
+    gdbus introspect --session \
+        --dest org.sessiond.session1 \
+        --object-path /org/sessiond/session1 \
+        --only-properties \
+        | awk '/.*=.*;/ {gsub(";",""); print $3"="$5}'
+}
+
 status() {
-    active="$(isActive $target)"
+    active="$(is_active $target)"
     r=$?
 
     if [ $r -ne 0 ]; then
@@ -36,7 +53,7 @@ status() {
         exit $r
     fi
 
-    units="$(consistsOf graphical-session.target)"
+    units="$(consists_of graphical-session.target)"
 
     if [ -n "$units" ]; then
         i=0
@@ -52,31 +69,42 @@ status() {
         for unit in $units; do
             i=$((i - 1))
             [ $i -eq 0 ] && s='└' || s='├'
-            printf "$s─%-${pad}s %s\n" "$unit:" "$(isActive "$unit")"
+            printf "$s─%-${pad}s %s\n" "$unit:" "$(is_active "$unit")"
         done
     fi
 
     exit
 }
 
+usage() {
+    echo 'usage: sessionctl [command]
+
+With no command, show session status.
+
+commands:
+  run         Run session
+  stop        Stop the running session
+  status      Show session status
+  lock        Lock the session
+  unlock      Unlock the session
+  properties  List sessiond properties'
+}
+
 [ $# -eq 0 ] && status
 
 case "$1" in
-    start)
+    run)
         if systemctl --user -q is-active $target; then
-            echo 'a session is already active' >&2
+            echo 'A session is already running' >&2
             exit 1
         fi
         systemctl --user import-environment
         exec systemctl --user --wait start $target
         ;;
-    stop)
-        systemctl --user stop $target
-        ;;
-    status)
-        status
-        ;;
-    *)
-        echo 'usage: sessiond-session [start|stop|status]' >&2
-        exit 2
+    stop) systemctl --user stop $target ;;
+    status) status ;;
+    lock) session_call Lock > /dev/null ;;
+    unlock) session_call Unlock > /dev/null ;;
+    properties) session_properties ;;
+    *) usage >&2; exit 2
 esac
