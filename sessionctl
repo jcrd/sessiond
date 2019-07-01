@@ -87,7 +87,8 @@ commands:
   status      Show session status
   lock        Lock the session
   unlock      Unlock the session
-  properties  List sessiond properties'
+  properties  List sessiond properties
+  version     Show sessiond version'
 }
 
 [ $# -eq 0 ] && status
@@ -106,5 +107,6 @@ case "$1" in
     lock) session_call Lock > /dev/null ;;
     unlock) session_call Unlock > /dev/null ;;
     properties) session_properties ;;
+    version) expr "$(session_call GetVersion)" : "('\(.*\)'" ;;
     *) usage >&2; exit 2
 esac

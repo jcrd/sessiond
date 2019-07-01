@@ -24,6 +24,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "hooks.h"
 #include "timeline.h"
 #include "xsource.h"
+#include "version.h"
 
 #include <locale.h>
 #include <glib-2.0/glib.h>
@@ -37,10 +38,6 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #ifdef DPMS
 #include <X11/extensions/dpms.h>
 #endif /* DPMS */
-
-#ifndef VERSION
-#define VERSION "unknown"
-#endif /* VERSION */
 
 static Config config;
 static Timeline timeline;

@@ -55,6 +55,10 @@ Lock the session. Returns an error if the session is already locked.
 
 Unlock the session.
 
+=item B<GetVersion>
+
+Returns the version of sessiond.
+
 =back
 
 =head2 Properties

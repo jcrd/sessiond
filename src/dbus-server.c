@@ -20,6 +20,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "dbus-gen.h"
 #include "backlight.h"
 #include "common.h"
+#include "version.h"
 
 #include <stdio.h>
 #include <glib-2.0/glib.h>
@@ -157,6 +158,14 @@ on_handle_list_inhibitors(DBusSession *session, GDBusMethodInvocation *i,
     return TRUE;
 }
 
+static gboolean
+on_handle_get_version(DBusSession *session, GDBusMethodInvocation *i,
+        UNUSED gpointer user_data)
+{
+    dbus_session_complete_get_version(session, i, VERSION);
+    return TRUE;
+}
+
 static void
 lock_callback(LogindContext *c, gboolean state, gpointer data)
 {
@@ -255,6 +264,8 @@ on_name_acquired(GDBusConnection *conn, const gchar *name, gpointer user_data)
             G_CALLBACK(on_handle_uninhibit), s);
     g_signal_connect(session, "handle-list-inhibitors",
             G_CALLBACK(on_handle_list_inhibitors), s);
+    g_signal_connect(session, "handle-get-version",
+            G_CALLBACK(on_handle_get_version), NULL);
 
     g_signal_connect_after(c, "lock", G_CALLBACK(lock_callback), s);
     g_signal_connect_after(c, "sleep", G_CALLBACK(sleep_callback), s);
