@@ -55,6 +55,42 @@ Lock the session. Returns an error if the session is already locked.
 
 Unlock the session.
 
+=item B<Inhibit>
+
+Inhibit inactivity. The session will always be considered active if at least
+one inhibitor is running. Takes two arguments:
+
+=over
+
+=item I<who>
+
+A string describing who is inhibiting.
+
+=item I<why>
+
+A string describing why the inhibitor is running.
+
+=back
+
+Returns a unique ID used to stop the inhibitor.
+
+=item B<Uninhibit>
+
+Stop an inhibitor. Takes one argument:
+
+=over
+
+=item I<id>
+
+The unique ID of the inhibitor to stop.
+
+=back
+
+=item B<ListInhibitors>
+
+List running inhibitors. Returns a list of tuples with the I<who> and I<why>
+strings.
+
 =item B<GetVersion>
 
 Returns the version of sessiond.
