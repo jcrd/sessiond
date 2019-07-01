@@ -11,6 +11,7 @@ manager or desktop environment that does not provide its own session management.
 * systemd targets activated by systemd-logind's lock, unlock, sleep,
   and shutdown signals
 * hooks triggered by inactivity or signals
+* a DBus service
 * (optional) management of DPMS settings
 
 ## Building
@@ -72,6 +73,42 @@ by a period of inactivity.
 
 See [sessiond-hooks(5)](man/sessiond-hooks.5.pod) for more information.
 
+## DBus service
+
+sessiond provides a DBus service on the session bus at the well-known name
+**_org.sessiond.session1_**.
+
+See the _DBus Service_ section of [sessiond(1)](man/sessiond.1.pod) for
+descriptions of methods, properties, and signals.
+
+For complete introspection data, use **gdbus**:
+
+```
+gdbus introspect --session --dest org.sessiond.session1 --object-path /org/sessiond/session1
+```
+
+## sessionctl
+
+The `sessionctl` script is provided to run a sessiond session and interact with
+its DBus service.
+
+```
+usage: sessionctl [command]
+
+With no command, show session status.
+
+commands:
+  run         Run session
+  stop        Stop the running session
+  status      Show session status
+  lock        Lock the session
+  unlock      Unlock the session
+  properties  List sessiond properties
+  version     Show sessiond version
+```
+
+See [sessionctl(1)](man/sessionctl.1.pod) for more information.
+
 ## Managing the session
 
 ### Starting the session
@@ -121,6 +158,13 @@ To configure a service to act as the screen locker, include:
 ExecStopPost=/usr/bin/loginctl unlock-session
 ```
 
+or
+
+```
+[Service]
+ExecStopPost=/usr/bin/sessionctl unlock
+```
+
 so the session is considered unlocked when the locker exits, and:
 
 ```
@@ -155,7 +199,7 @@ the session. To configure a service to stop the session when it exits, include:
 
 ```
 [Service]
-ExecStopPost=/usr/bin/sessiond-session stop
+ExecStopPost=/usr/bin/sessionctl stop
 ```
 
 Below is an example `awesome.service` that stops the session when the Awesome
@@ -168,7 +212,7 @@ PartOf=graphical-session.target
 
 [Service]
 ExecStart=/usr/bin/awesome
-ExecStopPost=/usr/bin/sessiond-session stop
+ExecStopPost=/usr/bin/sessionctl stop
 
 [Install]
 WantedBy=graphical-session.target
