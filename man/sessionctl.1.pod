@@ -1,0 +1,63 @@
+=head1 NAME
+
+sessionctl - standalone X session manager client
+
+=head1 SYNOPSIS
+
+B<sessionctl> [command]
+
+=head1 DESCRIPTION
+
+sessionctl is responsible for running a sessiond session and interacting with
+its DBus service.
+
+=head1 COMMANDS
+
+=over
+
+=item B<run>
+
+Run a new session.
+
+=item B<stop>
+
+Stop the running session.
+
+=item B<status>
+
+Show session status.
+
+=item B<lock>
+
+Lock the session.
+
+=item B<unlock>
+
+Unlock the session.
+
+=item B<properties>
+
+List sessiond properties.
+
+=item B<version>
+
+Show sessiond version.
+
+=back
+
+=head1 AUTHOR
+
+James Reed E<lt>jcrd@tuta.ioE<gt>
+
+=head1 REPORTING BUGS
+
+Bugs and issues can be reported here: L<https://github.com/jcrd/sessiond/issues>
+
+=head1 COPYRIGHT
+
+Copyright 2019 James Reed. sessiond is licensed under the
+GNU General Public License v3.0 or later.
+
+=head1 SEE ALSO
+
+B<systemctl>(1), B<gdbus>(1)

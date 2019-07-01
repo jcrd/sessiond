@@ -85,6 +85,7 @@ manpages = {
   'sessiond': '1',
   'sessiond.conf': '5',
   'sessiond-hooks': '5',
+  'sessionctl': '1',
   }
 
 # install manpages built with pod2man
