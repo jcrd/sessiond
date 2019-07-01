@@ -63,6 +63,7 @@ install_data('sessiond.conf',
   install_dir : join_paths(get_option('datadir'), meson.project_name()))
 
 install_data('sessionctl', install_dir : get_option('bindir'))
+install_data('sessiond-inhibit', install_dir : get_option('bindir'))
 
 install_data('sessiond.desktop',
   install_dir : join_paths(get_option('datadir'), 'xsessions'))
@@ -86,6 +87,7 @@ manpages = {
   'sessiond.conf': '5',
   'sessiond-hooks': '5',
   'sessionctl': '1',
+  'sessiond-inhibit': '1',
   }
 
 # install manpages built with pod2man

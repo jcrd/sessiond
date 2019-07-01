@@ -1,0 +1,81 @@
+#!/bin/sh
+
+# sessiond - standalone X session manager
+# Copyright (C) 2019 James Reed
+#
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program. If not, see <https://www.gnu.org/licenses/>.
+
+set -eu
+
+session_call() {
+    method="$1"
+    shift
+    gdbus call --session \
+        --dest org.sessiond.session1 \
+        --object-path /org/sessiond/session1 \
+        --method org.sessiond.session1.Session."$method" "$@"
+}
+
+usage() {
+    echo 'usage: sessiond-inhibit [options] [COMMAND]
+
+With no COMMAND, list running inhibitors.
+
+options:
+  -h      Show help message
+  -w WHO  Set who is inhibiting
+  -y WHY  Set why this inhibitor is running'
+}
+
+if [ $# -eq 0 ]; then
+    list="$(session_call ListInhibitors)" || exit $?
+    echo "$list" | perl -e '
+    if (<STDIN> =~ /.*\[(.*)\]/) {
+        if ($1 eq "") {
+            print STDERR "No inhibitors\n";
+            exit 1;
+        }
+        foreach my $i (split /\), /, $1) {
+            if ($i =~ /\('"'"'(.*)'"'"', '"'"'(.*)'"'"'/) {
+                print "what='"'"'$1'"'"' why='"'"'$2'"'"'\n";
+            }
+        }
+    }'
+    exit
+fi
+
+while getopts ':hw:y:' opt; do
+    case "$opt" in
+        h)
+            usage
+            exit
+            ;;
+        w) who="$OPTARG" ;;
+        y) why="$OPTARG" ;;
+        *) usage >&2; exit 2
+    esac
+done
+
+shift $((OPTIND - 1))
+
+if [ $# -eq 0 ]; then
+    usage >&2
+    exit 2
+fi
+
+id="$(session_call Inhibit "${who-}" "${why-}")"
+id="$(expr "$id" : "('\(.*\)'")"
+
+"$@"
+
+session_call Uninhibit "$id" > /dev/null

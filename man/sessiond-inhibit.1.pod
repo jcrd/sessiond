@@ -1,0 +1,48 @@
+=head1 NAME
+
+sessiond-inhibit - manage sessiond inhibitors
+
+=head1 SYNOPSIS
+
+B<sessiond-inhibit> [options] [COMMAND]
+
+=head1 DESCRIPTION
+
+sessiond-inhibit creates an inhibitor lock before running I<COMMAND> and
+releases it when the command returns.
+If no command is provided, it lists running inhibitors.
+
+=head1 OPTIONS
+
+=over
+
+=item B<-h>
+
+Show help message.
+
+=item B<-w> I<WHO>
+
+Set who is inhibiting.
+
+=item B<-y> I<WHY>
+
+Set why this inhibitor is running.
+
+=back
+
+=head1 AUTHOR
+
+James Reed E<lt>jcrd@tuta.ioE<gt>
+
+=head1 REPORTING BUGS
+
+Bugs and issues can be reported here: L<https://github.com/jcrd/sessiond/issues>
+
+=head1 COPYRIGHT
+
+Copyright 2019 James Reed. sessiond is licensed under the
+GNU General Public License v3.0 or later.
+
+=head1 SEE ALSO
+
+B<sessiond>(1), B<systemd-inhibit>(1)

@@ -217,6 +217,29 @@ ExecStopPost=/usr/bin/sessionctl stop
 [Install]
 WantedBy=graphical-session.target
 ```
+### Inhibiting inactivity
+
+Inhibitor locks can be acquired when the session should be considered active
+while a given command is running, e.g. a media player.
+
+The `sessiond-inhibit` script provides a simple interface to acquire a lock
+before running a command and release it when the command returns.
+
+```
+usage: sessiond-inhibit [options] [COMMAND]
+
+With no COMMAND, list running inhibitors.
+
+options:
+  -h      Show help message
+  -w WHO  Set who is inhibiting
+  -y WHY  Set why this inhibitor is running
+```
+
+See [sessiond-inhibit(1)](man/sessiond-inhibit.1.pod) for more information.
+
+See the _DBus Service_ section of [sessiond(1)](man/sessiond.1.pod) for
+descriptions of inhibitor-related methods.
 
 ## License
 
