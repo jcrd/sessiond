@@ -37,6 +37,8 @@ dbus_srcs = custom_target('dbus sources',
   input : ['dbus/org.sessiond.session1.Session.xml'],
   output : ['dbus-gen.c', 'dbus-gen.h'])
 
+add_project_arguments('-DG_LOG_USE_STRUCTURED', language : 'c')
+
 srcs = [
   dbus_srcs,
   'src/backlight.c',

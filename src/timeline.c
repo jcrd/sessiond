@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License along with
 this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#define G_LOG_DOMAIN "sessiond-activity"
+
 #include "timeline.h"
 
 #include <glib-2.0/glib.h>
