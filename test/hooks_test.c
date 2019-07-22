@@ -39,38 +39,42 @@ test_hooks(ConfigFixture *f, gconstpointer user_data)
     GPtrArray *hooks = f->c.hooks;
     g_assert_nonnull(hooks);
 
+    guint passed = 0;
+
     for (int i = 0; i < hooks->len; i++) {
         const struct Hook *h = g_ptr_array_index(hooks, i);
-        switch (i) {
-            case 0:
-                g_assert_cmpint(h->trigger, ==, HOOK_TRIGGER_IDLE);
+        switch (h->trigger) {
+            case HOOK_TRIGGER_IDLE:
                 g_assert_cmpstr(h->exec_start[0], ==, "test");
                 g_assert_cmpstr(h->exec_start[1], ==, "start");
+                passed++;
                 break;
-            case 1:
-                g_assert_cmpint(h->trigger, ==, HOOK_TRIGGER_SLEEP);
+            case HOOK_TRIGGER_SLEEP:
                 g_assert_cmpstr(h->exec_stop[0], ==, "test");
                 g_assert_cmpstr(h->exec_stop[1], ==, "stop");
+                passed++;
                 break;
-            case 2:
-                g_assert_cmpint(h->trigger, ==, HOOK_TRIGGER_INACTIVE);
+            case HOOK_TRIGGER_INACTIVE:
                 g_assert_cmpint(h->inactive_sec, ==, 10);
                 g_assert_cmpstr(h->exec_start[0], ==, "/usr/bin/touch");
                 g_assert_cmpstr(h->exec_start[1], ==, "/tmp/test_run_inactive");
                 g_assert_cmpstr(h->exec_stop[0], ==, "/bin/rm");
                 g_assert_cmpstr(h->exec_stop[1], ==, "/tmp/test_run_inactive");
+                passed++;
                 break;
-            case 3:
-                g_assert_cmpint(h->trigger, ==, HOOK_TRIGGER_LOCK);
+            case HOOK_TRIGGER_LOCK:
                 g_assert_cmpstr(h->exec_start[0], ==, "/usr/bin/touch");
                 g_assert_cmpstr(h->exec_start[1], ==, "/tmp/test_run_lock");
                 g_assert_cmpstr(h->exec_stop[0], ==, "/bin/rm");
                 g_assert_cmpstr(h->exec_stop[1], ==, "/tmp/test_run_lock");
+                passed++;
                 break;
             default:
                 break;
         }
     }
+
+    g_assert_cmpuint(passed, ==, hooks->len);
 }
 
 static void
