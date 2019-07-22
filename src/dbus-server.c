@@ -29,10 +29,13 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include <glib-2.0/gio/gio.h>
 
 #define DBUS_NAME "org.sessiond.session1"
-#define DBUS_ERROR DBUS_NAME ".Error"
+#define DBUS_SESSION_ERROR DBUS_NAME ".Session.Error"
+#define DBUS_BACKLIGHT_ERROR DBUS_NAME ".Backlight.Error"
 #define DBUS_PATH "/org/sessiond/session1"
+#define DBUS_BACKLIGHT_PATH DBUS_PATH "/backlight"
 
-#define IS_EXPORTED(s) (s && s->exported)
+#define EXPORTED(i) (g_dbus_interface_skeleton_get_object_path(\
+            G_DBUS_INTERFACE_SKELETON(i)) != NULL)
 
 G_DEFINE_TYPE(DBusServer, dbus_server, G_TYPE_OBJECT);
 
@@ -54,9 +57,9 @@ on_handle_lock(DBusSession *session, GDBusMethodInvocation *i,
         gchar *msg = g_strdup_printf("Session %s is already locked",
                 s->ctx->session_id);
         g_dbus_method_invocation_return_dbus_error(i,
-                DBUS_ERROR ".Lock", msg);
+                DBUS_SESSION_ERROR ".Lock", msg);
         g_free(msg);
-        return FALSE;
+        return TRUE;
     }
 
     logind_lock_session(s->ctx, TRUE);
@@ -100,8 +103,8 @@ on_handle_uninhibit(DBusSession *session, GDBusMethodInvocation *i,
 {
     if (!g_uuid_string_is_valid(id)) {
         g_dbus_method_invocation_return_dbus_error(i,
-                DBUS_ERROR ".Uninhibit", "Inhibitor ID is not valid");
-        return FALSE;
+                DBUS_SESSION_ERROR ".Uninhibit", "Inhibitor ID is not valid");
+        return TRUE;
     }
 
     DBusServer *s = (DBusServer *)user_data;
@@ -111,8 +114,8 @@ on_handle_uninhibit(DBusSession *session, GDBusMethodInvocation *i,
     GVariant *v = g_hash_table_lookup(s->inhibitors, id);
     if (!v) {
         g_dbus_method_invocation_return_dbus_error(i,
-                DBUS_ERROR ".Uninhibit", "Inhibitor ID does not exist");
-        return FALSE;
+                DBUS_SESSION_ERROR ".Uninhibit", "Inhibitor ID does not exist");
+        return TRUE;
     }
     g_variant_get(v, "(ss)", &who, &why);
 
@@ -168,11 +171,33 @@ on_handle_get_version(DBusSession *session, GDBusMethodInvocation *i,
     return TRUE;
 }
 
+static gboolean
+on_handle_set_brightness(DBusBacklight *dbl, GDBusMethodInvocation *i,
+        guint v, gpointer user_data)
+{
+    DBusServer *s = (DBusServer *)user_data;
+
+    if (!s->bl_devices)
+        return FALSE;
+
+    const gchar *sys_path = dbus_backlight_get_sys_path(dbl);
+    struct Backlight *bl = g_hash_table_lookup(s->bl_devices, sys_path);
+
+    if (!backlight_set_brightness(bl, v)) {
+        g_dbus_method_invocation_return_dbus_error(i,
+                DBUS_BACKLIGHT_ERROR ".SetBrightness", "Failed to set brightness");
+        return TRUE;
+    }
+
+    dbus_backlight_complete_set_brightness(dbl, i);
+    return TRUE;
+}
+
 static void
 lock_callback(LogindContext *c, gboolean state, gpointer data)
 {
     DBusServer *s = (DBusServer *)data;
-    if (!IS_EXPORTED(s))
+    if (!EXPORTED(s))
         return;
     if (state)
         dbus_session_emit_lock(s->session);
@@ -184,7 +209,7 @@ static void
 sleep_callback(UNUSED LogindContext *c, gboolean state, gpointer data)
 {
     DBusServer *s = (DBusServer *)data;
-    if (!IS_EXPORTED(s))
+    if (!EXPORTED(s))
         return;
     dbus_session_emit_prepare_for_sleep(s->session, state);
 }
@@ -193,7 +218,7 @@ static void
 shutdown_callback(UNUSED LogindContext *c, gboolean state, gpointer data)
 {
     DBusServer *s = (DBusServer *)data;
-    if (!IS_EXPORTED(s))
+    if (!EXPORTED(s))
         return;
     dbus_session_emit_prepare_for_shutdown(s->session, state);
 }
@@ -203,7 +228,7 @@ on_properties_changed(UNUSED GDBusProxy *proxy, GVariant *props,
         UNUSED GStrv inv_props, gpointer user_data)
 {
     DBusServer *s = (DBusServer *)user_data;
-    if (!IS_EXPORTED(s))
+    if (!EXPORTED(s))
         return;
     LogindContext *c = s->ctx;
     gchar *prop = NULL;
@@ -243,18 +268,75 @@ init_properties(DBusServer *s)
 }
 
 static void
+set_backlights_property(DBusServer *s)
+{
+    GList *dbls = g_hash_table_get_values(s->backlights);
+    const gchar **paths = g_malloc0_n(g_list_length(dbls) + 1, sizeof(gchar *));
+
+    guint n = 0;
+    for (GList *i = dbls; i; i = i->next, n++) {
+        DBusBacklight *dbl = i->data;
+        const gchar *path = g_dbus_interface_skeleton_get_object_path(
+                G_DBUS_INTERFACE_SKELETON(dbl));
+        if (path)
+            paths[n] = path;
+    }
+
+    dbus_session_set_backlights(s->session, paths);
+    g_free(paths);
+}
+
+static gboolean
+export_backlight(DBusServer *s, DBusBacklight *dbl)
+{
+    const gchar *name = dbus_backlight_get_name(dbl);
+    gchar *norm = backlight_normalize_name(name);
+    gchar *path = g_strdup_printf("%s/%s", DBUS_BACKLIGHT_PATH,
+            norm ? norm : name);
+
+    if (norm)
+        g_free(norm);
+
+    GError *err = NULL;
+    g_dbus_interface_skeleton_export(G_DBUS_INTERFACE_SKELETON(dbl), s->conn,
+            path, &err);
+
+    g_free(path);
+
+    if (err) {
+        g_error("Failed to export DBus Backlight interface: %s", err->message);
+        g_error_free(err);
+        return FALSE;
+    }
+
+    set_backlights_property(s);
+
+    return TRUE;
+}
+
+static void
+unexport_backlight(DBusServer *s, DBusBacklight *dbl)
+{
+    g_dbus_interface_skeleton_unexport(G_DBUS_INTERFACE_SKELETON(dbl));
+    set_backlights_property(s);
+}
+
+static void
 on_name_acquired(GDBusConnection *conn, const gchar *name, gpointer user_data)
 {
     g_debug("%s acquired", name);
 
+    DBusServer *s = (DBusServer *)user_data;
+    s->conn = conn;
+    s->name_acquired = TRUE;
+
     DBusSession *session = dbus_session_skeleton_new();
 
     if (!session) {
-        g_error("Failed to initialize DBus server");
+        g_error("Failed to initialize DBus Session");
         return;
     }
 
-    DBusServer *s = (DBusServer *)user_data;
     s->session = session;
     LogindContext *c = s->ctx;
 
@@ -278,13 +360,19 @@ on_name_acquired(GDBusConnection *conn, const gchar *name, gpointer user_data)
     init_properties(s);
 
     GError *err = NULL;
-    s->exported = g_dbus_interface_skeleton_export(
-            G_DBUS_INTERFACE_SKELETON(session),
+    g_dbus_interface_skeleton_export(G_DBUS_INTERFACE_SKELETON(session),
             conn, DBUS_PATH, &err);
     if (err) {
-        g_error("Failed to export DBus interface: %s", err->message);
-        g_free(err);
+        g_error("Failed to export DBus Session interface: %s", err->message);
+        g_error_free(err);
+        err = NULL;
     }
+
+    GList *dbls = g_hash_table_get_values(s->backlights);
+    for (GList *i = dbls; i; i = i->next)
+        if (!EXPORTED(i->data))
+            export_backlight(s, i->data);
+    g_list_free(dbls);
 }
 
 static void
@@ -293,26 +381,28 @@ on_name_lost(GDBusConnection *conn, const gchar *name, gpointer user_data)
     g_debug("%s lost", name);
 
     DBusServer *s = (DBusServer *)user_data;
+    s->name_acquired = FALSE;
 
     g_dbus_interface_skeleton_unexport(G_DBUS_INTERFACE_SKELETON(s->session));
-    s->exported = FALSE;
-    s->bus_id = 0;
-}
 
-static void
-dbus_server_destroy(DBusServer *s)
-{
-    g_object_unref(s->session);
-    s->session = NULL;
+    GList *dbls = g_hash_table_get_values(s->backlights);
+    for (GList *i = dbls; i; i = i->next)
+        unexport_backlight(s, i->data);
+    g_list_free(dbls);
+
+    s->bus_id = 0;
 }
 
 void
 dbus_server_free(DBusServer *s)
 {
+    if (!s)
+        return;
     if (s->bus_id)
         g_bus_unown_name(s->bus_id);
     if (s->session)
         g_object_unref(s->session);
+    g_hash_table_destroy(s->backlights);
     g_hash_table_destroy(s->inhibitors);
     g_object_unref(s);
 }
@@ -338,7 +428,7 @@ dbus_server_init(DBusServer *self)
 void
 dbus_server_emit_active(DBusServer *s)
 {
-    if (!IS_EXPORTED(s))
+    if (!EXPORTED(s))
         return;
     dbus_session_emit_active(s->session);
 }
@@ -346,25 +436,87 @@ dbus_server_emit_active(DBusServer *s)
 void
 dbus_server_emit_inactive(DBusServer *s, guint i)
 {
-    if (!IS_EXPORTED(s))
+    if (!EXPORTED(s))
         return;
     dbus_session_emit_inactive(s->session, i);
+}
+
+static void
+update_backlight(DBusBacklight *dbl, struct Backlight *bl)
+{
+    const gchar *str = NULL;
+#define SET_STR(n) \
+    str = dbus_backlight_get_##n(dbl); \
+    if (!str || g_strcmp0(str, bl->n) != 0) \
+        dbus_backlight_set_##n(dbl, bl->n)
+    SET_STR(name);
+    SET_STR(subsystem);
+    SET_STR(sys_path);
+    SET_STR(dev_path);
+#undef SET_STR
+
+#define SET_INT(n) \
+    if (dbus_backlight_get_##n(dbl) != bl->n) \
+        dbus_backlight_set_##n(dbl, bl->n)
+    SET_INT(online);
+    SET_INT(brightness);
+    SET_INT(max_brightness);
+#undef SET_INT
+}
+
+void
+dbus_server_add_backlight(DBusServer *s, struct Backlight *bl)
+{
+    DBusBacklight *dbl = dbus_backlight_skeleton_new();
+    g_hash_table_insert(s->backlights, (char *)bl->sys_path, dbl);
+
+    g_signal_connect(dbl, "handle-set-brightness",
+            G_CALLBACK(on_handle_set_brightness), s);
+
+    update_backlight(dbl, bl);
+
+    if (s->name_acquired)
+        export_backlight(s, dbl);
+}
+
+void
+dbus_server_remove_backlight(DBusServer *s, const char *path)
+{
+    DBusBacklight *dbl = g_hash_table_lookup(s->backlights, path);
+
+    if (!dbl)
+        return;
+
+    g_hash_table_steal(s->backlights, path);
+    unexport_backlight(s, dbl);
+    g_object_unref(dbl);
+}
+
+void
+dbus_server_update_backlight(DBusServer *s, struct Backlight *bl)
+{
+    DBusBacklight *dbl = g_hash_table_lookup(s->backlights, bl->sys_path);
+
+    if (dbl)
+        update_backlight(dbl, bl);
 }
 
 DBusServer *
 dbus_server_new(LogindContext *c)
 {
     DBusServer *s = g_object_new(DBUS_TYPE_SERVER, NULL);
+
     s->ctx = c;
-    s->exported = FALSE;
+    s->bl_devices = NULL;
+    s->backlights = g_hash_table_new_full(g_str_hash, g_str_equal, NULL,
+            g_object_unref);
     s->inhibitors = g_hash_table_new_full(g_str_hash, g_str_equal, NULL,
             (GDestroyNotify)g_variant_unref);
 
     s->bus_id = g_bus_own_name(G_BUS_TYPE_SESSION, DBUS_NAME,
             G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT |
             G_BUS_NAME_OWNER_FLAGS_REPLACE,
-            NULL, on_name_acquired, on_name_lost,
-            s, (GDestroyNotify)dbus_server_destroy);
+            NULL, on_name_acquired, on_name_lost, s, NULL);
 
     return s;
 }

@@ -1,6 +1,6 @@
 /*
 sessiond - standalone X session manager
-Copyright (C) 2018 James Reed
+Copyright (C) 2018-2019 James Reed
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -18,10 +18,64 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
 #include <glib-2.0/glib.h>
+#include <libudev.h>
 
-extern gchar *
-backlight_get_interface(const gchar *name);
-extern gint
-backlight_get(const gchar *iface);
+#define BL_ACTION_LIST \
+    X(ADD, "add") \
+    X(REMOVE, "remove") \
+    X(CHANGE, "change") \
+    X(ONLINE, "online") \
+    X(OFFLINE, "offline")
+
+typedef enum {
+#define X(action, _) BL_ACTION_##action,
+    BL_ACTION_LIST
+#undef X
+} BacklightAction;
+
+typedef enum {
+    BL_TYPE_DISPLAY,
+    BL_TYPE_KEYBOARD,
+} BacklightType;
+
+struct Backlight {
+    struct udev_device *device;
+    const char *name;
+    const char *subsystem;
+    gchar *sys_path;
+    const char *dev_path;
+    gboolean online;
+    gint brightness;
+    gint max_brightness;
+    gint pre_dim_brightness;
+};
+
+typedef gboolean (*BacklightsFunc)(BacklightAction a, const gchar *path,
+        struct Backlight *bl);
+
+typedef struct {
+    GSource source;
+    gpointer fd;
+    struct udev *udev;
+    struct udev_monitor *udev_mon;
+    GQueue *queue;
+    GHashTable *devices;
+} Backlights;
+
+extern Backlights *
+backlights_new(GMainContext *ctx, BacklightsFunc func);
 extern void
-backlight_set(const gchar *iface, guint v);
+backlights_free(Backlights *bls);
+extern gchar *
+backlight_normalize_name(const char *name);
+extern gboolean
+backlight_set_brightness(struct Backlight *bl, guint v);
+extern void
+backlight_dim(struct Backlight *bl, guint v);
+extern void
+backlight_dim_percent(struct Backlight *bl, guint percent);
+extern void
+backlight_restore(struct Backlight *bl);
+extern void
+backlights_on_timeout(GHashTable *devs, GHashTable *cs, guint timeout,
+        gboolean state);

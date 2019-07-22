@@ -1,94 +1,125 @@
+#include "../src/config.h"
 #include "../src/hooks.h"
 
 #include <locale.h>
 #include <glib-2.0/glib.h>
 
+struct Paths {
+    gchar *config;
+    gchar *hooksd;
+};
+
 typedef struct {
-    GPtrArray *hooks;
-} HooksFixture;
+    Config c;
+    gboolean success;
+} ConfigFixture;
 
 static void
-hooks_fixture_set_up(HooksFixture *f, gconstpointer user_data)
+config_fixture_set_up(ConfigFixture *f, gconstpointer user_data)
 {
-    f->hooks = hooks_load((const gchar *)user_data);
+    const struct Paths *paths = (struct Paths *)user_data;
+    f->success = config_load(paths->config, paths->hooksd, &f->c);
 }
 
 static void
-hooks_fixture_tear_down(HooksFixture *f, gconstpointer user_data)
+config_fixture_tear_down(ConfigFixture *f, gconstpointer user_data)
 {
-    hooks_free(f->hooks);
+    config_free(&f->c);
 }
 
 static void
-test_load_inactive(HooksFixture *f, gconstpointer user_data)
+test_load(ConfigFixture *f, gconstpointer user_data)
 {
-    g_assert_nonnull(f->hooks);
+    g_assert_true(f->success);
+}
 
-    gboolean hook_found = FALSE;
-    for (guint i = 0; i < f->hooks->len; i++) {
-        const Hook *h = g_ptr_array_index(f->hooks, i);
-        if (h->type != HOOK_TYPE_INACTIVE)
-            continue;
-        g_assert_cmpuint(h->inactive_sec, ==, 10);
-        g_assert_cmpstr(h->exec_start[0], ==, "/usr/bin/touch");
-        g_assert_cmpstr(h->exec_start[1], ==, "/tmp/test_run_inactive");
-        g_assert_cmpstr(h->exec_stop[0], ==, "/bin/rm");
-        g_assert_cmpstr(h->exec_stop[1], ==, "/tmp/test_run_inactive");
-        hook_found = TRUE;
-        break;
+static void
+test_hooks(ConfigFixture *f, gconstpointer user_data)
+{
+    GPtrArray *hooks = f->c.hooks;
+    g_assert_nonnull(hooks);
+
+    for (int i = 0; i < hooks->len; i++) {
+        const struct Hook *h = g_ptr_array_index(hooks, i);
+        switch (i) {
+            case 0:
+                g_assert_cmpint(h->trigger, ==, HOOK_TRIGGER_IDLE);
+                g_assert_cmpstr(h->exec_start[0], ==, "test");
+                g_assert_cmpstr(h->exec_start[1], ==, "start");
+                break;
+            case 1:
+                g_assert_cmpint(h->trigger, ==, HOOK_TRIGGER_SLEEP);
+                g_assert_cmpstr(h->exec_stop[0], ==, "test");
+                g_assert_cmpstr(h->exec_stop[1], ==, "stop");
+                break;
+            case 2:
+                g_assert_cmpint(h->trigger, ==, HOOK_TRIGGER_INACTIVE);
+                g_assert_cmpint(h->inactive_sec, ==, 10);
+                g_assert_cmpstr(h->exec_start[0], ==, "/usr/bin/touch");
+                g_assert_cmpstr(h->exec_start[1], ==, "/tmp/test_run_inactive");
+                g_assert_cmpstr(h->exec_stop[0], ==, "/bin/rm");
+                g_assert_cmpstr(h->exec_stop[1], ==, "/tmp/test_run_inactive");
+                break;
+            case 3:
+                g_assert_cmpint(h->trigger, ==, HOOK_TRIGGER_LOCK);
+                g_assert_cmpstr(h->exec_start[0], ==, "/usr/bin/touch");
+                g_assert_cmpstr(h->exec_start[1], ==, "/tmp/test_run_lock");
+                g_assert_cmpstr(h->exec_stop[0], ==, "/bin/rm");
+                g_assert_cmpstr(h->exec_stop[1], ==, "/tmp/test_run_lock");
+                break;
+            default:
+                break;
+        }
     }
-
-    g_assert_true(hook_found);
 }
 
 static void
-test_run_inactive_start(HooksFixture *f, gconstpointer user_data)
+test_run_inactive_start(ConfigFixture *f, gconstpointer user_data)
 {
     if (g_test_subprocess()) {
-        hooks_on_timeout(f->hooks, 10, TRUE);
+        hooks_on_timeout(f->c.hooks, 10, TRUE);
         return;
     }
 
-    g_assert_nonnull(f->hooks);
+    g_assert_nonnull(f->c.hooks);
     g_test_trap_subprocess(NULL, 0, 0);
     g_assert_true(g_file_test("/tmp/test_run_inactive", G_FILE_TEST_EXISTS));
 }
 
-static void
-test_run_inactive_stop(HooksFixture *f, gconstpointer user_data)
+static void test_run_inactive_stop(ConfigFixture *f, gconstpointer user_data)
 {
     if (g_test_subprocess()) {
-        hooks_on_timeout(f->hooks, 10, FALSE);
+        hooks_on_timeout(f->c.hooks, 10, FALSE);
         return;
     }
 
-    g_assert_nonnull(f->hooks);
+    g_assert_nonnull(f->c.hooks);
     g_test_trap_subprocess(NULL, 0, 0);
     g_assert_false(g_file_test("/tmp/test_run_inactive", G_FILE_TEST_EXISTS));
 }
 
 static void
-test_run_lock_start(HooksFixture *f, gconstpointer user_data)
+test_run_lock_start(ConfigFixture *f, gconstpointer user_data)
 {
     if (g_test_subprocess()) {
-        hooks_run(f->hooks, HOOK_TYPE_LOCK, TRUE);
+        hooks_run(f->c.hooks, HOOK_TRIGGER_LOCK, TRUE);
         return;
     }
 
-    g_assert_nonnull(f->hooks);
+    g_assert_nonnull(f->c.hooks);
     g_test_trap_subprocess(NULL, 0, 0);
     g_assert_true(g_file_test("/tmp/test_run_lock", G_FILE_TEST_EXISTS));
 }
 
 static void
-test_run_lock_stop(HooksFixture *f, gconstpointer user_data)
+test_run_lock_stop(ConfigFixture *f, gconstpointer user_data)
 {
     if (g_test_subprocess()) {
-        hooks_run(f->hooks, HOOK_TYPE_LOCK, FALSE);
+        hooks_run(f->c.hooks, HOOK_TRIGGER_LOCK, FALSE);
         return;
     }
 
-    g_assert_nonnull(f->hooks);
+    g_assert_nonnull(f->c.hooks);
     g_test_trap_subprocess(NULL, 0, 0);
     g_assert_false(g_file_test("/tmp/test_run_lock", G_FILE_TEST_EXISTS));
 }
@@ -101,26 +132,26 @@ main(int argc, char *argv[])
 
     g_test_init(&argc, &argv, NULL);
 
-    gchar *path = g_test_build_filename(G_TEST_DIST, "hooks.d", NULL);
+    struct Paths paths;
+    paths.config = g_test_build_filename(G_TEST_DIST, "hooks.conf", NULL);
+    paths.hooksd = g_test_build_filename(G_TEST_DIST, "hooks.d", NULL);
 
-    g_test_add("/hooks/load", HooksFixture, path,
-            hooks_fixture_set_up, test_load_inactive, hooks_fixture_tear_down);
+#define TEST(name, func) \
+    g_test_add("/hooks/" #name, ConfigFixture, &paths, \
+            config_fixture_set_up, test_##func, config_fixture_tear_down)
 
-    g_test_add("/hooks/run-lock/start", HooksFixture, path,
-            hooks_fixture_set_up, test_run_lock_start, hooks_fixture_tear_down);
-
-    g_test_add("/hooks/run-lock/stop", HooksFixture, path,
-            hooks_fixture_set_up, test_run_lock_stop, hooks_fixture_tear_down);
-
-    g_test_add("/hooks/run-inactive/start", HooksFixture, path,
-            hooks_fixture_set_up, test_run_inactive_start, hooks_fixture_tear_down);
-
-    g_test_add("/hooks/run-inactive/stop", HooksFixture, path,
-            hooks_fixture_set_up, test_run_inactive_stop, hooks_fixture_tear_down);
+    TEST(load, load);
+    TEST(hooks, hooks);
+    TEST(run-inactive/start, run_inactive_start);
+    TEST(run-inactive/stop, run_inactive_stop);
+    TEST(run-lock/start, run_lock_start);
+    TEST(run-lock/stop, run_lock_stop);
+#undef TEST
 
     int ret = g_test_run();
 
-    g_free(path);
+    g_free(paths.config);
+    g_free(paths.hooksd);
 
     return ret;
 }

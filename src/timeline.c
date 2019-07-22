@@ -118,6 +118,20 @@ timeline_add_timeout(Timeline *tl, guint timeout)
     return TRUE;
 }
 
+gboolean
+timeline_remove_timeout(Timeline *tl, guint timeout)
+{
+    for (guint i = 0; i < tl->timeouts->len; i++)
+        if (g_array_index(tl->timeouts, guint, i) == timeout) {
+            g_array_remove_index(tl->timeouts, i);
+            if (i <= tl->index)
+                tl->index--;
+            return TRUE;
+        }
+
+    return FALSE;
+}
+
 void
 timeline_start(Timeline *tl)
 {

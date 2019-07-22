@@ -1,6 +1,6 @@
 /*
 sessiond - standalone X session manager
-Copyright (C) 2018 James Reed
+Copyright (C) 2018-2019 James Reed
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -19,23 +19,32 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <glib-2.0/glib.h>
 
-#define CONFIG_MAP_LIST \
-    X("Idle", "Inputs", input_mask, input_mask) \
-    X("Idle", "IdleSec", uint, idle_sec) \
-    X("Lock", "OnIdle", bool, on_idle) \
-    X("Lock", "OnSleep", bool, on_sleep) \
-    X("Backlight", "Enable", bool, bl_enable) \
-    X("Backlight", "Name", str, bl_name) \
-    X("Backlight", "DimSec", uint, dim_sec) \
-    X("Backlight", "DimPercent", uint, dim_percent)
+#define IDLE_TABLE_LIST \
+    X("Inputs", input_mask, input_mask) \
+    X("IdleSec", uint, idle_sec)
+
+#define LOCK_TABLE_LIST \
+    X("OnIdle", bool, on_idle) \
+    X("OnSleep", bool, on_sleep)
+
+#define BACKLIGHT_TABLE_LIST \
+    X("DimSec", uint, dim_sec) \
+    X("DimValue", int, dim_value) \
+    X("DimPercent", int, dim_percent)
 
 #ifdef DPMS
-#define DPMS_MAP_LIST \
-    X("DPMS", "Enable", bool, dpms_enable) \
-    X("DPMS", "StandbySec", uint, standby_sec) \
-    X("DPMS", "SuspendSec", uint, suspend_sec) \
-    X("DPMS", "OffSec", uint, off_sec)
+#define DPMS_TABLE_LIST \
+    X("Enable", bool, dpms_enable) \
+    X("StandbySec", uint, standby_sec) \
+    X("SuspendSec", uint, suspend_sec) \
+    X("OffSec", uint, off_sec)
 #endif /* DPMS */
+
+struct BacklightConf {
+    guint dim_sec;
+    gint dim_value;
+    gint dim_percent;
+};
 
 typedef struct {
     /* Idle */
@@ -44,11 +53,10 @@ typedef struct {
     /* Lock */
     gboolean on_idle;
     gboolean on_sleep;
-    /* Backlight */
-    gboolean bl_enable;
-    gchar *bl_name;
-    guint dim_sec;
-    guint dim_percent;
+    /* Backlights */
+    GHashTable *backlights;
+    /* Hooks */
+    GPtrArray *hooks;
 #ifdef DPMS
     /* DPMS */
     gboolean dpms_enable;
@@ -59,6 +67,6 @@ typedef struct {
 } Config;
 
 extern gboolean
-config_load(Config *c, const gchar *path);
+config_load(const gchar *path, const gchar *hooksd, Config *c);
 extern void
 config_free(Config *c);

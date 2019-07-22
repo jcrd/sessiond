@@ -37,6 +37,8 @@ extern Timeline
 timeline_new(GMainContext *ctx, TimelineFunc func, gconstpointer user_data);
 extern gboolean
 timeline_add_timeout(Timeline *tl, guint timeout);
+extern gboolean
+timeline_remove_timeout(Timeline *tl, guint timeout);
 extern void
 timeline_start(Timeline *tl);
 extern void

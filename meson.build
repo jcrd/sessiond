@@ -5,6 +5,7 @@ deps = [
   dependency('gio-unix-2.0'),
   dependency('x11'),
   dependency('xi'),
+  dependency('libudev'),
   ]
 
 dpms = get_option('dpms')
@@ -34,7 +35,7 @@ dbus_srcs = custom_target('dbus sources',
     '--interface-prefix', 'org.sessiond.session1.',
     '--c-namespace', 'DBus',
     '@INPUT@'],
-  input : ['dbus/org.sessiond.session1.Session.xml'],
+  input : ['dbus/org.sessiond.session1.xml'],
   output : ['dbus-gen.c', 'dbus-gen.h'])
 
 add_project_arguments('-DG_LOG_USE_STRUCTURED', language : 'c')
@@ -48,10 +49,10 @@ srcs = [
   'src/dbus-systemd.c',
   'src/dbus-server.c',
   'src/hooks.c',
-  'src/keyfile.c',
   'src/sessiond.c',
   'src/timeline.c',
   'src/xsource.c',
+  'src/toml/toml.c',
   ]
 
 executable('sessiond', sources : srcs, dependencies : deps, install : true)

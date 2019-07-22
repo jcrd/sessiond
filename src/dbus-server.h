@@ -19,6 +19,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include "dbus-logind.h"
 #include "dbus-gen.h"
+#include "backlight.h"
 
 #include <glib-2.0/glib.h>
 
@@ -27,11 +28,14 @@ G_DECLARE_FINAL_TYPE(DBusServer, dbus_server, DBUS, SERVER, GObject);
 
 struct _DBusServer {
     GObject parent;
-    gboolean exported;
     guint bus_id;
+    GDBusConnection *conn;
+    gboolean name_acquired;
     DBusSession *session;
     LogindContext *ctx;
     GHashTable *inhibitors;
+    GHashTable *backlights;
+    GHashTable *bl_devices;
 };
 
 extern void
@@ -40,5 +44,11 @@ extern void
 dbus_server_emit_active(DBusServer *s);
 extern void
 dbus_server_emit_inactive(DBusServer *s, guint i);
+extern void
+dbus_server_add_backlight(DBusServer *s, struct Backlight *bl);
+extern void
+dbus_server_remove_backlight(DBusServer *s, const char *path);
+extern void
+dbus_server_update_backlight(DBusServer *s, struct Backlight *bl);
 extern DBusServer *
 dbus_server_new(LogindContext *c);

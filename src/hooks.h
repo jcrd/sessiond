@@ -1,6 +1,6 @@
 /*
 sessiond - standalone X session manager
-Copyright (C) 2018 James Reed
+Copyright (C) 2018-2019 James Reed
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -21,7 +21,13 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <glib-2.0/glib.h>
 
-#define HOOK_TYPE_LIST \
+#define HOOKS_TABLE_LIST \
+    X("Trigger", trigger, trigger) \
+    X("InactiveSec", uint, inactive_sec) \
+    X("ExecStart", exec, exec_start) \
+    X("ExecStop", exec, exec_stop)
+
+#define HOOK_TRIGGER_LIST \
     X(LOCK, "Lock") \
     X(IDLE, "Idle") \
     X(SLEEP, "Sleep") \
@@ -29,26 +35,22 @@ this program. If not, see <https://www.gnu.org/licenses/>.
     X(INACTIVE, "Inactive")
 
 typedef enum {
-    HOOK_TYPE_NONE,
-#define X(type, _) HOOK_TYPE_##type,
-    HOOK_TYPE_LIST
+    HOOK_TRIGGER_NONE,
+#define X(trigger, _) HOOK_TRIGGER_##trigger,
+    HOOK_TRIGGER_LIST
 #undef X
-} HookType;
+} HookTrigger;
 
-typedef struct {
-    HookType type;
+struct Hook {
+    HookTrigger trigger;
     guint inactive_sec;
     gchar **exec_start;
     gchar **exec_stop;
-} Hook;
+};
 
-extern GPtrArray *
-hooks_load(const gchar *path);
 extern void
 hooks_add_timeouts(GPtrArray *hooks, Timeline *tl);
 extern void
-hooks_run(GPtrArray *hooks, HookType type, gboolean state);
+hooks_run(GPtrArray *hooks, HookTrigger trigger, gboolean state);
 extern void
 hooks_on_timeout(GPtrArray *hooks, guint timeout, gboolean state);
-extern void
-hooks_free(GPtrArray *hooks);

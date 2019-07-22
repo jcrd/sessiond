@@ -1,5 +1,5 @@
 [Hook]
-Trigger=Inactive
+Trigger="Inactive"
 InactiveSec=10
-ExecStart=/usr/bin/touch /tmp/test_run_inactive
-ExecStop=/bin/rm /tmp/test_run_inactive
+ExecStart="/usr/bin/touch /tmp/test_run_inactive"
+ExecStop="/bin/rm /tmp/test_run_inactive"

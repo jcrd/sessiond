@@ -20,6 +20,7 @@
     <property name='IdleHint' type='b' access='read'/>
     <property name='IdleSinceHint' type='t' access='read'/>
     <property name='IdleSinceHintMonotonic' type='t' access='read'/>
+    <property name='Backlights' type='ao' access='read'/>
     <signal name='Lock'/>
     <signal name='Unlock'/>
     <signal name='Idle'/>
@@ -33,5 +34,17 @@
     <signal name='PrepareForShutdown'>
       <arg name='state' type='b'/>
     </signal>
+  </interface>
+  <interface name='org.sessiond.session1.Backlight'>
+    <method name='SetBrightness'>
+      <arg name='brightness' type='u' direction='in'/>
+    </method>
+    <property name='Online' type='b' access='read'/>
+    <property name='Name' type='s' access='read'/>
+    <property name='Subsystem' type='s' access='read'/>
+    <property name='SysPath' type='s' access='read'/>
+    <property name='DevPath' type='s' access='read'/>
+    <property name='MaxBrightness' type='u' access='read'/>
+    <property name='Brightness' type='u' access='read'/>
   </interface>
 </node>

@@ -9,8 +9,8 @@ test(
   'test config loading',
   executable('config_test', [
     'config_test.c',
+    '../src/toml/toml.c',
     '../src/config.c',
-    '../src/keyfile.c',
     ], dependencies : deps),
   env : g_test_env,
   )
@@ -19,8 +19,9 @@ test(
   'test hooks',
   executable('hooks_test', [
     'hooks_test.c',
+    '../src/toml/toml.c',
+    '../src/config.c',
     '../src/hooks.c',
-    '../src/keyfile.c',
     '../src/timeline.c',
     '../src/common.c',
     ], dependencies : deps),

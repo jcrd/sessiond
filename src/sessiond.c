@@ -51,10 +51,9 @@ static gboolean inhibited = FALSE;
 static gboolean inactive = FALSE;
 static GMainLoop *main_loop = NULL;
 static GMainContext *main_ctx = NULL;
-static GPtrArray *hooks = NULL;
-static gchar *bl_iface = NULL;
-static gint bl_value = -1;
+static Backlights *backlights = NULL;
 static gchar *config_path = NULL;
+static gchar *hooksd_path = NULL;
 static guint idle_sec = 0;
 #ifdef DPMS
 static gboolean no_dpms = FALSE;
@@ -76,8 +75,8 @@ set_idle(gboolean state)
         systemd_start_unit(sc, "graphical-unidle.target");
     }
 
-    if (hooks)
-        hooks_run(hooks, HOOK_TYPE_IDLE, state);
+    if (config.hooks)
+        hooks_run(config.hooks, HOOK_TRIGGER_IDLE, state);
 
     g_message("Idle: %s", BOOLSTR(state));
 }
@@ -97,8 +96,8 @@ lock_callback(LogindContext *c, gboolean state, UNUSED gpointer data)
         systemd_start_unit(sc, "graphical-unlock.target");
     }
 
-    if (hooks)
-        hooks_run(hooks, HOOK_TYPE_LOCK, state);
+    if (config.hooks)
+        hooks_run(config.hooks, HOOK_TRIGGER_LOCK, state);
 
     g_message("Locked: %s", BOOLSTR(state));
 }
@@ -113,8 +112,8 @@ sleep_callback(LogindContext *c, gboolean state, UNUSED gpointer data)
             logind_lock_session(c, TRUE);
     }
 
-    if (hooks)
-        hooks_run(hooks, HOOK_TYPE_SLEEP, state);
+    if (config.hooks)
+        hooks_run(config.hooks, HOOK_TRIGGER_SLEEP, state);
 }
 
 static void
@@ -125,8 +124,8 @@ shutdown_callback(UNUSED LogindContext *c, gboolean state, UNUSED gpointer data)
         systemd_start_unit(sc, "user-shutdown.target");
     }
 
-    if (hooks)
-        hooks_run(hooks, HOOK_TYPE_SHUTDOWN, state);
+    if (config.hooks)
+        hooks_run(config.hooks, HOOK_TRIGGER_SHUTDOWN, state);
 }
 
 static void
@@ -151,15 +150,51 @@ uninhibit_callback(UNUSED DBusServer *s, const gchar *who, const gchar *why,
     timeline_start(&timeline);
 }
 
+static gboolean
+backlights_cb(BacklightAction a, const char *path, struct Backlight *bl)
+{
+    struct BacklightConf *c = NULL;
+
+    switch (a) {
+        case BL_ACTION_ADD:
+            dbus_server_add_backlight(server, bl);
+            if (config.backlights)
+                c = g_hash_table_lookup(config.backlights, path);
+            if (c && c->dim_sec)
+                timeline_add_timeout(&timeline, c->dim_sec);
+            break;
+        case BL_ACTION_REMOVE:
+            dbus_server_remove_backlight(server, path);
+            if (config.backlights)
+                c = g_hash_table_lookup(config.backlights, path);
+            if (c && c->dim_sec)
+                timeline_remove_timeout(&timeline, c->dim_sec);
+            break;
+        case BL_ACTION_CHANGE:
+        case BL_ACTION_ONLINE:
+        case BL_ACTION_OFFLINE:
+            dbus_server_update_backlight(server, bl);
+            break;
+    }
+
+    return TRUE;
+}
+
 static void
 appear_callback(UNUSED LogindContext *c, UNUSED gpointer data)
 {
     if (!server) {
+        g_debug("* Init DBus server...");
         server = dbus_server_new(lc);
         g_signal_connect(server, "inhibit", G_CALLBACK(inhibit_callback),
                 NULL);
         g_signal_connect(server, "uninhibit", G_CALLBACK(uninhibit_callback),
                 NULL);
+
+        g_debug("* Init Backlights source...");
+        backlights = backlights_new(main_ctx, backlights_cb);
+
+        server->bl_devices = backlights->devices;
     }
 }
 
@@ -234,32 +269,17 @@ quit_signal(UNUSED gpointer user_data)
 }
 
 static void
-set_backlight(gboolean state)
-{
-    if (state) {
-        if ((bl_value = backlight_get(bl_iface)) != -1) {
-            guint dim = bl_value - bl_value * config.dim_percent / 100;
-            if (!dim)
-                return;
-            g_debug("Backlight value is %i", bl_value);
-            backlight_set(bl_iface, dim);
-        }
-    } else if (bl_value != -1) {
-        backlight_set(bl_iface, bl_value);
-        bl_value = -1;
-    }
-}
-
-static void
 on_timeout(guint timeout, gboolean state, gconstpointer user_data)
 {
     if (timeout == config.idle_sec)
         set_idle(state);
-    else if (bl_iface && timeout == config.dim_sec)
-        set_backlight(state);
 
-    if (hooks)
-        hooks_on_timeout(hooks, timeout, state);
+    if (config.backlights)
+        backlights_on_timeout(backlights->devices, config.backlights, timeout,
+                state);
+
+    if (config.hooks)
+        hooks_on_timeout(config.hooks, timeout, state);
 
     if (state)
         dbus_server_emit_inactive(server, timeout);
@@ -269,80 +289,43 @@ on_timeout(guint timeout, gboolean state, gconstpointer user_data)
     inactive = state;
 }
 
-static void
-load_hook_path(const gchar *path, GPtrArray **hooks)
-{
-    GPtrArray *hs = NULL;
-    gchar *p = g_strjoin("/", path, "hooks.d", NULL);
-
-    if (g_file_test(p, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)) {
-        if ((hs = hooks_load(p))) {
-            *hooks = hs;
-            g_info("Loaded hooks at %s", p);
-        }
-    } else {
-        g_debug("No hooks directory found at %s", p);
-    }
-
-    g_free(p);
-}
-
 static gboolean
-load_config_path(const gchar *path, Config *config)
-{
-    Config c;
-    gboolean ok = FALSE;
-
-    if (config_path) {
-        if (g_file_test(config_path, G_FILE_TEST_EXISTS))
-            ok = config_load(&c, config_path);
-        else
-            g_critical("No config file found at %s", config_path);
-    } else {
-        gchar *p = g_strjoin("/", path, "sessiond.conf", NULL);
-        if (g_file_test(p, G_FILE_TEST_EXISTS)) {
-            if ((ok = config_load(&c, p)))
-                g_info("Loaded config file at %s", p);
-        } else {
-            g_debug("No config file found at %s", p);
-        }
-
-        g_free(p);
-    }
-
-    if (ok) {
-        if (idle_sec)
-            c.idle_sec = idle_sec;
-        *config = c;
-    }
-
-    return ok;
-}
-
-static gboolean
-load_files(Config *config, GPtrArray **hooks)
+load_config(Config *c)
 {
     const gchar *dir = g_get_user_config_dir();
+
     gchar *path = dir ? g_strjoin("/", dir, "sessiond", NULL) :
         g_strjoin("/", getenv("HOME"), ".config", "sessiond", NULL);
 
-    if (!load_config_path(path, config)) {
-        g_free(path);
-        return FALSE;
+    gchar *config = config_path ? config_path :
+        g_strjoin("/", path, "sessiond.conf", NULL);
+
+    gchar *hooksd = hooksd_path ? hooksd_path :
+        g_strjoin("/", path, "hooks.d", NULL);
+
+    gboolean ret = FALSE;
+
+    if (!g_file_test(config, G_FILE_TEST_EXISTS)) {
+        g_critical("No config file found at %s", config);
+        goto err;
     }
 
-    load_hook_path(path, hooks);
+    if (!g_file_test(hooksd, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR))
+        g_debug("No hooks directory found at %s", hooksd);
 
+    ret = config_load(config, hooksd, c);
+
+    if (idle_sec)
+        c->idle_sec = idle_sec;
+
+err:
+    if (!config_path)
+        g_free(config);
+    if (!hooksd_path)
+        g_free(hooksd);
     g_free(path);
 
-    return TRUE;
-}
-
-static void
-init_backlight(void)
-{
-    if (config.bl_enable)
-        bl_iface = backlight_get_interface(config.bl_name);
+    return ret;
 }
 
 static void
@@ -352,11 +335,8 @@ init_timeline(Timeline *tl)
 
     timeline_add_timeout(tl, config.idle_sec);
 
-    if (bl_iface)
-        timeline_add_timeout(tl, config.dim_sec);
-
-    if (hooks)
-        hooks_add_timeouts(hooks, tl);
+    if (config.hooks)
+        hooks_add_timeouts(config.hooks, tl);
 
     timeline_start(tl);
 }
@@ -392,33 +372,30 @@ static gboolean
 reload_signal(UNUSED gpointer user_data)
 {
     Config c;
-    GPtrArray *hs = NULL;
 
-    if (load_files(&c, &hs)) {
-        g_message("Reloading configuration files...");
-
-        XSource *s;
-        if (c.input_mask != config.input_mask && init_xsource(&s)) {
-            xsource_free(xsource);
-            xsource = s;
-        }
-
-        config = c;
-        g_free(bl_iface);
-        bl_iface = NULL;
-        init_backlight();
-        hooks_free(hooks);
-        hooks = hs;
-        timeline_free(&timeline);
-        init_timeline(&timeline);
-        init_dbus();
-#ifdef DPMS
-        if (!no_dpms)
-            set_dpms(config);
-#endif /* DPMS */
-    } else {
-        g_message("Nothing to reload");
+    if (!load_config(&c)) {
+        config_free(&c);
+        g_message("Keeping current configuration");
+        return TRUE;
     }
+
+    g_message("Reloading configuration files...");
+
+    XSource *s;
+    if (c.input_mask != config.input_mask && init_xsource(&s)) {
+        xsource_free(xsource);
+        xsource = s;
+    }
+
+    config_free(&config);
+    config = c;
+    timeline_free(&timeline);
+    init_timeline(&timeline);
+    init_dbus();
+#ifdef DPMS
+    if (!no_dpms)
+        set_dpms(config);
+#endif /* DPMS */
 
     return TRUE;
 }
@@ -426,16 +403,19 @@ reload_signal(UNUSED gpointer user_data)
 static void
 cleanup(void)
 {
-    g_free(bl_iface);
     g_free(config_path);
-    hooks_free(hooks);
+    g_free(hooksd_path);
+    backlights_free(backlights);
+    config_free(&config);
     timeline_free(&timeline);
     logind_context_free(lc);
     systemd_context_free(sc);
     dbus_server_free(server);
     xsource_free(xsource);
-    g_main_context_unref(main_ctx);
-    g_main_loop_unref(main_loop);
+    if (main_ctx)
+        g_main_context_unref(main_ctx);
+    if (main_loop)
+        g_main_loop_unref(main_loop);
 }
 
 int
@@ -447,9 +427,12 @@ main(int argc, char *argv[])
     gboolean version = FALSE;
     GOptionEntry opts[] = {
         {"config", 'c', 0, G_OPTION_ARG_FILENAME, &config_path,
-         "Path to config file", "CONFIG"},
+            "Path to config file", "CONFIG"},
+        {"hooksd", 'd', 0, G_OPTION_ARG_FILENAME, &hooksd_path,
+            "Path to hooks directory", "DIR"},
         {"idle-sec", 'i', 0, G_OPTION_ARG_INT, &idle_sec,
-         "Seconds the session must be inactive before considered idle", "SEC"},
+            "Seconds the session must be inactive before considered idle",
+            "SEC"},
         {"version", 'v', 0, G_OPTION_ARG_NONE, &version, "Show version", NULL},
         {NULL},
     };
@@ -474,28 +457,32 @@ main(int argc, char *argv[])
 
     atexit(cleanup);
 
-    if (!load_files(&config, &hooks))
-        return EXIT_FAILURE;
-
-    init_backlight();
+    g_debug("* Loading configuration...");
+    load_config(&config);
+    /* if (!load_config(&config)) */
+    /*     return EXIT_FAILURE; */
 
     main_loop = g_main_loop_new(NULL, FALSE);
     main_ctx = g_main_loop_get_context(main_loop);
 
+    g_debug("* Init X source...");
     if (!init_xsource(&xsource))
         return EXIT_FAILURE;
 
-    init_dbus();
+    g_debug("* Init timeline...");
+    init_timeline(&timeline);
 
 #ifdef DPMS
     set_dpms(config);
 #endif /* DPMS */
 
-    init_timeline(&timeline);
+    g_debug("* Init DBus connections...");
+    init_dbus();
 
     g_unix_signal_add(SIGINT, quit_signal, NULL);
     g_unix_signal_add(SIGTERM, quit_signal, NULL);
     g_unix_signal_add(SIGHUP, reload_signal, NULL);
 
+    g_debug("* Running main loop...");
     g_main_loop_run(main_loop);
 }
