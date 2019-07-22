@@ -9,7 +9,8 @@ I<HOME>/.config/sessiond/sessiond.conf
 
 =head1 DESCRIPTION
 
-This file configures the X session manager B<sessiond>(1).
+This file configures the X session manager B<sessiond>(1). Its syntax is
+toml v0.4.0. See: I<https://github.com/toml-lang/toml/tree/v0.4.0>.
 
 =head1 OPTIONS
 
@@ -19,8 +20,8 @@ This file configures the X session manager B<sessiond>(1).
 
 =item I<Inputs=>
 
-A list (separated by ",") of input event types used to determine activity.
-Values are "motion", "button-press", "button-release", "key-press",
+A list (of the format ["item", "item"]) of input event types used to determine
+activity.  Values are "motion", "button-press", "button-release", "key-press",
 "key-release".
 
 =item I<IdleSec=>
@@ -41,29 +42,6 @@ If "true", lock the session when it becomes idle.
 
 If "true", lock the session when B<systemd-logind>(8) sends the
 "PrepareForSleep" signal.
-
-=back
-
-=head2 [Backlight]
-
-=over
-
-=item I<Enable=>
-
-If "true", dim backlight after DimSec seconds of inactivity.
-
-=item I<Name=>
-
-Name of backlight as listed in I</sys/class/backlight>. Defaults to the first
-name found.
-
-=item I<DimSec=>
-
-Seconds the session must be inactive before the backlight is dimmed.
-
-=item I<DimPercent=>
-
-Percentage to lower backlight brightness when dimming.
 
 =back
 
@@ -88,6 +66,32 @@ Off timeout.
 =item I<OffSec=>
 
 DPMS off timeout in seconds.
+
+=back
+
+=head2 [[Backlight]]
+
+Backlights are configured as an array of tables, using the section
+"[[Backlight]]". The options will be applied to backlights with the same path.
+
+=over
+
+=item I<Path=>
+
+Path to the backlight device via sys mount point. Should be of the format:
+"/sys/class/I<subsystem>/I<name>".
+
+=item I<DimSec=>
+
+Seconds the session must be inactive before the backlight is dimmed.
+
+=item I<DimValue=>
+
+Value of the backlight brightness when dimming.
+
+=item I<DimPercent=>
+
+Percentage to lower backlight brightness when dimming.
 
 =back
 
