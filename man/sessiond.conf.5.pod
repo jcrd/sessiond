@@ -95,6 +95,11 @@ Percentage to lower backlight brightness when dimming.
 
 =back
 
+=head2 [[Hook]]
+
+Hooks are configured as an array of tables, using the section "[[Hook]]".
+See B<sessiond-hooks>(5) for a description of options.
+
 =head1 SEE ALSO
 
-B<sessiond>(1), B<systemd-logind>(8)
+B<sessiond>(1), B<systemd-logind>(8), B<sessiond-hooks>(5)

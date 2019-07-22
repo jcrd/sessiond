@@ -25,6 +25,9 @@ The "Inactive" event is unique to hooks. It allows commands to be run after a
 period of inactivity. It is more general than the "Idle" event, which occurs
 after I<IdleSec> (see B<sessiond.conf>(5)) seconds of inactivity.
 
+Hooks can be specified in the configuration file using the section "[[Hook]]".
+See B<sessiond.conf>(5).
+
 Hook files with the ".hook" suffix are read from
 I<XDG_CONFIG_HOME>/sessiond/hooks.d or I<HOME>/.config/sessiond/hooks.d.
 
