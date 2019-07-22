@@ -197,7 +197,7 @@ static void
 lock_callback(LogindContext *c, gboolean state, gpointer data)
 {
     DBusServer *s = (DBusServer *)data;
-    if (!EXPORTED(s))
+    if (!EXPORTED(s->session))
         return;
     if (state)
         dbus_session_emit_lock(s->session);
@@ -209,7 +209,7 @@ static void
 sleep_callback(UNUSED LogindContext *c, gboolean state, gpointer data)
 {
     DBusServer *s = (DBusServer *)data;
-    if (!EXPORTED(s))
+    if (!EXPORTED(s->session))
         return;
     dbus_session_emit_prepare_for_sleep(s->session, state);
 }
@@ -218,7 +218,7 @@ static void
 shutdown_callback(UNUSED LogindContext *c, gboolean state, gpointer data)
 {
     DBusServer *s = (DBusServer *)data;
-    if (!EXPORTED(s))
+    if (!EXPORTED(s->session))
         return;
     dbus_session_emit_prepare_for_shutdown(s->session, state);
 }
@@ -228,7 +228,7 @@ on_properties_changed(UNUSED GDBusProxy *proxy, GVariant *props,
         UNUSED GStrv inv_props, gpointer user_data)
 {
     DBusServer *s = (DBusServer *)user_data;
-    if (!EXPORTED(s))
+    if (!EXPORTED(s->session))
         return;
     LogindContext *c = s->ctx;
     gchar *prop = NULL;
@@ -428,7 +428,7 @@ dbus_server_init(DBusServer *self)
 void
 dbus_server_emit_active(DBusServer *s)
 {
-    if (!EXPORTED(s))
+    if (!EXPORTED(s->session))
         return;
     dbus_session_emit_active(s->session);
 }
@@ -436,7 +436,7 @@ dbus_server_emit_active(DBusServer *s)
 void
 dbus_server_emit_inactive(DBusServer *s, guint i)
 {
-    if (!EXPORTED(s))
+    if (!EXPORTED(s->session))
         return;
     dbus_session_emit_inactive(s->session, i);
 }
