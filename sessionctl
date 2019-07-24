@@ -36,12 +36,24 @@ session_call() {
         --method org.sessiond.session1.Session."$method" "$@"
 }
 
+print_properties() {
+    perl -e '
+    while (my $line = <STDIN>) {
+        if ($line =~ /.*\s(.*)\s=\s(.*);/) {
+            my $v = $2;
+            if (substr($v, 0, 1) eq "[" and substr($v, -1) eq "]") {
+                $v =~ tr/[]/()/;
+            }
+            print "$1=$v\n";
+        }
+    }'
+}
+
 session_properties() {
     gdbus introspect --session \
         --dest org.sessiond.session1 \
         --object-path /org/sessiond/session1 \
-        --only-properties \
-        | awk '/.*=.*;/ {gsub(";",""); print $3"="$5}'
+        --only-properties
 }
 
 status() {
@@ -87,7 +99,7 @@ commands:
   status      Show session status
   lock        Lock the session
   unlock      Unlock the session
-  properties  List sessiond properties
+  properties  List session properties
   version     Show sessiond version'
 }
 
@@ -106,7 +118,7 @@ case "$1" in
     status) status ;;
     lock) session_call Lock > /dev/null ;;
     unlock) session_call Unlock > /dev/null ;;
-    properties) session_properties ;;
+    properties) session_properties | print_properties ;;
     version) expr "$(session_call GetVersion)" : "('\(.*\)'" ;;
     *) usage >&2; exit 2
 esac
