@@ -41,6 +41,10 @@ print_inhibitors() {
     }'
 }
 
+uninhibit() {
+    session_call Uninhibit "$id" > /dev/null
+}
+
 usage() {
     echo 'usage: sessiond-inhibit [options] [COMMAND]
 
@@ -78,7 +82,6 @@ fi
 
 id="$(session_call Inhibit "${who-}" "${why-}")"
 id="$(expr "$id" : "('\(.*\)'")"
+trap uninhibit EXIT
 
 "$@"
-
-session_call Uninhibit "$id" > /dev/null
