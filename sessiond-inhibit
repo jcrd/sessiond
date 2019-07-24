@@ -26,6 +26,21 @@ session_call() {
         --method org.sessiond.session1.Session."$method" "$@"
 }
 
+print_inhibitors() {
+    perl -e '
+    if (<STDIN> =~ /.*\[(.*)\]/) {
+        if ($1 eq "") {
+            print STDERR "No inhibitors\n";
+            exit 1;
+        }
+        foreach my $i (split /\), /, $1) {
+            if ($i =~ /\('"'"'(.*)'"'"', '"'"'(.*)'"'"'/) {
+                print "what='"'"'$1'"'"' why='"'"'$2'"'"'\n";
+            }
+        }
+    }'
+}
+
 usage() {
     echo 'usage: sessiond-inhibit [options] [COMMAND]
 
@@ -38,19 +53,7 @@ options:
 }
 
 if [ $# -eq 0 ]; then
-    list="$(session_call ListInhibitors)" || exit $?
-    echo "$list" | perl -e '
-    if (<STDIN> =~ /.*\[(.*)\]/) {
-        if ($1 eq "") {
-            print STDERR "No inhibitors\n";
-            exit 1;
-        }
-        foreach my $i (split /\), /, $1) {
-            if ($i =~ /\('"'"'(.*)'"'"', '"'"'(.*)'"'"'/) {
-                print "what='"'"'$1'"'"' why='"'"'$2'"'"'\n";
-            }
-        }
-    }'
+    session_call ListInhibitors | print_inhibitors
     exit
 fi
 
