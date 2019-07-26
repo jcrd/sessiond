@@ -21,6 +21,9 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <glib-2.0/glib.h>
 
+#define INACTIVE_SEC(tl) \
+    ((g_get_monotonic_time() - tl->inactive_since) / 1000000)
+
 static void
 add_timeout(Timeline *tl, guint timeout);
 
@@ -52,7 +55,7 @@ on_timeout(gpointer user_data)
     if (!tl || !tl->running)
         return G_SOURCE_REMOVE;
 
-    guint inactive = (g_get_monotonic_time() - tl->inactive_since) / 1000000;
+    guint inactive = INACTIVE_SEC(tl);
     guint timeout = get_timeout(tl);
 
     if (inactive >= timeout) {
@@ -74,6 +77,7 @@ remove_source(Timeline *tl)
 {
     if (!tl->source)
         return;
+    g_debug("timeline: Removed timeout source");
     g_source_destroy(tl->source);
     g_source_unref(tl->source);
     tl->source = NULL;
@@ -88,7 +92,7 @@ add_timeout(Timeline *tl, guint timeout)
     g_source_set_callback(tl->source, on_timeout, tl, NULL);
     g_source_attach(tl->source, tl->ctx);
 
-    g_debug("%us timeout added", timeout);
+    g_debug("timeline: Added %us timeout source", timeout);
 }
 
 Timeline
@@ -114,6 +118,22 @@ timeline_add_timeout(Timeline *tl, guint timeout)
             return FALSE;
 
     g_array_append_val(tl->timeouts, timeout);
+    g_debug("timeline: Added %us timeout", timeout);
+
+    if (tl->running) {
+        remove_source(tl);
+        g_array_sort(tl->timeouts, compare_timeouts);
+        tl->index = 0;
+        guint inactive = INACTIVE_SEC(tl);
+        for (guint i = 0; i < tl->timeouts->len; i++) {
+            guint t = g_array_index(tl->timeouts, guint, i);
+            if (t <= inactive)
+                tl->index++;
+        }
+        if (inactive >= timeout)
+            tl->func(timeout, TRUE, tl->user_data);
+        add_timeout(tl, get_timeout(tl) - inactive);
+    }
 
     return TRUE;
 }
