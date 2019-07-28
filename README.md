@@ -115,7 +115,9 @@ commands:
   status      Show session status
   lock        Lock the session
   unlock      Unlock the session
-  properties  List sessiond properties
+  properties  List session properties
+  backlight   Interact with backlights
+                Subcommands: list, get, set
   version     Show sessiond version
 ```
 

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # sessiond - standalone X session manager
 # Copyright (C) 2018 James Reed
@@ -36,6 +36,17 @@ session_call() {
         --method org.sessiond.session1.Session."$method" "$@"
 }
 
+backlight_call() {
+    name="$1"
+    shift
+    method="$1"
+    shift
+    gdbus call --session \
+        --dest org.sessiond.session1 \
+        --object-path /org/sessiond/session1/backlight/"$name" \
+        --method org.sessiond.session1.Backlight."$method" "$@"
+}
+
 print_properties() {
     perl -e '
     while (my $line = <STDIN>) {
@@ -50,11 +61,56 @@ print_properties() {
     }'
 }
 
+get_property() {
+    print_properties | grep "^$1"
+}
+
 session_properties() {
     gdbus introspect --session \
         --dest org.sessiond.session1 \
         --object-path /org/sessiond/session1 \
         --only-properties
+}
+
+backlight_properties() {
+    gdbus introspect --session \
+        --dest org.sessiond.session1 \
+        --object-path /org/sessiond/session1/backlight/"$1" \
+        --only-properties
+}
+
+list_backlights() {
+    declare -a Backlights
+    eval "$(session_properties | get_property Backlight)"
+
+    for i in "${Backlights[@]}"; do
+        echo "${i##*/}"
+    done
+}
+
+check_backlight() {
+    if ! list_backlights | grep -q "$1"; then
+        echo "backlight $1 not found" >&2
+        exit 2
+    fi
+}
+
+backlight_get() {
+    if [ $# -eq 0 ]; then
+        echo 'usage: sessionctl backlight get BACKLIGHT' >&2
+        exit 2
+    fi
+    check_backlight "$1"
+    backlight_properties "$1" | get_property Brightness | cut -d= -f2
+}
+
+backlight_set() {
+    if [ $# -eq 0 ]; then
+        echo 'usage: sessionctl backlight set BACKLIGHT VALUE' >&2
+        exit 2
+    fi
+    check_backlight "$1"
+    backlight_call "$1" SetBrightness "$2" > /dev/null
 }
 
 status() {
@@ -101,6 +157,8 @@ commands:
   lock        Lock the session
   unlock      Unlock the session
   properties  List session properties
+  backlight   Interact with backlights
+                Subcommands: list, get, set
   version     Show sessiond version'
 }
 
@@ -120,6 +178,25 @@ case "$1" in
     lock) session_call Lock > /dev/null ;;
     unlock) session_call Unlock > /dev/null ;;
     properties) session_properties | print_properties ;;
+    backlight)
+        shift
+        if [ $# -eq 0 ]; then
+            list_backlights
+            exit
+        fi
+        case "$1" in
+            get) shift; backlight_get "$@" ;;
+            set) shift; backlight_set "$@" ;;
+            list) list_backlights ;;
+            *)
+                echo 'usage: sessionctl backlight [command]
+
+commands:
+  list                 List backlights
+  get BACKLIGHT        Get backlight brightness
+  set BACKLIGHT VALUE  Set backlight brightness' >&2; exit 2
+        esac
+        ;;
     version) expr "$(session_call GetVersion)" : "('\(.*\)'" ;;
     *) usage >&2; exit 2
 esac
