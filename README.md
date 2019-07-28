@@ -18,16 +18,17 @@ manager or desktop environment that does not provide its own session management.
 
 ### Dependencies
 
-* sh
-* perl
-* awk
-* meson >= 0.47.0
-* glib >= 2.52
-* libx11
-* libxi
-* libxext (optional, for DPMS support)
+* bash [*runtime*]
+* perl [*build*,*runtime*]
+* grep [*runtime*]
+* coreutils [*runtime*]
+* meson >= 0.47.0 [*build*]
+* glib >= 2.52 [*build*,*runtime*]
+* libx11 [*build*]
+* libxi [*build*]
+* libxext (optional, for DPMS support) [*build*]
 
-Ensure the above dependencies are satisfied and configure the build with
+Ensure the above build dependencies are satisfied and configure the build with
 **meson**:
 
 ```
