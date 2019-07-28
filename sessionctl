@@ -42,6 +42,7 @@ print_properties() {
         if ($line =~ /.*\s(.*)\s=\s(.*);/) {
             my $v = $2;
             if (substr($v, 0, 1) eq "[" and substr($v, -1) eq "]") {
+                $v =~ s/,//;
                 $v =~ tr/[]/()/;
             }
             print "$1=$v\n";
