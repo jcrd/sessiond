@@ -206,7 +206,7 @@ WantedBy=graphical-lock.target
 
 ### Stopping the session
 
-The session can be stopped with `sessiond-session stop`. This will stop
+The session can be stopped with `sessionctl stop`. This will stop
 `graphical-session.target` and all units that are part of the session.
 
 A service that is part of the graphical session can be responsible for stopping
