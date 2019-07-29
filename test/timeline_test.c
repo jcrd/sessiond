@@ -43,7 +43,7 @@ tl_fixture_tear_down(TimelineFixture *f, gconstpointer user_data)
 static void
 test_timeline_timeout(TimelineFixture *f, gconstpointer user_data)
 {
-    guint timeouts[] = {1, 3, 5};
+    guint timeouts[] = {1, 2, 3};
 
     for (guint i = 0; i < G_N_ELEMENTS(timeouts); i++)
         timeline_add_timeout(&f->tl, timeouts[i]);
