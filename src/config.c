@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License along with
 this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#define G_LOG_DOMAIN "sessiond"
+
 #include "config.h"
 #include "backlight.h"
 #include "hooks.h"
@@ -370,6 +372,11 @@ load_hooks(toml_table_t *tab, const char *key, GPtrArray *out)
 static gint
 load_hooks_dir(const gchar *path, GPtrArray *out)
 {
+    if (!g_file_test(path, G_FILE_TEST_IS_DIR)) {
+        g_debug("Load hooks: directory not found at %s; skipping", path);
+        return 0;
+    }
+
     GError *err = NULL;
     GDir *dir = g_dir_open(path, 0, &err);
 

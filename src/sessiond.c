@@ -310,9 +310,6 @@ load_config(Config *c)
         goto err;
     }
 
-    if (!g_file_test(hooksd, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR))
-        g_debug("No hooks directory found at %s", hooksd);
-
     ret = config_load(config, hooksd, c);
 
     if (idle_sec)
