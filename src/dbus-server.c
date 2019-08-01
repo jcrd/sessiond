@@ -193,6 +193,29 @@ on_handle_set_brightness(DBusBacklight *dbl, GDBusMethodInvocation *i,
     return TRUE;
 }
 
+static gboolean
+on_handle_inc_brightness(DBusBacklight *dbl, GDBusMethodInvocation *i,
+        gint v, gpointer user_data)
+{
+    DBusServer *s = (DBusServer *)user_data;
+
+    if (!s->bl_devices)
+        return FALSE;
+
+    const gchar *sys_path = dbus_backlight_get_sys_path(dbl);
+    struct Backlight *bl = g_hash_table_lookup(s->bl_devices, sys_path);
+
+    if (!backlight_set_brightness(bl, bl->brightness + v)) {
+        g_dbus_method_invocation_return_dbus_error(i,
+                DBUS_BACKLIGHT_ERROR ".IncBrightness",
+                "Failed to increment brightness");
+        return TRUE;
+    }
+
+    dbus_backlight_complete_inc_brightness(dbl, i);
+    return TRUE;
+}
+
 static void
 lock_callback(LogindContext *c, gboolean state, gpointer data)
 {
@@ -472,6 +495,8 @@ dbus_server_add_backlight(DBusServer *s, struct Backlight *bl)
 
     g_signal_connect(dbl, "handle-set-brightness",
             G_CALLBACK(on_handle_set_brightness), s);
+    g_signal_connect(dbl, "handle-inc-brightness",
+            G_CALLBACK(on_handle_inc_brightness), s);
 
     update_backlight(dbl, bl);
 

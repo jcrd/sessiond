@@ -118,7 +118,7 @@ commands:
   unlock      Unlock the session
   properties  List session properties
   backlight   Interact with backlights
-                Subcommands: list, get, set
+                Subcommands: list, get, set, inc
   version     Show sessiond version
 ```
 

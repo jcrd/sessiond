@@ -57,6 +57,10 @@ Get backlight brightness.
 
 Set backlight brightness.
 
+=item B<inc> I<BACKLIGHT> I<VALUE>
+
+Increment backlight brightness.
+
 =back
 
 =item B<version>

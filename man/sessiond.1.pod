@@ -186,6 +186,18 @@ An unsigned integer value.
 
 =back
 
+=item B<IncBrightness>
+
+Increment the brightness of the backlight. Takes one argument:
+
+=over
+
+=item I<value>
+
+An integer value added to the backlight's current brightness.
+
+=back
+
 =back
 
 =head3 PROPERTIES

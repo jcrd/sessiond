@@ -44,7 +44,7 @@ backlight_call() {
     gdbus call --session \
         --dest org.sessiond.session1 \
         --object-path /org/sessiond/session1/backlight/"$name" \
-        --method org.sessiond.session1.Backlight."$method" "$@"
+        --method org.sessiond.session1.Backlight."$method" -- "$@"
 }
 
 print_properties() {
@@ -113,6 +113,15 @@ backlight_set() {
     backlight_call "$1" SetBrightness "$2" > /dev/null
 }
 
+backlight_inc() {
+    if [ $# -eq 0 ]; then
+        echo 'usage: sessionctl backlight inc BACKLIGHT VALUE' >&2
+        exit 2
+    fi
+    check_backlight "$1"
+    backlight_call "$1" IncBrightness "$2" > /dev/null
+}
+
 status() {
     active="$(is_active $target)"
     r=$?
@@ -158,7 +167,7 @@ commands:
   unlock      Unlock the session
   properties  List session properties
   backlight   Interact with backlights
-                Subcommands: list, get, set
+                Subcommands: list, get, set, inc
   version     Show sessiond version'
 }
 
@@ -187,6 +196,7 @@ case "$1" in
         case "$1" in
             get) shift; backlight_get "$@" ;;
             set) shift; backlight_set "$@" ;;
+            inc) shift; backlight_inc "$@" ;;
             list) list_backlights ;;
             *)
                 echo 'usage: sessionctl backlight [command]
@@ -194,7 +204,8 @@ case "$1" in
 commands:
   list                 List backlights
   get BACKLIGHT        Get backlight brightness
-  set BACKLIGHT VALUE  Set backlight brightness' >&2; exit 2
+  set BACKLIGHT VALUE  Set backlight brightness
+  inc BACKLIGHT VALUE  Increment backlight brightness' >&2; exit 2
         esac
         ;;
     version) expr "$(session_call GetVersion)" : "('\(.*\)'" ;;

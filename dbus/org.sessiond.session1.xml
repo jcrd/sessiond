@@ -39,6 +39,9 @@
     <method name='SetBrightness'>
       <arg name='brightness' type='u' direction='in'/>
     </method>
+    <method name='IncBrightness'>
+      <arg name='value' type='i' direction='in'/>
+    </method>
     <property name='Online' type='b' access='read'/>
     <property name='Name' type='s' access='read'/>
     <property name='Subsystem' type='s' access='read'/>
