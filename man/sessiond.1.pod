@@ -117,6 +117,10 @@ The timestamp of the last change to B<IdleHint>.
 
 The timestamp of the last change to B<IdleHint> in monotonic time.
 
+=item B<Backlights>
+
+An array of object paths to exported Backlights.
+
 =item B<Version>
 
 The version of sessiond.
