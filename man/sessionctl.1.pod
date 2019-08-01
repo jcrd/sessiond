@@ -59,7 +59,7 @@ Set backlight brightness.
 
 =item B<inc> I<BACKLIGHT> I<VALUE>
 
-Increment backlight brightness.
+Increment backlight brightness. Prints the new brightness value.
 
 =back
 

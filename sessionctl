@@ -123,7 +123,8 @@ backlight_inc() {
         exit 2
     fi
     check_backlight "$1"
-    backlight_call "$1" IncBrightness "$2" > /dev/null
+    r="$(backlight_call "$1" IncBrightness "$2")"
+    expr "$r" : "(.* \(.*\),)"
 }
 
 status() {

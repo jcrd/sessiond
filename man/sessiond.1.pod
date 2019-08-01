@@ -202,6 +202,8 @@ An integer value added to the backlight's current brightness.
 
 =back
 
+Returns the new brightness value.
+
 =back
 
 =head3 PROPERTIES

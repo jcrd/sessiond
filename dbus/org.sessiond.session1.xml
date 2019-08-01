@@ -39,6 +39,7 @@
     </method>
     <method name='IncBrightness'>
       <arg name='value' type='i' direction='in'/>
+      <arg name='brightness' type='u' direction='out'/>
     </method>
     <property name='Online' type='b' access='read'/>
     <property name='Name' type='s' access='read'/>

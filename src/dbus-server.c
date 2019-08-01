@@ -197,14 +197,15 @@ on_handle_inc_brightness(DBusBacklight *dbl, GDBusMethodInvocation *i,
     const gchar *sys_path = dbus_backlight_get_sys_path(dbl);
     struct Backlight *bl = g_hash_table_lookup(s->bl_devices, sys_path);
 
-    if (!backlight_set_brightness(bl, bl->brightness + v)) {
+    guint b = bl->brightness + v;
+    if (!backlight_set_brightness(bl, b)) {
         g_dbus_method_invocation_return_dbus_error(i,
                 DBUS_BACKLIGHT_ERROR ".IncBrightness",
                 "Failed to increment brightness");
         return TRUE;
     }
 
-    dbus_backlight_complete_inc_brightness(dbl, i);
+    dbus_backlight_complete_inc_brightness(dbl, i, b);
     return TRUE;
 }
 
