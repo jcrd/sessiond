@@ -95,10 +95,6 @@ The unique ID of the inhibitor to stop.
 List running inhibitors. Returns a list of tuples with the I<who> and I<why>
 strings.
 
-=item B<GetVersion>
-
-Returns the version of sessiond.
-
 =back
 
 =head3 PROPERTIES
@@ -120,6 +116,10 @@ The timestamp of the last change to B<IdleHint>.
 =item B<IdleSinceHintMonotonic>
 
 The timestamp of the last change to B<IdleHint> in monotonic time.
+
+=item B<Version>
+
+The version of sessiond.
 
 =back
 

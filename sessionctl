@@ -65,6 +65,10 @@ get_property() {
     print_properties | grep "^$1"
 }
 
+get_property_val() {
+    get_property "$1" | cut -d= -f2
+}
+
 session_properties() {
     gdbus introspect --session \
         --dest org.sessiond.session1 \
@@ -101,7 +105,7 @@ backlight_get() {
         exit 2
     fi
     check_backlight "$1"
-    backlight_properties "$1" | get_property Brightness | cut -d= -f2
+    backlight_properties "$1" | get_property_val Brightness
 }
 
 backlight_set() {
@@ -208,6 +212,6 @@ commands:
   inc BACKLIGHT VALUE  Increment backlight brightness' >&2; exit 2
         esac
         ;;
-    version) expr "$(session_call GetVersion)" : "('\(.*\)'" ;;
+    version) session_properties | get_property_val Version | tr -d "'" ;;
     *) usage >&2; exit 2
 esac

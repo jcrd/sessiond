@@ -13,14 +13,12 @@
     <method name='ListInhibitors'>
       <arg name='inhibitors' type='a(ss)' direction='out'/>
     </method>
-    <method name='GetVersion'>
-      <arg name='version' type='s' direction='out'/>
-    </method>
     <property name='LockedHint' type='b' access='read'/>
     <property name='IdleHint' type='b' access='read'/>
     <property name='IdleSinceHint' type='t' access='read'/>
     <property name='IdleSinceHintMonotonic' type='t' access='read'/>
     <property name='Backlights' type='ao' access='read'/>
+    <property name='Version' type='s' access='read'/>
     <signal name='Lock'/>
     <signal name='Unlock'/>
     <signal name='Idle'/>

@@ -164,14 +164,6 @@ on_handle_list_inhibitors(DBusSession *session, GDBusMethodInvocation *i,
 }
 
 static gboolean
-on_handle_get_version(DBusSession *session, GDBusMethodInvocation *i,
-        UNUSED gpointer user_data)
-{
-    dbus_session_complete_get_version(session, i, VERSION);
-    return TRUE;
-}
-
-static gboolean
 on_handle_set_brightness(DBusBacklight *dbl, GDBusMethodInvocation *i,
         guint v, gpointer user_data)
 {
@@ -288,6 +280,8 @@ init_properties(DBusServer *s)
     dbus_session_set_idle_since_hint(s->session, logind_get_idle_since_hint(c));
     dbus_session_set_idle_since_hint_monotonic(s->session,
             logind_get_idle_since_hint_monotonic(c));
+
+    dbus_session_set_version(s->session, VERSION);
 }
 
 static void
@@ -371,8 +365,6 @@ on_name_acquired(GDBusConnection *conn, const gchar *name, gpointer user_data)
             G_CALLBACK(on_handle_uninhibit), s);
     g_signal_connect(session, "handle-list-inhibitors",
             G_CALLBACK(on_handle_list_inhibitors), s);
-    g_signal_connect(session, "handle-get-version",
-            G_CALLBACK(on_handle_get_version), NULL);
 
     g_signal_connect_after(c, "lock", G_CALLBACK(lock_callback), s);
     g_signal_connect_after(c, "sleep", G_CALLBACK(sleep_callback), s);
