@@ -456,8 +456,6 @@ main(int argc, char *argv[])
 
     g_debug("* Loading configuration...");
     load_config(&config);
-    /* if (!load_config(&config)) */
-    /*     return EXIT_FAILURE; */
 
     main_loop = g_main_loop_new(NULL, FALSE);
     main_ctx = g_main_loop_get_context(main_loop);
