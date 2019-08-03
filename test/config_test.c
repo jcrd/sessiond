@@ -65,7 +65,7 @@ test_backlights(ConfigFixture *f, gconstpointer user_data)
     struct BacklightConf *bl = g_hash_table_lookup(bls, "/sys/class/backlight/1");
     g_assert_nonnull(bl);
     g_assert_cmpuint(bl->dim_sec, ==, 600);
-    g_assert_cmpint(bl->dim_percent, ==, 100);
+    g_assert_cmpint(bl->dim_percent, ==, 0.66);
     g_assert_cmpint(bl->dim_value, ==, -1);
 
     struct BacklightConf *led = g_hash_table_lookup(bls, "/sys/class/leds/1");

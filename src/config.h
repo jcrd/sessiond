@@ -30,7 +30,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #define BACKLIGHT_TABLE_LIST \
     X("DimSec", uint, dim_sec) \
     X("DimValue", int, dim_value) \
-    X("DimPercent", int, dim_percent)
+    X("DimPercent", double, dim_percent)
 
 #ifdef DPMS
 #define DPMS_TABLE_LIST \
@@ -43,7 +43,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 struct BacklightConf {
     guint dim_sec;
     gint dim_value;
-    gint dim_percent;
+    gdouble dim_percent;
 };
 
 typedef struct {

@@ -72,7 +72,7 @@ new_backlight(const gchar *path)
     if (g_strcmp0(subsystem, "backlight") == 0) {
         bl->dim_sec = 60 * 8;
         bl->dim_value = -1;
-        bl->dim_percent = 30;
+        bl->dim_percent = 0.3;
     } else if (g_strcmp0(subsystem, "leds") == 0) {
         bl->dim_sec = 60;
         bl->dim_value = 0;
@@ -135,6 +135,25 @@ load_uint(toml_table_t *tab, const char *key, guint *ret)
     if (r != -1)
         *ret = (guint)i;
     return r;
+}
+
+static gdouble
+load_double(toml_table_t *tab, const char *key, gdouble *ret)
+{
+    const char *raw = toml_raw_in(tab, key);
+
+    if (!raw)
+        return 0;
+
+    double d;
+
+    if (toml_rtod(raw, &d) == -1) {
+        g_warning("Failed to parse %s: expected double", key);
+        return -1;
+    }
+
+    *ret = (gdouble)d;
+    return 0;
 }
 
 static gint
@@ -275,6 +294,8 @@ load_backlights(toml_table_t *tab, const char *key, GHashTable *out)
         load_##type(t, key, &bl->name);
         BACKLIGHT_TABLE_LIST
 #undef X
+
+        bl->dim_percent = CLAMP(bl->dim_percent, 0.01, 1.0);
 
         g_hash_table_insert(out, path, bl);
     }

@@ -323,7 +323,8 @@ backlight_dim_percent(struct Backlight *bl, guint percent)
     if (v == -1)
         return;
     bl->pre_dim_brightness = v;
-    backlight_set_brightness(bl, v - v * percent / 100);
+    gdouble d = v - v * percent;
+    backlight_set_brightness(bl, (guint)(d > 0 ? d + 0.5 : d));
 }
 
 void
