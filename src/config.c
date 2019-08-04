@@ -295,7 +295,8 @@ load_backlights(toml_table_t *tab, const char *key, GHashTable *out)
         BACKLIGHT_TABLE_LIST
 #undef X
 
-        bl->dim_percent = CLAMP(bl->dim_percent, 0.01, 1.0);
+        if (bl->dim_percent != -1)
+            bl->dim_percent = CLAMP(bl->dim_percent, 0.01, 1.0);
 
         g_hash_table_insert(out, path, bl);
     }
