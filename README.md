@@ -91,8 +91,8 @@ See [sessiond-hooks(5)](man/sessiond-hooks.5.pod) for more information.
 sessiond provides a DBus service on the session bus at the well-known name
 **_org.sessiond.session1_**.
 
-See the _DBus Service_ section of [sessiond(1)](man/sessiond.1.pod) for
-descriptions of methods, properties, and signals.
+See the _DBus Service_ section of [sessiond(1)](man/sessiond.1.pod#dbus-service)
+for descriptions of methods, properties, and signals.
 
 For complete introspection data, use **gdbus**:
 
@@ -253,8 +253,8 @@ options:
 
 See [sessiond-inhibit(1)](man/sessiond-inhibit.1.pod) for more information.
 
-See the _DBus Service_ section of [sessiond(1)](man/sessiond.1.pod) for
-descriptions of inhibitor-related methods.
+See the _DBus Service_ section of [sessiond(1)](man/sessiond.1.pod#dbus-service)
+for descriptions of inhibitor-related methods.
 
 ## License
 
