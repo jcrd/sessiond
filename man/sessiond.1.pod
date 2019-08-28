@@ -166,6 +166,16 @@ and false respectively.
 Emitted before and after system shutdown, with the B<state> argument being true
 and false respectively.
 
+=item B<AddBacklight> B<path>
+
+Emitted when a backlight is added, with B<path> being the object path of the
+new backlight.
+
+=item B<RemoveBacklight> B<path>
+
+Emitted when a backlight is removed, with B<path> being the old object path of
+the backlight.
+
 =back
 
 =head2 Backlight interface

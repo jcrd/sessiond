@@ -319,15 +319,17 @@ export_backlight(DBusServer *s, DBusBacklight *dbl)
     g_dbus_interface_skeleton_export(G_DBUS_INTERFACE_SKELETON(dbl), s->conn,
             path, &err);
 
-    g_free(path);
-
     if (err) {
         g_error("Failed to export DBus Backlight interface: %s", err->message);
         g_error_free(err);
+        g_free(path);
         return FALSE;
     }
 
     set_backlights_property(s);
+
+    dbus_session_emit_add_backlight(s->session, path);
+    g_free(path);
 
     return TRUE;
 }
@@ -335,8 +337,14 @@ export_backlight(DBusServer *s, DBusBacklight *dbl)
 static void
 unexport_backlight(DBusServer *s, DBusBacklight *dbl)
 {
-    g_dbus_interface_skeleton_unexport(G_DBUS_INTERFACE_SKELETON(dbl));
+    GDBusInterfaceSkeleton *skel = G_DBUS_INTERFACE_SKELETON(dbl);
+    gchar *path = g_strdup(g_dbus_interface_skeleton_get_object_path(skel));
+
+    g_dbus_interface_skeleton_unexport(skel);
     set_backlights_property(s);
+
+    dbus_session_emit_remove_backlight(s->session, path);
+    g_free(path);
 }
 
 static void

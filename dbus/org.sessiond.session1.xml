@@ -32,6 +32,12 @@
     <signal name='PrepareForShutdown'>
       <arg name='state' type='b'/>
     </signal>
+    <signal name='AddBacklight'>
+      <arg name='path' type='o'/>
+    </signal>
+    <signal name='RemoveBacklight'>
+      <arg name='path' type='o'/>
+    </signal>
   </interface>
   <interface name='org.sessiond.session1.Backlight'>
     <method name='SetBrightness'>
