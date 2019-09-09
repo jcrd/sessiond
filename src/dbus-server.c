@@ -91,6 +91,8 @@ on_handle_inhibit(DBusSession *session, GDBusMethodInvocation *i,
 
     dbus_session_complete_inhibit(session, i, id);
 
+    dbus_session_set_inhibited_hint(s->session, TRUE);
+
     g_signal_emit(s, signals[INHIBIT_SIGNAL], 0, who, why,
             g_hash_table_size(s->inhibitors));
 
@@ -121,8 +123,10 @@ on_handle_uninhibit(DBusSession *session, GDBusMethodInvocation *i,
 
     dbus_session_complete_uninhibit(session, i);
 
-    g_signal_emit(s, signals[UNINHIBIT_SIGNAL], 0, who, why,
-            g_hash_table_size(s->inhibitors) - 1);
+    guint n = g_hash_table_size(s->inhibitors) - 1;
+    dbus_session_set_inhibited_hint(s->session, n > 0);
+
+    g_signal_emit(s, signals[UNINHIBIT_SIGNAL], 0, who, why, n);
 
     g_hash_table_remove(s->inhibitors, id);
 
@@ -276,6 +280,8 @@ init_properties(DBusServer *s)
 {
     LogindContext *c = s->ctx;
 
+    dbus_session_set_inhibited_hint(s->session,
+            g_hash_table_size(s->inhibitors) > 0);
     dbus_session_set_locked_hint(s->session, logind_get_locked_hint(c));
     dbus_session_set_idle_hint(s->session, logind_get_idle_hint(c));
     dbus_session_set_idle_since_hint(s->session, logind_get_idle_since_hint(c));

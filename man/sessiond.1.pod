@@ -101,6 +101,10 @@ strings.
 
 =over
 
+=item B<InhibitedHint>
+
+The inhibited state of the session.
+
 =item B<LockedHint>
 
 The locked state of the session.
