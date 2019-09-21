@@ -9,3 +9,4 @@ Type=dbus
 BusName=org.sessiond.session1
 ExecStart=/usr/bin/sessiond
 ExecReload=/usr/bin/kill -HUP $MAINPID
+Restart=always
