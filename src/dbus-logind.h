@@ -45,6 +45,9 @@ extern guint64
 logind_get_idle_since_hint(LogindContext *c);
 extern guint64
 logind_get_idle_since_hint_monotonic(LogindContext *c);
+extern gboolean
+logind_set_brightness(LogindContext *c, const char *sys, const char *name,
+        guint32 v);
 extern LogindContext *
 logind_context_new(void);
 extern void

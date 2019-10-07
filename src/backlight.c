@@ -289,8 +289,12 @@ backlight_normalize_name(const char *name)
 }
 
 gboolean
-backlight_set_brightness(struct Backlight *bl, guint v)
+backlight_set_brightness(struct Backlight *bl, guint32 v)
 {
+#ifndef BACKLIGHT_HELPER
+    return FALSE;
+#endif
+
     if (bl->max_brightness == -1)
         return FALSE;
 

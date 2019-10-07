@@ -313,6 +313,28 @@ logind_set_locked_hint(LogindContext *c, gboolean state)
     }
 }
 
+gboolean
+logind_set_brightness(LogindContext *c, const char *sys, const char *name,
+        guint32 v)
+{
+    if (!c->logind_session) {
+        g_warning("Cannot set brightness: %s does not exist", LOGIND_NAME);
+        return FALSE;
+    }
+
+    GError *err = NULL;
+    g_dbus_proxy_call_sync(c->logind_session, "SetBrightness",
+                           g_variant_new("(ssu)", sys, name, v),
+                           G_DBUS_CALL_FLAGS_NONE, -1, NULL, &err);
+    if (err) {
+        g_error_free(err);
+        return FALSE;
+    }
+
+    g_debug("SetBrightness %s %s %u", sys, name, v);
+    return TRUE;
+}
+
 LogindContext *
 logind_context_new(void)
 {

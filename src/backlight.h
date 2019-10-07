@@ -69,7 +69,7 @@ backlights_free(Backlights *bls);
 extern gchar *
 backlight_normalize_name(const char *name);
 extern gboolean
-backlight_set_brightness(struct Backlight *bl, guint v);
+backlight_set_brightness(struct Backlight *bl, guint32 v);
 extern void
 backlight_dim(struct Backlight *bl, guint v);
 extern void

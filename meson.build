@@ -8,13 +8,6 @@ deps = [
   dependency('libudev'),
   ]
 
-dpms = get_option('dpms')
-
-if dpms.enabled()
-  deps += dependency('xext')
-  add_project_arguments('-DDPMS', language : 'c')
-endif
-
 # alternative to vcs_tag that allows reuse of version
 # see https://github.com/mesonbuild/meson/issues/3903
 r = run_command('git', 'describe', '--dirty', '--tags', '--always')
@@ -25,6 +18,20 @@ else
 endif
 
 add_project_arguments('-DVERSION="@0@"'.format(version), language : 'c')
+add_project_arguments('-DG_LOG_USE_STRUCTURED', language : 'c')
+
+if get_option('dpms').enabled()
+  deps += dependency('xext')
+  add_project_arguments('-DDPMS', language : 'c')
+endif
+
+if get_option('backlight_helper').enabled()
+  add_project_arguments('-DBACKLIGHT_HELPER', language : 'c')
+  executable('sessiond-sysfs-writer', 'src/helper/sessiond-sysfs-writer.c')
+
+  # install setuid helper
+  meson.add_install_script('scripts/install_sysfs_writer.sh')
+endif
 
 # generate dbus sources
 gdbus_codegen = find_program('gdbus-codegen')
@@ -37,8 +44,6 @@ dbus_srcs = custom_target('dbus sources',
     '@INPUT@'],
   input : ['dbus/org.sessiond.session1.xml'],
   output : ['dbus-gen.c', 'dbus-gen.h'])
-
-add_project_arguments('-DG_LOG_USE_STRUCTURED', language : 'c')
 
 srcs = [
   dbus_srcs,
@@ -56,11 +61,6 @@ srcs = [
   ]
 
 executable('sessiond', sources : srcs, dependencies : deps, install : true)
-
-executable('sessiond-sysfs-writer', 'src/helper/sessiond-sysfs-writer.c')
-
-# install setuid helper
-meson.add_install_script('scripts/install_sysfs_writer.sh')
 
 install_data('sessiond.conf',
   install_dir : join_paths(get_option('datadir'), meson.project_name()))
