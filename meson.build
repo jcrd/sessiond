@@ -1,4 +1,4 @@
-project('sessiond', 'c', version : 'v0.1.0')
+project('sessiond', 'c', version : 'v0.1.0', meson_version : '>=0.47.0')
 
 deps = [
   dependency('gio-2.0'),
