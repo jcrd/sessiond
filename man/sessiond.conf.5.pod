@@ -10,7 +10,7 @@ I<HOME>/.config/sessiond/sessiond.conf
 =head1 DESCRIPTION
 
 This file configures the X session manager B<sessiond>(1). Its syntax is
-toml v0.4.0. See: I<https://github.com/toml-lang/toml/tree/v0.4.0>.
+toml v0.5.0. See: I<https://github.com/toml-lang/toml/tree/v0.5.0>.
 
 =head1 OPTIONS
 
