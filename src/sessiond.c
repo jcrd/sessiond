@@ -306,7 +306,7 @@ load_config(Config *c)
     gboolean ret = FALSE;
 
     if (!g_file_test(config, G_FILE_TEST_EXISTS)) {
-        g_critical("No config file found at %s", config);
+        g_warning("No config file found at %s", config);
         goto err;
     }
 
