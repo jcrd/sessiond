@@ -122,6 +122,11 @@ static void
 logind_get_property(LogindContext *c, const gchar *prop, const gchar *fmt,
         gpointer out)
 {
+    if (!c->logind_session) {
+        g_warning("Cannot get %s: %s does not exist", prop, LOGIND_NAME);
+        return;
+    }
+
     GVariant *v = g_dbus_proxy_get_cached_property(c->logind_session,
             prop);
     if (v)
