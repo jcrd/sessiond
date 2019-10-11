@@ -129,11 +129,12 @@ logind_get_property(LogindContext *c, const gchar *prop, const gchar *fmt,
 
     GVariant *v = g_dbus_proxy_get_cached_property(c->logind_session,
             prop);
-    if (v)
+    if (v) {
         g_variant_get(v, fmt, out);
-    else
+        g_variant_unref(v);
+    } else {
         g_warning("Failed to get logind %s", prop);
-    g_variant_unref(v);
+    }
 }
 
 gboolean
