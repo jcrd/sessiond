@@ -164,16 +164,9 @@ See below for example services.
 
 By default, the session is locked when it becomes idle and before sleeping.
 This is configured in the `[Lock]` section of the configuration file.
-The session can be manually locked by running `loginctl lock-session`.
+The session can be manually locked by running `sessionctl lock`.
 
 To configure a service to act as the screen locker, include:
-
-```
-[Service]
-ExecStopPost=/usr/bin/loginctl unlock-session
-```
-
-or
 
 ```
 [Service]
@@ -198,7 +191,7 @@ PartOf=graphical-session.target
 
 [Service]
 ExecStart=/usr/bin/i3lock -n -c 000000
-ExecStopPost=/usr/bin/loginctl unlock-session
+ExecStopPost=/usr/bin/sessionctl unlock
 
 [Install]
 WantedBy=graphical-lock.target
