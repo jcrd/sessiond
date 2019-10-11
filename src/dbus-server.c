@@ -459,7 +459,7 @@ dbus_server_init(DBusServer *self)
 void
 dbus_server_emit_active(DBusServer *s)
 {
-    if (!EXPORTED(s->session))
+    if (!s || !EXPORTED(s->session))
         return;
     dbus_session_emit_active(s->session);
 }
@@ -467,7 +467,7 @@ dbus_server_emit_active(DBusServer *s)
 void
 dbus_server_emit_inactive(DBusServer *s, guint i)
 {
-    if (!EXPORTED(s->session))
+    if (!s || !EXPORTED(s->session))
         return;
     dbus_session_emit_inactive(s->session, i);
 }
