@@ -130,9 +130,9 @@ load_int(toml_table_t *tab, const char *key, gint *ret)
 static gint
 load_uint(toml_table_t *tab, const char *key, guint *ret)
 {
-    gint i;
+    gint i = -1;
     gint r = load_int(tab, key, &i);
-    if (r != -1)
+    if (i > -1)
         *ret = (guint)i;
     return r;
 }
