@@ -312,9 +312,6 @@ load_config(Config *c)
 
     ret = config_load(config, hooksd, c);
 
-    if (idle_sec)
-        c->idle_sec = idle_sec;
-
 err:
     if (!config_path)
         g_free(config);
@@ -458,6 +455,8 @@ main(int argc, char *argv[])
     g_debug("* Loading configuration...");
     config = config_new();
     load_config(&config);
+    if (idle_sec)
+        config.idle_sec = idle_sec;
 
     main_loop = g_main_loop_new(NULL, FALSE);
     main_ctx = g_main_loop_get_context(main_loop);
