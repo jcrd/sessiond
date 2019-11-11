@@ -43,8 +43,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 static Config config;
 static Timeline timeline;
-static LogindContext *lc = NULL;
-static SystemdContext *sc = NULL;
+static LogindContext *logind_ctx = NULL;
+static SystemdContext *systemd_ctx = NULL;
 static DBusServer *server = NULL;
 static XSource *xsource = NULL;
 static gboolean inhibited = FALSE;
@@ -62,17 +62,17 @@ static gboolean no_dpms = FALSE;
 static void
 set_idle(gboolean state)
 {
-    if (state == logind_get_idle_hint(lc))
+    if (state == logind_get_idle_hint(logind_ctx))
         return;
 
-    logind_set_idle_hint(lc, state);
+    logind_set_idle_hint(logind_ctx, state);
 
     if (state) {
-        systemd_start_unit(sc, "graphical-idle.target");
-        if (config.on_idle && !logind_get_locked_hint(lc))
-            logind_lock_session(lc, TRUE);
+        systemd_start_unit(systemd_ctx, "graphical-idle.target");
+        if (config.on_idle && !logind_get_locked_hint(logind_ctx))
+            logind_lock_session(logind_ctx, TRUE);
     } else {
-        systemd_start_unit(sc, "graphical-unidle.target");
+        systemd_start_unit(systemd_ctx, "graphical-unidle.target");
     }
 
     if (config.hooks)
@@ -90,10 +90,10 @@ lock_callback(LogindContext *c, gboolean state, UNUSED gpointer data)
     logind_set_locked_hint(c, state);
 
     if (state) {
-        systemd_start_unit(sc, "graphical-lock.target");
+        systemd_start_unit(systemd_ctx, "graphical-lock.target");
     } else {
         timeline_start(&timeline);
-        systemd_start_unit(sc, "graphical-unlock.target");
+        systemd_start_unit(systemd_ctx, "graphical-unlock.target");
     }
 
     if (config.hooks)
@@ -107,7 +107,7 @@ sleep_callback(LogindContext *c, gboolean state, UNUSED gpointer data)
 {
     if (state) {
         g_message("Preparing for sleep...");
-        systemd_start_unit(sc, "user-sleep.target");
+        systemd_start_unit(systemd_ctx, "user-sleep.target");
         if (config.on_sleep && !logind_get_locked_hint(c))
             logind_lock_session(c, TRUE);
     }
@@ -121,7 +121,7 @@ shutdown_callback(UNUSED LogindContext *c, gboolean state, UNUSED gpointer data)
 {
     if (state) {
         g_message("Preparing for shutdown...");
-        systemd_start_unit(sc, "user-shutdown.target");
+        systemd_start_unit(systemd_ctx, "user-shutdown.target");
     }
 
     if (config.hooks)
@@ -185,7 +185,7 @@ appear_callback(UNUSED LogindContext *c, UNUSED gpointer data)
 {
     if (!server) {
         g_debug("* Init DBus server...");
-        server = dbus_server_new(lc);
+        server = dbus_server_new(logind_ctx);
         g_signal_connect(server, "inhibit", G_CALLBACK(inhibit_callback),
                 NULL);
         g_signal_connect(server, "uninhibit", G_CALLBACK(uninhibit_callback),
@@ -352,17 +352,17 @@ init_xsource(XSource **source)
 static void
 init_dbus(void)
 {
-    if (!lc) {
-        lc = logind_context_new();
-        g_signal_connect(lc, "lock", G_CALLBACK(lock_callback), NULL);
-        g_signal_connect(lc, "sleep", G_CALLBACK(sleep_callback), NULL);
-        g_signal_connect(lc, "shutdown", G_CALLBACK(shutdown_callback), NULL);
-        g_signal_connect(lc, "appear", G_CALLBACK(appear_callback), NULL);
-        g_signal_connect(lc, "vanish", G_CALLBACK(vanish_callback), NULL);
+    if (!logind_ctx) {
+        logind_ctx = logind_context_new();
+        g_signal_connect(logind_ctx, "lock", G_CALLBACK(lock_callback), NULL);
+        g_signal_connect(logind_ctx, "sleep", G_CALLBACK(sleep_callback), NULL);
+        g_signal_connect(logind_ctx, "shutdown", G_CALLBACK(shutdown_callback), NULL);
+        g_signal_connect(logind_ctx, "appear", G_CALLBACK(appear_callback), NULL);
+        g_signal_connect(logind_ctx, "vanish", G_CALLBACK(vanish_callback), NULL);
     }
 
-    if (!sc)
-        sc = systemd_context_new();
+    if (!systemd_ctx)
+        systemd_ctx = systemd_context_new();
 }
 
 static gboolean
@@ -405,8 +405,8 @@ cleanup(void)
     backlights_free(backlights);
     config_free(&config);
     timeline_free(&timeline);
-    logind_context_free(lc);
-    systemd_context_free(sc);
+    logind_context_free(logind_ctx);
+    systemd_context_free(systemd_ctx);
     dbus_server_free(server);
     xsource_free(xsource);
     if (main_ctx)
