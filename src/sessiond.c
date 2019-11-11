@@ -402,6 +402,7 @@ cleanup(void)
 {
     g_free(config_path);
     g_free(hooksd_path);
+    backlights_restore(backlights->devices, logind_ctx);
     backlights_free(backlights);
     config_free(&config);
     timeline_free(&timeline);

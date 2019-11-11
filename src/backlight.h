@@ -68,6 +68,8 @@ extern Backlights *
 backlights_new(GMainContext *ctx, BacklightsFunc func);
 extern void
 backlights_free(Backlights *bls);
+extern void
+backlights_restore(GHashTable *devs, LogindContext *ctx);
 extern gchar *
 backlight_normalize_name(const char *name);
 extern gboolean

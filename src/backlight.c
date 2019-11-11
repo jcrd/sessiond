@@ -331,6 +331,17 @@ backlights_free(Backlights *bls)
     g_source_unref(source);
 }
 
+void
+backlights_restore(GHashTable *devs, LogindContext *ctx)
+{
+    GHashTableIter iter;
+    gpointer bl;
+
+    g_hash_table_iter_init(&iter, devs);
+    while (g_hash_table_iter_next(&iter, NULL, &bl))
+        backlight_restore(bl, ctx);
+}
+
 gchar *
 backlight_normalize_name(const char *name)
 {
