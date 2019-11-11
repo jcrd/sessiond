@@ -37,7 +37,7 @@ get_sys_path(const char *subsystem, const char *name)
     return g_strjoin("/", "", "sys", "class", subsystem, name, NULL);
 }
 
-static gint
+static gint32
 get_uint_sysattr(struct Backlight *b, const char *attr)
 {
     const char *str = udev_device_get_sysattr_value(b->device, attr);
@@ -265,7 +265,7 @@ set_backlight_brightness(struct Backlight *bl, guint32 v)
 }
 
 static void
-backlight_dim_value(struct Backlight *bl, guint v, LogindContext *ctx)
+backlight_dim_value(struct Backlight *bl, guint32 v, LogindContext *ctx)
 {
     bl->pre_dim_brightness = bl->brightness;
     backlight_set_brightness(bl, v, ctx);
@@ -274,12 +274,12 @@ backlight_dim_value(struct Backlight *bl, guint v, LogindContext *ctx)
 static void
 backlight_dim_percent(struct Backlight *bl, guint percent, LogindContext *ctx)
 {
-    gint v = bl->brightness;
+    gint32 v = bl->brightness;
     if (v == -1)
         return;
     bl->pre_dim_brightness = v;
     gdouble d = v - v * percent;
-    backlight_set_brightness(bl, (guint)(d > 0 ? d + 0.5 : d), ctx);
+    backlight_set_brightness(bl, (guint32)(d > 0 ? d + 0.5 : d), ctx);
 }
 
 static void

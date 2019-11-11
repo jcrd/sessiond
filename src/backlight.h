@@ -47,9 +47,9 @@ struct Backlight {
     gchar *sys_path;
     const char *dev_path;
     gboolean online;
-    gint brightness;
-    gint max_brightness;
-    gint pre_dim_brightness;
+    gint32 brightness;
+    gint32 max_brightness;
+    gint32 pre_dim_brightness;
 };
 
 typedef gboolean (*BacklightsFunc)(BacklightAction a, const gchar *path,
