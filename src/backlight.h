@@ -17,6 +17,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include "dbus-logind.h"
+
 #include <glib-2.0/glib.h>
 #include <libudev.h>
 
@@ -69,13 +71,7 @@ backlights_free(Backlights *bls);
 extern gchar *
 backlight_normalize_name(const char *name);
 extern gboolean
-backlight_set_brightness(struct Backlight *bl, guint32 v);
-extern void
-backlight_dim(struct Backlight *bl, guint v);
-extern void
-backlight_dim_percent(struct Backlight *bl, guint percent);
-extern void
-backlight_restore(struct Backlight *bl);
+backlight_set_brightness(struct Backlight *bl, guint32 v, LogindContext *ctx);
 extern void
 backlights_on_timeout(GHashTable *devs, GHashTable *cs, guint timeout,
-        gboolean state);
+        gboolean state, LogindContext *ctx);

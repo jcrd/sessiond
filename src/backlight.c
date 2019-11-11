@@ -20,6 +20,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "backlight.h"
 #include "common.h"
 #include "config.h"
+#include "dbus-logind.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -238,6 +239,58 @@ backlights_init_devices(Backlights *self, BacklightsFunc func)
     udev_enumerate_unref(e);
 }
 
+static gboolean
+set_backlight_brightness(struct Backlight *bl, guint32 v)
+{
+#ifndef BACKLIGHT_HELPER
+    return FALSE;
+#endif
+
+    if (bl->max_brightness == -1)
+        return FALSE;
+
+    v = MIN(v, bl->max_brightness);
+
+    gchar *str = g_strdup_printf("%u", v);
+    gchar *brightness = g_strjoin("/", bl->sys_path, "brightness", NULL);
+    gchar *argv[] = {SYSFS_WRITER, brightness, str, NULL};
+
+    if (spawn_exec(argv) == 0)
+        g_debug("Set %s brightness: %u", bl->sys_path, v);
+
+    g_free(brightness);
+    g_free(str);
+
+    return TRUE;
+}
+
+static void
+backlight_dim_value(struct Backlight *bl, guint v, LogindContext *ctx)
+{
+    bl->pre_dim_brightness = bl->brightness;
+    backlight_set_brightness(bl, v, ctx);
+}
+
+static void
+backlight_dim_percent(struct Backlight *bl, guint percent, LogindContext *ctx)
+{
+    gint v = bl->brightness;
+    if (v == -1)
+        return;
+    bl->pre_dim_brightness = v;
+    gdouble d = v - v * percent;
+    backlight_set_brightness(bl, (guint)(d > 0 ? d + 0.5 : d), ctx);
+}
+
+static void
+backlight_restore(struct Backlight *bl, LogindContext *ctx)
+{
+    if (bl->pre_dim_brightness == -1)
+        return;
+    backlight_set_brightness(bl, bl->pre_dim_brightness, ctx);
+    bl->pre_dim_brightness = -1;
+}
+
 Backlights *
 backlights_new(GMainContext *ctx, BacklightsFunc func)
 {
@@ -289,60 +342,17 @@ backlight_normalize_name(const char *name)
 }
 
 gboolean
-backlight_set_brightness(struct Backlight *bl, guint32 v)
+backlight_set_brightness(struct Backlight *bl, guint32 v, LogindContext *ctx)
 {
-#ifndef BACKLIGHT_HELPER
-    return FALSE;
-#endif
-
-    if (bl->max_brightness == -1)
-        return FALSE;
-
-    v = MIN(v, bl->max_brightness);
-
-    gchar *str = g_strdup_printf("%u", v);
-    gchar *brightness = g_strjoin("/", bl->sys_path, "brightness", NULL);
-    gchar *argv[] = {SYSFS_WRITER, brightness, str, NULL};
-
-    if (spawn_exec(argv) == 0)
-        g_debug("Set %s brightness: %u", bl->sys_path, v);
-
-    g_free(brightness);
-    g_free(str);
+    if (!logind_set_brightness(ctx, bl->subsystem, bl->name, v))
+        return set_backlight_brightness(bl, v);
 
     return TRUE;
 }
 
 void
-backlight_dim_value(struct Backlight *bl, guint v)
-{
-    bl->pre_dim_brightness = bl->brightness;
-    backlight_set_brightness(bl, v);
-}
-
-void
-backlight_dim_percent(struct Backlight *bl, guint percent)
-{
-    gint v = bl->brightness;
-    if (v == -1)
-        return;
-    bl->pre_dim_brightness = v;
-    gdouble d = v - v * percent;
-    backlight_set_brightness(bl, (guint)(d > 0 ? d + 0.5 : d));
-}
-
-void
-backlight_restore(struct Backlight *bl)
-{
-    if (bl->pre_dim_brightness == -1)
-        return;
-    backlight_set_brightness(bl, bl->pre_dim_brightness);
-    bl->pre_dim_brightness = -1;
-}
-
-void
 backlights_on_timeout(GHashTable *devs, GHashTable *cs, guint timeout,
-        gboolean state)
+        gboolean state, LogindContext *ctx)
 {
     GHashTableIter iter;
     gpointer key, val;
@@ -362,11 +372,11 @@ backlights_on_timeout(GHashTable *devs, GHashTable *cs, guint timeout,
 
         if (state) {
             if (c->dim_value != -1)
-                backlight_dim_value(bl, c->dim_value);
+                backlight_dim_value(bl, c->dim_value, ctx);
             else
-                backlight_dim_percent(bl, c->dim_percent);
+                backlight_dim_percent(bl, c->dim_percent, ctx);
         } else {
-            backlight_restore(bl);
+            backlight_restore(bl, ctx);
         }
     }
 }

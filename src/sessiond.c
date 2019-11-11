@@ -276,7 +276,7 @@ on_timeout(guint timeout, gboolean state, gconstpointer user_data)
 
     if (config.backlights)
         backlights_on_timeout(backlights->devices, config.backlights, timeout,
-                state);
+                state, logind_ctx);
 
     if (config.hooks)
         hooks_on_timeout(config.hooks, timeout, state);
@@ -465,15 +465,15 @@ main(int argc, char *argv[])
     if (!init_xsource(&xsource))
         return EXIT_FAILURE;
 
+    g_debug("* Init DBus connections...");
+    init_dbus();
+
     g_debug("* Init timeline...");
     init_timeline(&timeline);
 
 #ifdef DPMS
     set_dpms(config);
 #endif /* DPMS */
-
-    g_debug("* Init DBus connections...");
-    init_dbus();
 
     g_unix_signal_add(SIGINT, quit_signal, NULL);
     g_unix_signal_add(SIGTERM, quit_signal, NULL);
