@@ -272,7 +272,7 @@ backlight_dim_value(struct Backlight *bl, guint32 v, LogindContext *ctx)
 }
 
 static void
-backlight_dim_percent(struct Backlight *bl, guint percent, LogindContext *ctx)
+backlight_dim_percent(struct Backlight *bl, gdouble percent, LogindContext *ctx)
 {
     gint32 v = bl->brightness;
     if (v == -1)
