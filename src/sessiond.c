@@ -455,6 +455,7 @@ main(int argc, char *argv[])
     atexit(cleanup);
 
     g_debug("* Loading configuration...");
+    config = config_new();
     load_config(&config);
 
     main_loop = g_main_loop_new(NULL, FALSE);

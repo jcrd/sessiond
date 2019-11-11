@@ -26,27 +26,6 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include <glib-2.0/glib.h>
 #include "toml/toml.h"
 
-static Config
-new_config(void)
-{
-    Config c;
-
-    c.input_mask = INPUT_TYPE_MASK(RawMotion)
-        | INPUT_TYPE_MASK(RawButtonPress) | INPUT_TYPE_MASK(RawKeyPress);
-    c.idle_sec = 60 * 20;
-    c.on_idle = TRUE;
-    c.on_sleep = TRUE;
-    c.backlights = NULL;
-#ifdef DPMS
-    c.dpms_enable = TRUE;
-    c.standby_sec = 60 * 10;
-    c.suspend_sec = 60 * 10;
-    c.off_sec = 60 * 10;
-#endif /* DPMS */
-
-    return c;
-}
-
 static gchar *
 subsystem_from_path(const gchar *path)
 {
@@ -440,10 +419,31 @@ end:
     return ret;
 }
 
+Config
+config_new(void)
+{
+    Config c;
+
+    c.input_mask = INPUT_TYPE_MASK(RawMotion)
+        | INPUT_TYPE_MASK(RawButtonPress) | INPUT_TYPE_MASK(RawKeyPress);
+    c.idle_sec = 60 * 20;
+    c.on_idle = TRUE;
+    c.on_sleep = TRUE;
+    c.backlights = NULL;
+    c.hooks = NULL;
+#ifdef DPMS
+    c.dpms_enable = TRUE;
+    c.standby_sec = 60 * 10;
+    c.suspend_sec = 60 * 10;
+    c.off_sec = 60 * 10;
+#endif /* DPMS */
+
+    return c;
+}
+
 gboolean
 config_load(const gchar *path, const gchar *hooksd, Config *c)
 {
-    *c = new_config();
     toml_table_t *conf = parse_file(path);
 
     if (!conf)

@@ -66,6 +66,8 @@ typedef struct {
 #endif /* DPMS */
 } Config;
 
+extern Config
+config_new(void);
 extern gboolean
 config_load(const gchar *path, const gchar *hooksd, Config *c);
 extern void
