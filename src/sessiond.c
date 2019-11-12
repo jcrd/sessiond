@@ -196,6 +196,9 @@ appear_callback(UNUSED LogindContext *c, UNUSED gpointer data)
 
         server->bl_devices = backlights->devices;
     }
+
+    logind_set_idle_hint(logind_ctx, FALSE);
+    logind_set_locked_hint(logind_ctx, FALSE);
 }
 
 static void
