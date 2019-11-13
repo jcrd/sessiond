@@ -136,6 +136,10 @@ inhibit_callback(UNUSED DBusServer *s, const gchar *who, const gchar *why,
 
     inhibited = TRUE;
     timeline_stop(&timeline);
+
+#ifdef DPMS
+    DPMSDisable(xsource->dpy);
+#endif /* DPMS */
 }
 
 static void
@@ -148,6 +152,10 @@ uninhibit_callback(UNUSED DBusServer *s, const gchar *who, const gchar *why,
         return;
     inhibited = FALSE;
     timeline_start(&timeline);
+
+#ifdef DPMS
+    DPMSEnable(xsource->dpy);
+#endif /* DPMS */
 }
 
 static gboolean
