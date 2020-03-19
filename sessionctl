@@ -53,8 +53,7 @@ print_properties() {
         if ($line =~ /.*\s(.*)\s=\s(.*);/) {
             my $v = $2;
             if (substr($v, 0, 1) eq "[" and substr($v, -1) eq "]") {
-                $v =~ s/,//;
-                $v =~ tr/[]/()/;
+                $v =~ tr/,[]//d;
             }
             print "$1=$v\n";
         }
@@ -84,10 +83,9 @@ backlight_properties() {
 }
 
 list_backlights() {
-    declare -a Backlights
-    eval "$(session_properties | get_property Backlight)"
+    bls=($(session_properties | get_property_val Backlight))
 
-    for i in "${Backlights[@]}"; do
+    for i in "${bls[@]}"; do
         echo "${i##*/}"
     done
 }
