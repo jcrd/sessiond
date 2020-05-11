@@ -10,11 +10,13 @@ deps = [
 
 # alternative to vcs_tag that allows reuse of version
 # see https://github.com/mesonbuild/meson/issues/3903
-r = run_command('git', 'describe', '--dirty', '--tags', '--always')
-if r.returncode() == 0
-  version = r.stdout().strip()
-else
-  version = meson.project_version()
+version = meson.project_version()
+git = find_program('git', required : false)
+if git.found()
+  r = run_command('git', 'describe', '--dirty', '--tags', '--always')
+  if r.returncode() == 0
+    version = r.stdout().strip()
+  endif
 endif
 
 add_project_arguments('-DVERSION="@0@"'.format(version), language : 'c')
