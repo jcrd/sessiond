@@ -79,7 +79,7 @@ Bugs and issues can be reported here: L<https://github.com/jcrd/sessiond/issues>
 
 =head1 COPYRIGHT
 
-Copyright 2019 James Reed. sessiond is licensed under the
+Copyright 2019-2020 James Reed. sessiond is licensed under the
 GNU General Public License v3.0 or later.
 
 =head1 SEE ALSO
