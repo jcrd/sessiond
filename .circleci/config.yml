@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: supplantr/sessiond:2.0
+      - image: supplantr/sessiond:latest
     steps:
       - checkout
       - run: meson builddir && meson test -C builddir
