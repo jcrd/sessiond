@@ -1,6 +1,6 @@
 Name: sessiond
 Version: 0.1.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: Standalone X11 session manager for logind
 
 License: GPLv3+
@@ -10,11 +10,10 @@ Source0: https://github.com/jcrd/sessiond/archive/v0.1.0.tar.gz
 BuildRequires: meson
 BuildRequires: gcc
 BuildRequires: perl
-BuildRequires: glib2-devel
-BuildRequires: systemd-devel
-BuildRequires: libXi-devel
-BuildRequires: libX11-devel
-BuildRequires: libXext-devel
+BuildRequires: pkgconfig(glib-2.0)
+BuildRequires: pkgconfig(libudev)
+BuildRequires: pkgconfig(x11)
+BuildRequires: pkgconfig(xi)
 
 Requires: perl
 Requires: glib2
@@ -63,5 +62,8 @@ or desktop environment that does not provide its own session management.
 %{_datadir}/xsessions/sessiond.desktop
 
 %changelog
+* Sat May 23 2020 James Reed <jcrd@tuta.io> - 0.1.0-2
+- Use pkgconfig in build requires
+
 * Mon May 11 2020 James Reed <jcrd@tuta.io> - 0.1.0
 - Initial package
