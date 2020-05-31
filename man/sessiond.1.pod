@@ -57,7 +57,7 @@ Lock the session. Returns an error if the session is already locked.
 
 =item B<Unlock>
 
-Unlock the session.
+Unlock the session. Returns an error if the session is not locked.
 
 =item B<Inhibit>
 

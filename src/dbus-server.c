@@ -73,8 +73,19 @@ on_handle_unlock(DBusSession *session, GDBusMethodInvocation *i,
         gpointer user_data)
 {
     DBusServer *s = (DBusServer *)user_data;
+
+    if (!logind_get_locked_hint(s->ctx)) {
+        gchar *msg = g_strdup_printf("Session %s is not locked",
+                s->ctx->session_id);
+        g_dbus_method_invocation_return_dbus_error(i,
+                DBUS_SESSION_ERROR ".Unlock", msg);
+        g_free(msg);
+        return TRUE;
+    }
+
     logind_lock_session(s->ctx, FALSE);
     dbus_session_complete_unlock(session, i);
+
     return TRUE;
 }
 
