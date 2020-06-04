@@ -58,6 +58,70 @@ static gchar *hooksd_path = NULL;
 static guint idle_sec = 0;
 #ifdef DPMS
 static gboolean no_dpms = FALSE;
+
+static gboolean
+set_dpms_timeouts(guint standby, guint suspend, guint off)
+{
+    Status status = DPMSSetTimeouts(xsource->dpy, (CARD16)standby,
+                                        (CARD16)suspend,
+                                        (CARD16)off);
+
+    if (status == BadValue) {
+        g_warning("Inconsistent DPMS timeouts supplied; \
+see sessiond.conf(5) for more details");
+        return FALSE;
+    }
+
+    g_debug("DPMS timeouts set (standby: %u, suspend: %u, off: %u)",
+            standby, suspend, off);
+
+    return TRUE;
+}
+
+static gboolean
+set_dpms(const Config *c)
+{
+    int event;
+    int error;
+    if (!DPMSQueryExtension(xsource->dpy, &event, &error)) {
+        g_warning("DPMS extension is not available");
+        goto err;
+    }
+
+    if (!DPMSCapable(xsource->dpy)) {
+        g_warning("X server is not capable of DPMS");
+        goto err;
+    }
+
+    if (c->dpms_enable) {
+        DPMSEnable(xsource->dpy);
+        return set_dpms_timeouts(c->standby_sec, c->suspend_sec, c->off_sec);
+    } else {
+        /* support config reloading */
+        DPMSDisable(xsource->dpy);
+        g_debug("DPMS disabled");
+        return TRUE;
+    }
+
+err:
+    no_dpms = TRUE;
+    return FALSE;
+}
+
+static void
+set_dpms_locked(gboolean state)
+{
+    const Config *c = &config;
+
+    if (no_dpms || !c->dpms_enable)
+        return;
+
+    if (state)
+        set_dpms_timeouts(c->lock_standby_sec, c->lock_suspend_sec,
+                c->lock_off_sec);
+    else
+        set_dpms_timeouts(c->standby_sec, c->suspend_sec, c->off_sec);
+}
 #endif /* DPMS */
 
 static void
@@ -97,6 +161,10 @@ lock_callback(LogindContext *c, gboolean state, UNUSED gpointer data)
         timeline_start(&timeline);
         systemd_start_unit(systemd_ctx, "graphical-unlock.target");
     }
+
+#ifdef DPMS
+    set_dpms_locked(state);
+#endif /* DPMS */
 
     if (config.hooks)
         hooks_run(config.hooks, HOOK_TRIGGER_LOCK, state);
@@ -218,51 +286,6 @@ vanish_callback(UNUSED LogindContext *c, UNUSED gpointer data)
     dbus_server_free(server);
     server = NULL;
 }
-
-#ifdef DPMS
-static gboolean
-set_dpms(const Config *c)
-{
-    int event;
-    int error;
-    if (!DPMSQueryExtension(xsource->dpy, &event, &error)) {
-        g_warning("DPMS extension is not available");
-        goto err;
-    }
-
-    if (!DPMSCapable(xsource->dpy)) {
-        g_warning("X server is not capable of DPMS");
-        goto err;
-    }
-
-    if (c->dpms_enable) {
-        DPMSEnable(xsource->dpy);
-
-        Status status = DPMSSetTimeouts(xsource->dpy, (CARD16)c->standby_sec,
-                                        (CARD16)c->suspend_sec,
-                                        (CARD16)c->off_sec);
-
-        if (status == BadValue) {
-            g_warning("Inconsistent DPMS timeouts supplied; \
-see sessiond.conf(5) for more details");
-            return FALSE;
-        }
-
-        g_debug("DPMS timeouts set (standby: %u, suspend: %u, off: %u)",
-                c->standby_sec, c->suspend_sec, c->off_sec);
-    } else {
-        /* support config reloading */
-        DPMSDisable(xsource->dpy);
-        g_debug("DPMS disabled");
-    }
-
-    return TRUE;
-
-err:
-    no_dpms = TRUE;
-    return FALSE;
-}
-#endif /* DPMS */
 
 static gboolean
 xsource_cb(UNUSED gpointer user_data)

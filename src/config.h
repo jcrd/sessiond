@@ -38,6 +38,11 @@ this program. If not, see <https://www.gnu.org/licenses/>.
     X("StandbySec", uint, standby_sec) \
     X("SuspendSec", uint, suspend_sec) \
     X("OffSec", uint, off_sec)
+
+#define DPMS_LOCK_TABLE_LIST \
+    X("StandbySec", uint, lock_standby_sec) \
+    X("SuspendSec", uint, lock_suspend_sec) \
+    X("OffSec", uint, lock_off_sec)
 #endif /* DPMS */
 
 struct BacklightConf {
@@ -63,6 +68,10 @@ typedef struct {
     guint standby_sec;
     guint suspend_sec;
     guint off_sec;
+
+    guint lock_standby_sec;
+    guint lock_suspend_sec;
+    guint lock_off_sec;
 #endif /* DPMS */
 } Config;
 

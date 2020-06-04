@@ -43,6 +43,20 @@ If "true", lock the session when it becomes idle.
 If "true", lock the session when B<systemd-logind>(8) sends the
 "PrepareForSleep" signal.
 
+=item I<StandbySec=>
+
+DPMS standby timeout in seconds to use while session is locked.
+Must occur before or simultaneously with Suspend timeout.
+
+=item I<SuspendSec=>
+
+DPMS suspend timeout in seconds to use while session is locked.
+Must occur before or simultaneously with Off timeout.
+
+=item I<OffSec=>
+
+DPMS off timeout in seconds to use while session is locked.
+
 =back
 
 =head2 [DPMS]
@@ -51,7 +65,7 @@ If "true", lock the session when B<systemd-logind>(8) sends the
 
 =item I<Enable=>
 
-If "true", apply DPMS settings.
+If "true", apply DPMS settings, including those in the "[Lock]" section.
 
 =item I<StandbySec=>
 

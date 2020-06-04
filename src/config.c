@@ -436,6 +436,10 @@ config_new(void)
     c.standby_sec = 60 * 10;
     c.suspend_sec = 60 * 10;
     c.off_sec = 60 * 10;
+
+    c.lock_standby_sec = 5;
+    c.lock_suspend_sec = 5;
+    c.lock_off_sec = 5;
 #endif /* DPMS */
 
     return c;
@@ -466,6 +470,10 @@ config_load(const gchar *path, const gchar *hooksd, Config *c)
 #ifdef DPMS
     if ((tab = toml_table_in(conf, "DPMS"))) {
         DPMS_TABLE_LIST
+    }
+
+    if ((tab = toml_table_in(conf, "Lock"))) {
+        DPMS_LOCK_TABLE_LIST
     }
 #endif /* DPMS */
 
