@@ -227,12 +227,12 @@ set_dpms(Config c)
     int error;
     if (!DPMSQueryExtension(xsource->dpy, &event, &error)) {
         g_warning("DPMS extension is not available");
-        return FALSE;
+        goto err;
     }
 
     if (!DPMSCapable(xsource->dpy)) {
         g_warning("X server is not capable of DPMS");
-        return FALSE;
+        goto err;
     }
 
     if (c.dpms_enable) {
@@ -257,6 +257,10 @@ see sessiond.conf(5) for more details");
     }
 
     return TRUE;
+
+err:
+    no_dpms = TRUE;
+    return FALSE;
 }
 #endif /* DPMS */
 
