@@ -221,7 +221,7 @@ vanish_callback(UNUSED LogindContext *c, UNUSED gpointer data)
 
 #ifdef DPMS
 static gboolean
-set_dpms(Config c)
+set_dpms(const Config *c)
 {
     int event;
     int error;
@@ -235,12 +235,12 @@ set_dpms(Config c)
         goto err;
     }
 
-    if (c.dpms_enable) {
+    if (c->dpms_enable) {
         DPMSEnable(xsource->dpy);
 
-        Status status = DPMSSetTimeouts(xsource->dpy, (CARD16)c.standby_sec,
-                                        (CARD16)c.suspend_sec,
-                                        (CARD16)c.off_sec);
+        Status status = DPMSSetTimeouts(xsource->dpy, (CARD16)c->standby_sec,
+                                        (CARD16)c->suspend_sec,
+                                        (CARD16)c->off_sec);
 
         if (status == BadValue) {
             g_warning("Inconsistent DPMS timeouts supplied; \
@@ -249,7 +249,7 @@ see sessiond.conf(5) for more details");
         }
 
         g_debug("DPMS timeouts set (standby: %u, suspend: %u, off: %u)",
-                c.standby_sec, c.suspend_sec, c.off_sec);
+                c->standby_sec, c->suspend_sec, c->off_sec);
     } else {
         /* support config reloading */
         DPMSDisable(xsource->dpy);
@@ -406,7 +406,7 @@ reload_signal(UNUSED gpointer user_data)
     init_dbus();
 #ifdef DPMS
     if (!no_dpms)
-        set_dpms(config);
+        set_dpms(&config);
 #endif /* DPMS */
 
     return TRUE;
@@ -492,7 +492,7 @@ main(int argc, char *argv[])
     init_timeline(&timeline);
 
 #ifdef DPMS
-    set_dpms(config);
+    set_dpms(&config);
 #endif /* DPMS */
 
     g_unix_signal_add(SIGINT, quit_signal, NULL);
