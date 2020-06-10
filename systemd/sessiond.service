@@ -1,5 +1,6 @@
 [Unit]
 Description=Standalone X session manager
+Documentation=man:sessiond(1)
 Requires=dbus.socket
 After=dbus.socket
 PartOf=graphical-session.target
