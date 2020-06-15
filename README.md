@@ -18,15 +18,14 @@ manager or desktop environment that does not provide its own session management.
 
 ### Dependencies
 
-* bash [*runtime*]
-* perl [*build*,*runtime*]
-* grep [*runtime*]
-* coreutils [*runtime*]
+* perl [*build*]
 * meson >= 0.47.0 [*build*]
-* glib >= 2.52 [*build*,*runtime*]
+* glib >= 2.52 [*build*]
 * libx11 [*build*]
 * libxi [*build*]
 * libxext (optional, for DPMS support) [*build*]
+* python3-setuptools [*build*]
+* python3 [*runtime*]
 
 Ensure the above build dependencies are satisfied and configure the build with
 **meson**:
@@ -51,6 +50,12 @@ Run tests with `meson test`.
 ### Installing
 
 After building sessiond, `ninja install` can be used to install it.
+
+The `sessiond` Python package must also be installed. Run:
+```
+cd python-sessiond
+python3 setup.py install
+```
 
 ## Configuration
 
@@ -106,20 +111,25 @@ The `sessionctl` script is provided to run a sessiond session and interact with
 its DBus service.
 
 ```
-usage: sessionctl [command]
+usage: sessionctl [-h]
+                  {run,stop,status,lock,unlock,properties,backlight,version}
+                  ...
 
-With no command, show session status.
+With no arguments, show session status.
 
-commands:
-  run         Run session
-  stop        Stop the running session
-  status      Show session status
-  lock        Lock the session
-  unlock      Unlock the session
-  properties  List session properties
-  backlight   Interact with backlights
-                Subcommands: list, get, set, inc
-  version     Show sessiond version
+positional arguments:
+  {run,stop,status,lock,unlock,properties,backlight,version}
+    run                 Run session
+    stop                Stop the running session
+    status              Show session status
+    lock                Lock the session
+    unlock              Unlock the session
+    properties          List session properties
+    backlight           Interact with backlights
+    version             Show sessiond version
+
+optional arguments:
+  -h, --help            show this help message and exit
 ```
 
 See [sessionctl(1)](man/sessionctl.1.pod) for more information.
@@ -234,14 +244,17 @@ The `sessiond-inhibit` script provides a simple interface to acquire a lock
 before running a command and release it when the command returns.
 
 ```
-usage: sessiond-inhibit [options] [COMMAND]
+usage: sessiond-inhibit [-h] [-w WHO] [-y WHY] [command]
 
-With no COMMAND, list running inhibitors.
+With no command, list running inhibitors.
 
-options:
-  -h      Show help message
-  -w WHO  Set who is inhibiting
-  -y WHY  Set why this inhibitor is running
+positional arguments:
+  command            Command to run
+
+optional arguments:
+  -h, --help         show this help message and exit
+  -w WHO, --who WHO  Set who is inhibiting
+  -y WHY, --why WHY  Set why this inhibitor is running
 ```
 
 See [sessiond-inhibit(1)](man/sessiond-inhibit.1.pod) for more information.

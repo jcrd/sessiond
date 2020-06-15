@@ -1,7 +1,7 @@
-#!/bin/sh
+#!/usr/bin/python3
 
 # sessiond - standalone X session manager
-# Copyright (C) 2019-2020 James Reed
+# Copyright (C) 2020 James Reed
 #
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -15,73 +15,31 @@
 # You should have received a copy of the GNU General Public License along with
 # this program. If not, see <https://www.gnu.org/licenses/>.
 
-set -eu
+import sys
+from argparse import ArgumentParser
+from subprocess import run
 
-session_call() {
-    method="$1"
-    shift
-    gdbus call --session \
-        --dest org.sessiond.session1 \
-        --object-path /org/sessiond/session1 \
-        --method org.sessiond.session1.Session."$method" "$@"
-}
+from sessiond import Session
 
-print_inhibitors() {
-    perl -e '
-    if (<STDIN> =~ /.*\[(.*)\]/) {
-        if ($1 eq "") {
-            print STDERR "No inhibitors\n";
-            exit 1;
-        }
-        foreach my $i (split /\), /, $1) {
-            if ($i =~ /\('"'"'(.*)'"'"', '"'"'(.*)'"'"'/) {
-                print "what='"'"'$1'"'"' why='"'"'$2'"'"'\n";
-            }
-        }
-    }'
-}
 
-uninhibit() {
-    session_call Uninhibit "$id" > /dev/null
-}
+if __name__ == '__main__':
+    p = ArgumentParser(description='With no command, list running inhibitors.')
+    p.add_argument('command', nargs='?', help='Command to run')
+    p.add_argument('-w', '--who', default='', help='Set who is inhibiting')
+    p.add_argument('-y', '--why', default='',
+                   help='Set why this inhibitor is running')
 
-usage() {
-    echo 'usage: sessiond-inhibit [options] [COMMAND]
+    args = p.parse_args()
+    s = Session()
 
-With no COMMAND, list running inhibitors.
-
-options:
-  -h      Show help message
-  -w WHO  Set who is inhibiting
-  -y WHY  Set why this inhibitor is running'
-}
-
-if [ $# -eq 0 ]; then
-    session_call ListInhibitors | print_inhibitors
-    exit
-fi
-
-while getopts ':hw:y:' opt; do
-    case "$opt" in
-        h)
-            usage
-            exit
-            ;;
-        w) who="$OPTARG" ;;
-        y) why="$OPTARG" ;;
-        *) usage >&2; exit 2
-    esac
-done
-
-shift $((OPTIND - 1))
-
-if [ $# -eq 0 ]; then
-    usage >&2
-    exit 2
-fi
-
-id="$(session_call Inhibit "${who-}" "${why-}")"
-id="$(expr "$id" : "('\(.*\)'")"
-trap uninhibit EXIT
-
-"$@"
+    if args.command:
+        id = s.inhibit(args.who, args.why)
+        run(args.command, shell=True)
+        s.uninhibit(id)
+    else:
+        i = s.list_inhibitors()
+        if len(i) == 0:
+            sys.stderr.write('No inhibitors\n')
+            sys.exit(1)
+        for t in i:
+            print('who={} why={}'.format(*t))

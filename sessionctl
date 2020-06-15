@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/usr/bin/python3
 
 # sessiond - standalone X session manager
-# Copyright (C) 2018-2020 James Reed
+# Copyright (C) 2020 James Reed
 #
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -15,202 +15,122 @@
 # You should have received a copy of the GNU General Public License along with
 # this program. If not, see <https://www.gnu.org/licenses/>.
 
-set -eu
+import sys
+from argparse import ArgumentParser
+from os import execlp
+from pathlib import PurePath
+from subprocess import run
 
-readonly target=sessiond-session.target
+from dbus.exceptions import DBusException
+from sessiond import Session, Backlight
 
-is_active() {
-    systemctl --user is-active "$1"
-}
 
-consists_of() {
-    systemctl --user show -p ConsistsOf --value "$1"
-}
+class Unit:
+    def __init__(self, name='sessiond-session.target'):
+        self.name = name
 
-session_call() {
-    method="$1"
-    shift
-    gdbus call --session \
-        --dest org.sessiond.session1 \
-        --object-path /org/sessiond/session1 \
-        --method org.sessiond.session1.Session."$method" "$@"
-}
+    def active(self):
+        cmd = 'systemctl --user -q is-active {}'.format(self.name)
+        return run(cmd.split()).returncode == 0
 
-backlight_call() {
-    name="$1"
-    shift
-    method="$1"
-    shift
-    gdbus call --session \
-        --dest org.sessiond.session1 \
-        --object-path /org/sessiond/session1/backlight/"$name" \
-        --method org.sessiond.session1.Backlight."$method" -- "$@"
-}
+    def status(self):
+        cmd = 'systemctl --user is-active {}'.format(self.name)
+        return run(cmd.split(), capture_output=True, text=True).stdout.rstrip()
 
-print_properties() {
-    perl -e '
-    while (my $line = <STDIN>) {
-        if ($line =~ /.*\s(.*)\s=\s(.*);/) {
-            my $v = $2;
-            if (substr($v, 0, 1) eq "[" and substr($v, -1) eq "]") {
-                $v =~ tr/,[]//d;
-            }
-            print "$1=$v\n";
-        }
-    }'
-}
+    def consists_of(self):
+        cmd = 'systemctl --user show -p ConsistsOf --value {}'.format(self.name)
+        return run(cmd.split(), capture_output=True, text=True).stdout.split()
 
-get_property() {
-    print_properties | grep "^$1"
-}
+    def stop(self):
+        run('systemctl --user stop {}'.format(self.name).split())
 
-get_property_val() {
-    get_property "$1" | cut -d= -f2
-}
+    def exec_start_wait(self):
+        execlp('systemctl', 'systemctl', '--user', '--wait', 'start', self.name)
 
-session_properties() {
-    gdbus introspect --session \
-        --dest org.sessiond.session1 \
-        --object-path /org/sessiond/session1 \
-        --only-properties
-}
 
-backlight_properties() {
-    gdbus introspect --session \
-        --dest org.sessiond.session1 \
-        --object-path /org/sessiond/session1/backlight/"$1" \
-        --only-properties
-}
+def status():
+    g = Unit('graphical-session.target')
+    if not g.active():
+        sys.stderr.write('Session is not active\n')
+        sys.exit(1)
+    units = g.consists_of()
+    n = len(max(units, key=len))
+    for u in units:
+        print('{u: <{n}} {s}'.format(u=u + ':', n=n + 1, s=Unit(u).status()))
 
-list_backlights() {
-    bls=($(session_properties | get_property_val Backlight))
 
-    for i in "${bls[@]}"; do
-        echo "${i##*/}"
-    done
-}
+def get_session():
+    try:
+        return Session()
+    except DBusException as e:
+        sys.stderr.write('Failed to connect to sessiond DBus service: {}\n'\
+                         .format(e.get_dbus_message()))
+        sys.exit(1)
 
-check_backlight() {
-    if ! list_backlights | grep -q "$1"; then
-        echo "backlight $1 not found" >&2
-        exit 2
-    fi
-}
 
-backlight_get() {
-    if [ $# -eq 0 ]; then
-        echo 'usage: sessionctl backlight get BACKLIGHT' >&2
-        exit 2
-    fi
-    check_backlight "$1"
-    backlight_properties "$1" | get_property_val Brightness
-}
+if __name__ == '__main__':
+    p = ArgumentParser(description='With no arguments, show session status.')
+    subp = p.add_subparsers(dest='cmd')
 
-backlight_set() {
-    if [ $# -eq 0 ]; then
-        echo 'usage: sessionctl backlight set BACKLIGHT VALUE' >&2
-        exit 2
-    fi
-    check_backlight "$1"
-    backlight_call "$1" SetBrightness "$2" > /dev/null
-}
+    subp.add_parser('run', help='Run session')
+    subp.add_parser('stop', help='Stop the running session')
+    subp.add_parser('status', help='Show session status')
+    subp.add_parser('lock', help='Lock the session')
+    subp.add_parser('unlock', help='Unlock the session')
+    subp.add_parser('properties', help='List session properties')
 
-backlight_inc() {
-    if [ $# -eq 0 ]; then
-        echo 'usage: sessionctl backlight inc BACKLIGHT VALUE' >&2
-        exit 2
-    fi
-    check_backlight "$1"
-    r="$(backlight_call "$1" IncBrightness "$2")"
-    expr "$r" : "(.* \(.*\),)"
-}
+    b = subp.add_parser('backlight', help='Interact with backlights')
+    b.add_argument('-l', '--list', action='store_true',
+                   help='List backlight names')
+    b.add_argument('-g', '--get', metavar='BACKLIGHT',
+                   help='Get backlight brightness')
+    b.add_argument('-s', '--set', type=int, nargs=2,
+                   metavar=('BACKLIGHT', 'VALUE'),
+                   help='Set backlight brightness')
+    b.add_argument('-i', '--inc', type=int, nargs=2,
+                   metavar=('BACKLIGHT', 'VALUE'),
+                   help='Increment backlight brightness')
 
-status() {
-    active="$(is_active $target)"
-    r=$?
+    subp.add_parser('version', help='Show sessiond version')
 
-    if [ $r -ne 0 ]; then
-        echo "$target: $active"
-        exit $r
-    fi
+    args = p.parse_args()
 
-    units="$(consists_of graphical-session.target)"
+    if not args.cmd:
+        status()
+        sys.exit(0)
 
-    if [ -n "$units" ]; then
-        i=0
-        pad=${#target}
-        for unit in $units; do
-            i=$((i + 1))
-            [ ${#unit} -gt $pad ] && pad=${#unit}
-        done
-        # account for colon
-        pad=$((pad + 1))
-        # account for bars
-        printf "%-$((pad + 2))s %s\n" "$target:" "$active"
-        for unit in $units; do
-            i=$((i - 1))
-            [ $i -eq 0 ] && s='└' || s='├'
-            printf "$s─%-${pad}s %s\n" "$unit:" "$(is_active "$unit")"
-        done
-    fi
+    sessiond_session = Unit()
 
-    exit
-}
-
-usage() {
-    echo 'usage: sessionctl [command]
-
-With no command, show session status.
-
-commands:
-  run         Run session
-  stop        Stop the running session
-  status      Show session status
-  lock        Lock the session
-  unlock      Unlock the session
-  properties  List session properties
-  backlight   Interact with backlights
-                Subcommands: list, get, set, inc
-  version     Show sessiond version'
-}
-
-[ $# -eq 0 ] && status
-
-case "$1" in
-    run)
-        if systemctl --user -q is-active $target; then
-            echo 'A session is already running' >&2
-            exit 1
-        fi
-        systemctl --user import-environment
-        exec systemctl --user --wait start $target
-        ;;
-    stop) systemctl --user stop $target ;;
-    status) status ;;
-    lock) session_call Lock > /dev/null ;;
-    unlock) session_call Unlock > /dev/null ;;
-    properties) session_properties | print_properties ;;
-    backlight)
-        shift
-        if [ $# -eq 0 ]; then
-            list_backlights
-            exit
-        fi
-        case "$1" in
-            get) shift; backlight_get "$@" ;;
-            set) shift; backlight_set "$@" ;;
-            inc) shift; backlight_inc "$@" ;;
-            list) list_backlights ;;
-            *)
-                echo 'usage: sessionctl backlight [command]
-
-commands:
-  list                 List backlights
-  get BACKLIGHT        Get backlight brightness
-  set BACKLIGHT VALUE  Set backlight brightness
-  inc BACKLIGHT VALUE  Increment backlight brightness' >&2; exit 2
-        esac
-        ;;
-    version) session_properties | get_property_val Version | tr -d "'" ;;
-    *) usage >&2; exit 2
-esac
+    if args.cmd == 'run':
+        if sessiond_session.active():
+            sys.stderr.write('A session is already running\n')
+            sys.exit(1)
+        run('systemctl --user import-environment'.split())
+        sessiond_session.exec_start_wait()
+    elif args.cmd == 'stop':
+        sessiond_session.stop()
+    elif args.cmd == 'status':
+        status()
+    elif args.cmd == 'lock':
+        get_session().lock()
+    elif args.cmd == 'unlock':
+        get_session().unlock()
+    elif args.cmd == 'properties':
+        for k, v in get_session().get_properties().items():
+            print('{}={}'.format(k, v))
+    elif args.cmd == 'backlight':
+        if args.get:
+            print(Backlight(args.get))
+        elif args.set:
+            Backlight(args.set[0]).set_brightness(args.set[1])
+        elif args.inc:
+            Backlight(args.inc[0]).set_brightness(args.inc[1])
+        else:
+            bls = get_session().backlights
+            if len(bls) == 0:
+                sys.stderr.write('No backlights\n')
+                sys.exit(1)
+            for o in bls:
+                print(PurePath(o).name)
+    elif args.cmd == 'version':
+        print(get_session().version)
