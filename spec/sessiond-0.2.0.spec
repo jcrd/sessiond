@@ -1,11 +1,11 @@
 Name: sessiond
-Version: 0.1.0
-Release: 2%{?dist}
+Version: 0.2.0
+Release: 1%{?dist}
 Summary: Standalone X11 session manager for logind
 
 License: GPLv3+
 URL: https://github.com/jcrd/sessiond
-Source0: https://github.com/jcrd/sessiond/archive/v0.1.0.tar.gz
+Source0: https://github.com/jcrd/sessiond/archive/v0.2.0.tar.gz
 
 BuildRequires: meson
 BuildRequires: gcc
@@ -14,12 +14,10 @@ BuildRequires: pkgconfig(glib-2.0)
 BuildRequires: pkgconfig(libudev)
 BuildRequires: pkgconfig(x11)
 BuildRequires: pkgconfig(xi)
+BuildRequires: python3-devel
+BuildRequires: python3-setuptools
 
-Requires: perl
-Requires: glib2
-Requires: bash
-Requires: grep
-Requires: coreutils
+Requires: python3-dbus
 
 %description
 sessiond is a standalone X session manager that reports the idle status of a
@@ -33,8 +31,14 @@ or desktop environment that does not provide its own session management.
 %meson --libdir lib
 %meson_build
 
+cd python-sessiond
+%py3_build
+
 %install
 %meson_install
+
+cd python-sessiond
+%py3_install
 
 %check
 %meson_test
@@ -61,7 +65,14 @@ or desktop environment that does not provide its own session management.
 %{_datadir}/sessiond/sessiond.conf
 %{_datadir}/xsessions/sessiond.desktop
 
+%{python3_sitelib}/%{name}-*.egg-info/
+%{python3_sitelib}/%{name}.py
+%{python3_sitelib}/__pycache__/%{name}.*
+
 %changelog
+* Wed Jun 17 2020 James Reed <jcrd@tuta.io> - 0.2.0-1
+- Release v0.2.0
+
 * Sat May 23 2020 James Reed <jcrd@tuta.io> - 0.1.0-2
 - Use pkgconfig in build requires
 
