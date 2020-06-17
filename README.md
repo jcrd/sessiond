@@ -26,6 +26,7 @@ manager or desktop environment that does not provide its own session management.
 * libxext (optional, for DPMS support) [*build*]
 * python3-setuptools [*build*]
 * python3 [*runtime*]
+* dbus-python [*runtime*]
 
 Ensure the above build dependencies are satisfied and configure the build with
 **meson**:
