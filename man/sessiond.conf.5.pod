@@ -116,4 +116,4 @@ See B<sessiond-hooks>(5) for a description of options.
 
 =head1 SEE ALSO
 
-B<sessiond>(1), B<systemd-logind>(8), B<sessiond-hooks>(5)
+B<sessiond>(1), B<systemd-logind.service>(8), B<sessiond-hooks>(5)

@@ -9,7 +9,7 @@ B<sessiond> [OPTIONS]
 =head1 DESCRIPTION
 
 sessiond is a standalone X session manager that reports the idle status of a
-session to B<systemd-logind>(8) and handles its lock, unlock, sleep, and
+session to B<systemd-logind.service>(8) and handles its lock, unlock, sleep, and
 shutdown signals. sessiond also provides hooks triggered by inactivity or a
 signal, automatic backlight dimming on idle, and optional management of DPMS
 settings.
@@ -287,4 +287,4 @@ GNU General Public License v3.0 or later.
 
 =head1 SEE ALSO
 
-B<sessiond.conf>(5), B<sessiond-hooks>(5), B<systemd-logind>(8), B<gdbus>(1)
+B<sessiond.conf>(5), B<sessiond-hooks>(5), B<systemd-logind.service>(8), B<gdbus>(1)
