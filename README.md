@@ -1,5 +1,27 @@
 # sessiond [![CircleCI](https://circleci.com/gh/jcrd/sessiond.svg?style=svg)](https://circleci.com/gh/jcrd/sessiond) [![Copr build status](https://copr.fedorainfracloud.org/coprs/jcrd/sessiond/package/sessiond/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/jcrd/sessiond/package/sessiond/)
 
+## Contents
+
+1. [Overview](#overview)
+2. [Features](#features)
+3. [Building](#building)
+    1. [Dependencies](#dependencies)
+    2. [Testing](#testing)
+    3. [Installing](#installing)
+4. [Configuration](#configuration)
+    1. [Hooks](#hooks)
+5. [DBus service](#dbus-service)
+    1. [sessionctl](#sessionctl)
+6. [systemd targets](#systemd-targets)
+7. [Managing the session](#managing-the-session)
+    1. [Starting the session](#starting-the-session)
+    2. [Running services](#running-services)
+    3. [Locking the session](#locking-the-session)
+    4. [Stopping the session](#stopping-the-session)
+    5. [Inhibiting inactivity](#inhibiting-inactivity)
+
+## Overview
+
 sessiond is a standalone X session manager that reports the idle status of a
 graphical session to **systemd-logind**. It can be used alongside a window
 manager or desktop environment that does not provide its own session management.
