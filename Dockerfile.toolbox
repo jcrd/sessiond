@@ -19,7 +19,7 @@ RUN dnf install -y perl
 RUN curl -L http://cpanmin.us | perl - App::cpanminus
 RUN cpanm Pod::Markdown
 
-# Install github-pages ruby gem to test github pages site.
-# Run `jekyll build && jekyll serve` in gh-pages directory.
+# Install bundler ruby gem to test github pages site.
+# Run `make gems && make serve` in gh-pages directory.
 RUN dnf install -y ruby-devel
-RUN gem install github-pages
+RUN dnf install -y rubygem-bundler
