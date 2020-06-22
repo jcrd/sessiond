@@ -69,20 +69,7 @@ The default configuration is included at `/usr/share/sessiond/sessiond.conf`.
 
 See [sessiond.conf(5)](man/sessiond.conf.5.pod) for descriptions of the options.
 
-## systemd targets
-
-sessiond provides the following systemd targets:
-
-Target                    | Started when
-------                    | ------------
-`graphical-lock.target`   | session is locked
-`graphical-unlock.target` | session is unlocked
-`graphical-idle.target`   | session becomes idle
-`graphical-unidle.target` | session resumes activity
-`user-sleep.target`       | system sleeps
-`user-shutdown.target`    | system shuts down
-
-## Hooks
+### Hooks
 
 Hook files with the `.hook` suffix are read from
 `$XDG_CONFIG_HOME/sessiond/hooks.d` or `$HOME/.config/sessiond/hooks.d`.
@@ -106,7 +93,7 @@ For complete introspection data, use **gdbus**:
 gdbus introspect --session --dest org.sessiond.session1 --object-path /org/sessiond/session1
 ```
 
-## sessionctl
+### sessionctl
 
 The `sessionctl` script is provided to run a sessiond session and interact with
 its DBus service.
@@ -134,6 +121,19 @@ optional arguments:
 ```
 
 See [sessionctl(1)](man/sessionctl.1.pod) for more information.
+
+## systemd targets
+
+sessiond provides the following systemd targets:
+
+Target                    | Started when
+------                    | ------------
+`graphical-lock.target`   | session is locked
+`graphical-unlock.target` | session is unlocked
+`graphical-idle.target`   | session becomes idle
+`graphical-unidle.target` | session resumes activity
+`user-sleep.target`       | system sleeps
+`user-shutdown.target`    | system shuts down
 
 ## Managing the session
 
