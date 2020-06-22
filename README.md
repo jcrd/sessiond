@@ -18,8 +18,8 @@ manager or desktop environment that does not provide its own session management.
 
 ### Dependencies
 
+* [meson][1] >= 0.47.0 [*build*]
 * perl [*build*]
-* meson >= 0.47.0 [*build*]
 * glib >= 2.52 [*build*]
 * libx11 [*build*]
 * libxi [*build*]
