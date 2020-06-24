@@ -5,21 +5,21 @@
 1. [Overview](#overview)
 2. [Features](#features)
 3. [Packages](#packages)
-4. [Building](#building)
-    1. [Dependencies](#dependencies)
-    2. [Testing](#testing)
-    3. [Installing](#installing)
-5. [Configuration](#configuration)
+4. [Configuration](#configuration)
     1. [Hooks](#hooks)
-6. [DBus service](#dbus-service)
+5. [DBus service](#dbus-service)
     1. [sessionctl](#sessionctl)
-7. [systemd targets](#systemd-targets)
-8. [Managing the session](#managing-the-session)
+6. [systemd targets](#systemd-targets)
+7. [Managing the session](#managing-the-session)
     1. [Starting the session](#starting-the-session)
     2. [Running services](#running-services)
     3. [Locking the session](#locking-the-session)
     4. [Stopping the session](#stopping-the-session)
     5. [Inhibiting inactivity](#inhibiting-inactivity)
+8. [Building](#building)
+    1. [Dependencies](#dependencies)
+    2. [Testing](#testing)
+    3. [Installing](#installing)
 
 ## Overview
 
@@ -46,50 +46,6 @@ manager or desktop environment that does not provide its own session management.
   dnf copr enable jcrd/sessiond
   dnf install sessiond
   ```
-
-## Building
-
-### Dependencies
-
-* [meson][1] >= 0.47.0 [*build*]
-* perl [*build*]
-* glib >= 2.52 [*build*]
-* libx11 [*build*]
-* libxi [*build*]
-* libxext (optional, for DPMS support) [*build*]
-* python3-setuptools [*build*]
-* python3 [*runtime*]
-* dbus-python [*runtime*]
-
-Ensure the above build dependencies are satisfied and configure the build with
-**meson**:
-
-```
-meson builddir && cd builddir
-```
-
-Inside the build directory, `meson configure` will list all options set with
-`-D`. For example, to disable the DPMS feature, run:
-
-```
-meson configure -Ddpms=disabled
-```
-
-Finally, run `ninja` to build sessiond.
-
-### Testing
-
-Run tests with `meson test`.
-
-### Installing
-
-After building sessiond, `ninja install` can be used to install it.
-
-The `sessiond` Python package must also be installed. Run:
-```
-cd python-sessiond
-python3 setup.py install
-```
 
 ## Configuration
 
@@ -295,6 +251,50 @@ See [sessiond-inhibit(1)](man/sessiond-inhibit.1.pod) for more information.
 
 See the _DBus Service_ section of [sessiond(1)](man/sessiond.1.pod#dbus-service)
 for descriptions of inhibitor-related methods.
+
+## Building
+
+### Dependencies
+
+* [meson][1] >= 0.47.0 [*build*]
+* perl [*build*]
+* glib >= 2.52 [*build*]
+* libx11 [*build*]
+* libxi [*build*]
+* libxext (optional, for DPMS support) [*build*]
+* python3-setuptools [*build*]
+* python3 [*runtime*]
+* dbus-python [*runtime*]
+
+Ensure the above build dependencies are satisfied and configure the build with
+**meson**:
+
+```
+meson builddir && cd builddir
+```
+
+Inside the build directory, `meson configure` will list all options set with
+`-D`. For example, to disable the DPMS feature, run:
+
+```
+meson configure -Ddpms=disabled
+```
+
+Finally, run `ninja` to build sessiond.
+
+### Testing
+
+Run tests with `meson test`.
+
+### Installing
+
+After building sessiond, `ninja install` can be used to install it.
+
+The `sessiond` Python package must also be installed. Run:
+```
+cd python-sessiond
+python3 setup.py install
+```
 
 ## License
 
