@@ -122,8 +122,8 @@ on_handle_uninhibit(DBusSession *session, GDBusMethodInvocation *i,
 
     DBusServer *s = (DBusServer *)user_data;
 
-    const gchar *who;
-    const gchar *why;
+    gchar *who;
+    gchar *why;
     GVariant *v = g_hash_table_lookup(s->inhibitors, id);
     if (!v) {
         g_dbus_method_invocation_return_dbus_error(i,
@@ -139,6 +139,9 @@ on_handle_uninhibit(DBusSession *session, GDBusMethodInvocation *i,
 
     g_signal_emit(s, signals[UNINHIBIT_SIGNAL], 0, who, why, n);
 
+    g_free(who);
+    g_free(why);
+
     dbus_session_complete_uninhibit(session, i);
 
     return TRUE;
@@ -150,10 +153,13 @@ remove_inhibitor(UNUSED gpointer k, gpointer v, gpointer user_data)
     DBusServer *s = (DBusServer *)user_data;
     guint n = g_hash_table_size(s->inhibitors);
 
-    const gchar *who;
-    const gchar *why;
+    gchar *who;
+    gchar *why;
     g_variant_get(v, "(ss)", &who, &why);
     g_signal_emit(s, signals[UNINHIBIT_SIGNAL], 0, who, why, n - 1);
+
+    g_free(who);
+    g_free(why);
 
     return TRUE;
 }
