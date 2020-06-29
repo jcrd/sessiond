@@ -67,12 +67,13 @@ logind_on_manager_signal(UNUSED GDBusProxy *proxy, UNUSED gchar *sender,
     LogindContext *c = (LogindContext *)user_data;
 
     gboolean state;
-    g_variant_get(params, "(b)", &state);
 
     if (g_strcmp0(signal, "PrepareForSleep") == 0) {
+        g_variant_get(params, "(b)", &state);
         g_debug("PrepareForSleep signal received: %s", BOOLSTR(state));
         g_signal_emit(c, signals[SLEEP_SIGNAL], 0, state);
     } else if (g_strcmp0(signal, "PrepareForShutdown") == 0) {
+        g_variant_get(params, "(b)", &state);
         g_debug("PrepareForShutdown signal received: %s", BOOLSTR(state));
         g_signal_emit(c, signals[SHUTDOWN_SIGNAL], 0, state);
     }
