@@ -1,0 +1,4 @@
+[Unit]
+Description=User sleep finished
+Conflicts=user-sleep.target
+StopWhenUnneeded=yes

@@ -79,6 +79,7 @@ units = [
   'systemd/graphical-lock.target',
   'systemd/graphical-unlock.target',
   'systemd/user-sleep.target',
+  'systemd/user-sleep-finished.target',
   'systemd/user-shutdown.target',
   'systemd/sessiond-session.target',
   'systemd/sessiond.service',

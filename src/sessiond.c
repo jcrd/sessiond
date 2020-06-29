@@ -175,12 +175,16 @@ lock_callback(LogindContext *c, gboolean state, UNUSED gpointer data)
 static void
 sleep_callback(LogindContext *c, gboolean state, UNUSED gpointer data)
 {
-    if (state && can_sleep) {
+    if (state) {
+        if (!can_sleep)
+            return;
         can_sleep = FALSE;
         g_message("Preparing for sleep...");
         systemd_start_unit(systemd_ctx, "user-sleep.target");
         if (config.on_sleep && !logind_get_locked_hint(c))
             logind_lock_session(c, TRUE);
+    } else {
+        systemd_start_unit(systemd_ctx, "user-sleep-finished.target");
     }
 
     if (config.hooks)
