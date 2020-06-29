@@ -145,6 +145,33 @@ on_handle_uninhibit(DBusSession *session, GDBusMethodInvocation *i,
 }
 
 static gboolean
+remove_inhibitor(UNUSED gpointer k, gpointer v, gpointer user_data)
+{
+    DBusServer *s = (DBusServer *)user_data;
+    guint n = g_hash_table_size(s->inhibitors);
+
+    const gchar *who;
+    const gchar *why;
+    g_variant_get(v, "(ss)", &who, &why);
+    g_signal_emit(s, signals[UNINHIBIT_SIGNAL], 0, who, why, n - 1);
+
+    return TRUE;
+}
+
+static gboolean
+on_handle_stop_inhibitors(DBusSession *session, GDBusMethodInvocation *i,
+        gpointer user_data)
+{
+    DBusServer *s = (DBusServer *)user_data;
+
+    guint n = g_hash_table_size(s->inhibitors);
+    g_hash_table_foreach_remove(s->inhibitors, remove_inhibitor, s);
+    dbus_session_complete_stop_inhibitors(session, i, n);
+
+    return TRUE;
+}
+
+static gboolean
 on_handle_list_inhibitors(DBusSession *session, GDBusMethodInvocation *i,
         gpointer user_data)
 {
@@ -390,6 +417,8 @@ on_name_acquired(GDBusConnection *conn, const gchar *name, gpointer user_data)
             G_CALLBACK(on_handle_inhibit), s);
     g_signal_connect(session, "handle-uninhibit",
             G_CALLBACK(on_handle_uninhibit), s);
+    g_signal_connect(session, "handle-stop-inhibitors",
+            G_CALLBACK(on_handle_stop_inhibitors), s);
     g_signal_connect(session, "handle-list-inhibitors",
             G_CALLBACK(on_handle_list_inhibitors), s);
 

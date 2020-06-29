@@ -10,6 +10,9 @@
     <method name='Uninhibit'>
       <arg name='id' type='s' direction='in'/>
     </method>
+    <method name='StopInhibitors'>
+      <arg name='count' type='u' direction='out'/>
+    </method>
     <method name='ListInhibitors'>
       <arg name='inhibitors' type='a(ss)' direction='out'/>
     </method>

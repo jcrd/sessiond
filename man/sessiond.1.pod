@@ -90,6 +90,10 @@ The unique ID of the inhibitor to stop.
 
 =back
 
+=item B<StopInhibitors>
+
+Stop running inhibitors. Returns the number of inhibitors stopped.
+
 =item B<ListInhibitors>
 
 List running inhibitors. Returns a list of tuples with the I<who> and I<why>

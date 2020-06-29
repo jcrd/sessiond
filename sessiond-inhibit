@@ -19,6 +19,7 @@ import sys
 from argparse import ArgumentParser
 from subprocess import run
 
+from dbus.exceptions import DBusException
 from sessiond import Session
 
 
@@ -28,14 +29,23 @@ if __name__ == '__main__':
     p.add_argument('-w', '--who', default='', help='Set who is inhibiting')
     p.add_argument('-y', '--why', default='',
                    help='Set why this inhibitor is running')
+    p.add_argument('-s', '--stop', action='store_true',
+                   help='Stop running inhibitors')
 
     args = p.parse_args()
     s = Session()
 
-    if args.command:
+    if args.stop:
+        n = s.stop_inhibitors()
+        if n == 0:
+            sys.exit(1)
+    elif args.command:
         id = s.inhibit(args.who, args.why)
         run(args.command, shell=True)
-        s.uninhibit(id)
+        try:
+            s.uninhibit(id)
+        except DBusException:
+            pass
     else:
         i = s.list_inhibitors()
         if len(i) == 0:

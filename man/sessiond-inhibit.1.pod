@@ -28,6 +28,10 @@ Set who is inhibiting.
 
 Set why this inhibitor is running.
 
+=item B<-s>
+
+Stop running inhibitors.
+
 =back
 
 =head1 AUTHOR

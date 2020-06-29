@@ -79,6 +79,9 @@ class Session(DBusIFace):
     def uninhibit(self, id):
         self.interface.Uninhibit(id)
 
+    def stop_inhibitors(self):
+        return self.interface.StopInhibitors()
+
     def list_inhibitors(self):
         def convert(s):
             return str(s[0]), str(s[1])
