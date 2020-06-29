@@ -41,11 +41,17 @@ if __name__ == '__main__':
             sys.exit(1)
     elif args.command:
         id = s.inhibit(args.who, args.why)
-        run(args.command, shell=True)
+        def try_uninhibit():
+            try:
+                s.uninhibit(id)
+            except DBusException:
+                pass
         try:
-            s.uninhibit(id)
-        except DBusException:
-            pass
+            run(args.command, shell=True)
+        except KeyboardInterrupt:
+            try_uninhibit()
+            sys.exit(130)
+        try_uninhibit()
     else:
         i = s.list_inhibitors()
         if len(i) == 0:
