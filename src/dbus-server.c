@@ -100,8 +100,6 @@ on_handle_inhibit(DBusSession *session, GDBusMethodInvocation *i,
     g_variant_ref_sink(inhibit);
     g_hash_table_insert(s->inhibitors, id, inhibit);
 
-    dbus_session_set_inhibited_hint(s->session, TRUE);
-
     g_signal_emit(s, signals[INHIBIT_SIGNAL], 0, who, why,
             g_hash_table_size(s->inhibitors));
 
@@ -134,8 +132,6 @@ on_handle_uninhibit(DBusSession *session, GDBusMethodInvocation *i,
 
     g_hash_table_remove(s->inhibitors, id);
     guint n = g_hash_table_size(s->inhibitors);
-
-    dbus_session_set_inhibited_hint(s->session, n > 0);
 
     g_signal_emit(s, signals[UNINHIBIT_SIGNAL], 0, who, why, n);
 

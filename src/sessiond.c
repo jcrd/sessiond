@@ -204,12 +204,13 @@ shutdown_callback(UNUSED LogindContext *c, gboolean state, UNUSED gpointer data)
 }
 
 static void
-inhibit_callback(UNUSED DBusServer *s, const gchar *who, const gchar *why,
+inhibit_callback(DBusServer *s, const gchar *who, const gchar *why,
         UNUSED guint n, UNUSED gpointer data)
 {
     g_message("Inhibitor added: %s (%s)", who, why);
 
     inhibited = TRUE;
+    dbus_session_set_inhibited_hint(s->session, TRUE);
     timeline_stop(&timeline);
 
 #ifdef DPMS
@@ -218,7 +219,7 @@ inhibit_callback(UNUSED DBusServer *s, const gchar *who, const gchar *why,
 }
 
 static void
-uninhibit_callback(UNUSED DBusServer *s, const gchar *who, const gchar *why,
+uninhibit_callback(DBusServer *s, const gchar *who, const gchar *why,
         guint n, UNUSED gpointer data)
 {
     g_message("Inhibitor removed: %s (%s)", who, why);
@@ -226,6 +227,7 @@ uninhibit_callback(UNUSED DBusServer *s, const gchar *who, const gchar *why,
     if (n > 0)
         return;
     inhibited = FALSE;
+    dbus_session_set_inhibited_hint(s->session, FALSE);
     timeline_start(&timeline);
 
 #ifdef DPMS
