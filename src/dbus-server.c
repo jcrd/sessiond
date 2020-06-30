@@ -148,31 +148,32 @@ on_handle_uninhibit(DBusSession *session, GDBusMethodInvocation *i,
 }
 
 static gboolean
-remove_inhibitor(UNUSED gpointer k, gpointer v, gpointer user_data)
-{
-    DBusServer *s = (DBusServer *)user_data;
-    guint n = g_hash_table_size(s->inhibitors);
-
-    gchar *who;
-    gchar *why;
-    g_variant_get(v, "(ss)", &who, &why);
-    g_signal_emit(s, signals[UNINHIBIT_SIGNAL], 0, who, why, n - 1);
-
-    g_free(who);
-    g_free(why);
-
-    return TRUE;
-}
-
-static gboolean
 on_handle_stop_inhibitors(DBusSession *session, GDBusMethodInvocation *i,
         gpointer user_data)
 {
     DBusServer *s = (DBusServer *)user_data;
+    guint count = g_hash_table_size(s->inhibitors);
+    guint n = count;
 
-    guint n = g_hash_table_size(s->inhibitors);
-    g_hash_table_foreach_remove(s->inhibitors, remove_inhibitor, s);
-    dbus_session_complete_stop_inhibitors(session, i, n);
+    GHashTableIter iter;
+    gpointer k;
+    gpointer v;
+    gchar *who;
+    gchar *why;
+
+    g_hash_table_iter_init(&iter, s->inhibitors);
+
+    while (g_hash_table_iter_next(&iter, &k, &v)) {
+        g_variant_get(v, "(ss)", &who, &why);
+        g_hash_table_iter_remove(&iter);
+
+        g_signal_emit(s, signals[UNINHIBIT_SIGNAL], 0, who, why, --n);
+
+        g_free(who);
+        g_free(why);
+    }
+
+    dbus_session_complete_stop_inhibitors(session, i, count);
 
     return TRUE;
 }
