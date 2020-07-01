@@ -211,6 +211,7 @@ inhibit_callback(DBusServer *s, const gchar *who, const gchar *why,
 
     inhibited = TRUE;
     dbus_session_set_inhibited_hint(s->session, TRUE);
+    inactive = FALSE;
     timeline_stop(&timeline);
 
 #ifdef DPMS
