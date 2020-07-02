@@ -58,4 +58,7 @@ if __name__ == '__main__':
             sys.stderr.write('No inhibitors\n')
             sys.exit(1)
         for t in i:
-            print('who={} why={}'.format(*t))
+            out = "who='{}'".format(t[0])
+            if t[1]:
+                out += " why='{}'".format(t[1])
+            print(out)
