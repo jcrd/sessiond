@@ -40,10 +40,10 @@ if __name__ == '__main__':
         if n == 0:
             sys.exit(1)
     elif args.command:
-        id = s.inhibit(args.who, args.why)
+        i = s.inhibit(args.who, args.why)
         def try_uninhibit():
             try:
-                s.uninhibit(id)
+                s.uninhibit(i)
             except DBusException:
                 pass
         try:
