@@ -57,8 +57,8 @@ if __name__ == '__main__':
         if len(i) == 0:
             sys.stderr.write('No inhibitors\n')
             sys.exit(1)
-        for t in i:
-            out = "who='{}'".format(t[0])
+        for k, t in i.items():
+            out = "id='{}' who='{}'".format(k, t[0])
             if t[1]:
                 out += " why='{}'".format(t[1])
             print(out)

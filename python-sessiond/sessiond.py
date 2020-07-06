@@ -83,9 +83,8 @@ class Session(DBusIFace):
         return self.interface.StopInhibitors()
 
     def list_inhibitors(self):
-        def convert(s):
-            return str(s[0]), str(s[1])
-        return [convert(s) for s in self.interface.ListInhibitors()]
+        return {str(k): (str(s[0]), str(s[1])) for k, s \
+                in self.interface.ListInhibitors().items()}
 
     def lock(self):
         self.interface.Lock()

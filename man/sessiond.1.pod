@@ -96,8 +96,8 @@ Stop running inhibitors. Returns the number of inhibitors stopped.
 
 =item B<ListInhibitors>
 
-List running inhibitors. Returns a list of tuples with the I<who> and I<why>
-strings.
+List running inhibitors. Returns a dictionary mapping IDs to tuples of
+I<who> and I<why> strings.
 
 =back
 

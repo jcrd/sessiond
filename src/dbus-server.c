@@ -179,31 +179,25 @@ on_handle_list_inhibitors(DBusSession *session, GDBusMethodInvocation *i,
         gpointer user_data)
 {
     DBusServer *s = (DBusServer *)user_data;
-    guint n = g_hash_table_size(s->inhibitors);
+    GVariantBuilder b;
+    GVariant *dict;
 
-    if (n == 0) {
-        GVariant *arr = g_variant_new_array(G_VARIANT_TYPE("(ss)"), NULL, 0);
-        dbus_session_complete_list_inhibitors(session, i, arr);
-        g_variant_ref_sink(arr);
-        g_variant_unref(arr);
-        return TRUE;
-    }
+    g_variant_builder_init(&b, G_VARIANT_TYPE("a{s(ss)}"));
 
-    GList *list = g_hash_table_get_values(s->inhibitors);
-    GVariant **vs = g_malloc0_n(n, sizeof(GVariant *));
+    GHashTableIter iter;
+    gpointer k;
+    gpointer v;
 
-    GList *ls = list;
-    GVariant **v = vs;
-    for (; ls; ls = ls->next)
-        *(v++) = ls->data;
+    g_hash_table_iter_init(&iter, s->inhibitors);
 
-    GVariant *arr = g_variant_new_array(NULL, vs, n);
-    dbus_session_complete_list_inhibitors(session, i, arr);
+    while (g_hash_table_iter_next(&iter, &k, &v))
+        g_variant_builder_add(&b, "{s@(ss)}", k, v);
 
-    g_variant_ref_sink(arr);
-    g_variant_unref(arr);
-    g_free(vs);
-    g_list_free(list);
+    dict = g_variant_builder_end(&b);
+    dbus_session_complete_list_inhibitors(session, i, dict);
+
+    g_variant_ref_sink(dict);
+    g_variant_unref(dict);
 
     return TRUE;
 }
