@@ -40,7 +40,7 @@ if __name__ == '__main__':
         if n == 0:
             sys.exit(1)
     elif args.command:
-        i = s.inhibit(args.who, args.why)
+        i = s.inhibit(args.who or args.command, args.why)
         def try_uninhibit():
             try:
                 s.uninhibit(i)
