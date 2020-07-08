@@ -207,7 +207,7 @@ static void
 inhibit_callback(DBusServer *s, const gchar *who, const gchar *why,
         UNUSED guint n, UNUSED gpointer data)
 {
-    g_message("Inhibitor added: who='%s' why='%s'", who, why);
+    g_debug("Inhibitor added: who='%s' why='%s'", who, why);
 
     inhibited = TRUE;
     dbus_session_set_inhibited_hint(s->session, TRUE);
@@ -223,7 +223,7 @@ static void
 uninhibit_callback(DBusServer *s, const gchar *who, const gchar *why,
         guint n, UNUSED gpointer data)
 {
-    g_message("Inhibitor removed: who='%s' why='%s'", who, why);
+    g_debug("Inhibitor removed: who='%s' why='%s'", who, why);
 
     if (n > 0)
         return;
