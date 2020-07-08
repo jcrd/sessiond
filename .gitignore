@@ -1,2 +1,3 @@
 builddir
 python-sessiond/__pycache__
+.clangd
