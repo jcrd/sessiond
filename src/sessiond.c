@@ -158,6 +158,7 @@ lock_callback(LogindContext *c, gboolean state, UNUSED gpointer data)
     if (state) {
         systemd_start_unit(systemd_ctx, "graphical-lock.target");
     } else {
+        set_idle(FALSE);
         timeline_start(&timeline);
         systemd_start_unit(systemd_ctx, "graphical-unlock.target");
     }
