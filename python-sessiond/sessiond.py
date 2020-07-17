@@ -1,3 +1,5 @@
+# This project is licensed under the MIT License.
+
 import dbus
 
 BUS_NAME = 'org.sessiond.session1'
