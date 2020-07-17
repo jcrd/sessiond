@@ -90,6 +90,8 @@ The unique ID of the inhibitor to stop.
 
 =back
 
+Returns an error if the ID is not valid or does not exist.
+
 =item B<StopInhibitors>
 
 Stop running inhibitors. Returns the number of inhibitors stopped.
@@ -208,6 +210,8 @@ An unsigned integer value.
 
 =back
 
+Returns an error if unable to set brightness.
+
 =item B<IncBrightness>
 
 Increment the brightness of the backlight. Takes one argument:
@@ -220,7 +224,7 @@ An integer value added to the backlight's current brightness.
 
 =back
 
-Returns the new brightness value.
+Returns the new brightness value or an error if unable to set brightness.
 
 =back
 
