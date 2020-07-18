@@ -94,9 +94,6 @@ class Session(DBusIFace):
     def unlock(self):
         self.interface.Unlock()
 
-    def get_backlight(self, name):
-        return Backlight(name)
-
     @property
     def backlights(self):
         return self.get_property('Backlights')
