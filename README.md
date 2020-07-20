@@ -16,7 +16,8 @@
     3. [Locking the session](#locking-the-session)
     4. [Stopping the session](#stopping-the-session)
     5. [Inhibiting inactivity](#inhibiting-inactivity)
-8. [Building](#building)
+8. [Python package](#python-package)
+9. [Building](#building)
     1. [Dependencies](#dependencies)
     2. [Testing](#testing)
     3. [Installing](#installing)
@@ -252,6 +253,13 @@ See [sessiond-inhibit(1)](man/sessiond-inhibit.1.pod) for more information.
 See the _DBus Service_ section of [sessiond(1)](man/sessiond.1.pod#dbus-service)
 for descriptions of inhibitor-related methods.
 
+## Python package
+
+A Python package is utilized by sessiond's command-line clients to interact with
+its DBus service.
+
+See the [API documentation][4].
+
 ## Building
 
 ### Dependencies
@@ -304,3 +312,4 @@ sessiond is licensed under the GNU General Public License v3.0 or later
 [1]: https://mesonbuild.com
 [2]: https://www.freedesktop.org/software/systemd/man/systemd.special.html
 [3]: https://copr.fedorainfracloud.org/coprs/jcrd/sessiond/
+[4]: https://sessiond.org/python/sessiond.html
