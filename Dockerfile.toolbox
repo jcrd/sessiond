@@ -23,3 +23,5 @@ RUN cpanm Pod::Markdown
 # Run `make gems && make serve` in gh-pages directory.
 RUN dnf install -y ruby-devel
 RUN dnf install -y rubygem-bundler
+
+RUN pip install sphinx-jekyll-builder
