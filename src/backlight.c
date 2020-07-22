@@ -55,18 +55,21 @@ get_uint_sysattr(struct Backlight *b, const char *attr)
     return i;
 }
 
-static void
+static gboolean
 update_backlight(struct Backlight *bl, struct udev_device *dev)
 {
     if (bl->device)
         udev_device_unref(bl->device);
+    if (!((bl->name = udev_device_get_sysname(dev)) &&
+        (bl->subsystem = udev_device_get_subsystem(dev)) &&
+        (bl->sys_path = get_sys_path(bl->subsystem, bl->name)) &&
+        (bl->dev_path = udev_device_get_devpath(dev))))
+        return FALSE;
     bl->device = udev_device_ref(dev);
-    bl->name = udev_device_get_sysname(dev);
-    bl->subsystem = udev_device_get_subsystem(dev);
-    bl->sys_path = get_sys_path(bl->subsystem, bl->name);
-    bl->dev_path = udev_device_get_devpath(dev);
     bl->brightness = get_uint_sysattr(bl, "brightness");
     bl->max_brightness = get_uint_sysattr(bl, "max_brightness");
+
+    return TRUE;
 }
 
 static struct Backlight *
@@ -77,7 +80,10 @@ new_backlight(struct udev_device *dev)
     bl->device = NULL;
     bl->online = TRUE;
     bl->pre_dim_brightness = -1;
-    update_backlight(bl, dev);
+    if (!update_backlight(bl, dev)) {
+        g_free(bl);
+        return NULL;
+    }
 
     return bl;
 }
@@ -154,7 +160,7 @@ source_dispatch(GSource *source, GSourceFunc func, UNUSED gpointer user_data)
     switch (action) {
         case BL_ACTION_ADD:
             bl = new_backlight(dev);
-            if (!g_hash_table_insert(self->devices, (char *)sys_path, bl))
+            if (!bl || !g_hash_table_insert(self->devices, (char *)sys_path, bl))
                 goto end;
             break;
         case BL_ACTION_REMOVE:
