@@ -136,6 +136,7 @@ set_idle(gboolean state)
         if (config.on_idle && !logind_get_locked_hint(logind_ctx))
             logind_lock_session(logind_ctx, TRUE);
     } else {
+        timeline_start(&timeline);
         systemd_start_unit(systemd_ctx, "graphical-unidle.target");
     }
 
@@ -157,7 +158,6 @@ lock_callback(LogindContext *c, gboolean state, UNUSED gpointer data)
         systemd_start_unit(systemd_ctx, "graphical-lock.target");
     } else {
         set_idle(FALSE);
-        timeline_start(&timeline);
         systemd_start_unit(systemd_ctx, "graphical-unlock.target");
     }
 
@@ -180,6 +180,7 @@ sleep_callback(LogindContext *c, gboolean state, UNUSED gpointer data)
         if (config.on_sleep && !logind_get_locked_hint(c))
             logind_lock_session(c, TRUE);
     } else {
+        set_idle(FALSE);
         systemd_start_unit(systemd_ctx, "user-sleep-finished.target");
     }
 
