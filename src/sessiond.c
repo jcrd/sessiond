@@ -49,7 +49,6 @@ static DBusServer *server = NULL;
 static XSource *xsource = NULL;
 static gboolean inhibited = FALSE;
 static gboolean inactive = FALSE;
-static gboolean can_sleep = TRUE;
 static GMainLoop *main_loop = NULL;
 static GMainContext *main_ctx = NULL;
 static Backlights *backlights = NULL;
@@ -134,7 +133,6 @@ set_idle(gboolean state)
 
     if (state) {
         systemd_start_unit(systemd_ctx, "graphical-idle.target");
-        can_sleep = TRUE;
         if (config.on_idle && !logind_get_locked_hint(logind_ctx))
             logind_lock_session(logind_ctx, TRUE);
     } else {
@@ -177,9 +175,6 @@ static void
 sleep_callback(LogindContext *c, gboolean state, UNUSED gpointer data)
 {
     if (state) {
-        if (!can_sleep)
-            return;
-        can_sleep = FALSE;
         g_message("Preparing for sleep...");
         systemd_start_unit(systemd_ctx, "user-sleep.target");
         if (config.on_sleep && !logind_get_locked_hint(c))
