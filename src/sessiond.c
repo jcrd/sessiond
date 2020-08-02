@@ -49,6 +49,7 @@ static DBusServer *server = NULL;
 static XSource *xsource = NULL;
 static gboolean inhibited = FALSE;
 static gboolean inactive = FALSE;
+static gboolean idle = FALSE;
 static GMainLoop *main_loop = NULL;
 static GMainContext *main_ctx = NULL;
 static Backlights *backlights = NULL;
@@ -126,8 +127,10 @@ set_dpms_locked(gboolean state)
 static void
 set_idle(gboolean state)
 {
-    if (state == logind_get_idle_hint(logind_ctx))
+    if (state == idle)
         return;
+
+    idle = state;
 
     logind_set_idle_hint(logind_ctx, state);
 
