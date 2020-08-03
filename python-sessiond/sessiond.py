@@ -29,7 +29,7 @@ class DBusIFace:
         :param val: Value to convert
         :return: The python-typed value
         """
-        if isinstance(val, dbus.String):
+        if isinstance(val, (dbus.String, dbus.ObjectPath)):
             return str(val)
         if isinstance(val, dbus.Boolean):
             return bool(val)
