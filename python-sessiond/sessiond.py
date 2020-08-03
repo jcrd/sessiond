@@ -36,7 +36,7 @@ class DBusIFace:
         if isinstance(val, dbus.UInt64):
             return int(val)
         if isinstance(val, dbus.Array):
-            return list(val)
+            return list(map(DBusIFace.convert, list(val)))
 
         return None
 
