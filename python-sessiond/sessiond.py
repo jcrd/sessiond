@@ -22,21 +22,23 @@ class DBusIFace:
     bus = dbus.SessionBus()
 
     @staticmethod
-    def convert(v):
+    def convert(val):
         """
         Convert a DBus-typed value to its python-type.
 
-        :param v: Value to convert
+        :param val: Value to convert
         :return: The python-typed value
         """
-        if isinstance(v, dbus.String):
-            return str(v)
-        elif isinstance(v, dbus.Boolean):
-            return bool(v)
-        elif isinstance(v, dbus.UInt64):
-            return int(v)
-        elif isinstance(v, dbus.Array):
-            return list(v)
+        if isinstance(val, dbus.String):
+            return str(val)
+        if isinstance(val, dbus.Boolean):
+            return bool(val)
+        if isinstance(val, dbus.UInt64):
+            return int(val)
+        if isinstance(val, dbus.Array):
+            return list(val)
+
+        return None
 
     def __init__(self, path, iface):
         self.obj = DBusIFace.bus.get_object(BUS_NAME, path)
