@@ -212,7 +212,11 @@ on_handle_set_brightness(DBusBacklight *dbl, GDBusMethodInvocation *i,
         return FALSE;
 
     const gchar *sys_path = dbus_backlight_get_sys_path(dbl);
+    if (!sys_path)
+        return FALSE;
     struct Backlight *bl = g_hash_table_lookup(s->bl_devices, sys_path);
+    if (!bl)
+        return FALSE;
 
     if (!backlight_set_brightness(bl, v, s->ctx)) {
         g_dbus_method_invocation_return_dbus_error(i,
@@ -235,7 +239,11 @@ on_handle_inc_brightness(DBusBacklight *dbl, GDBusMethodInvocation *i,
         return FALSE;
 
     const gchar *sys_path = dbus_backlight_get_sys_path(dbl);
+    if (!sys_path)
+        return FALSE;
     struct Backlight *bl = g_hash_table_lookup(s->bl_devices, sys_path);
+    if (!bl)
+        return FALSE;
 
     guint b = MAX(bl->brightness + v, 0);
     if (!backlight_set_brightness(bl, b, s->ctx)) {
