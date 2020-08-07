@@ -338,7 +338,6 @@ logind_set_brightness(LogindContext *c, const char *sys, const char *name,
         return FALSE;
     }
 
-    g_debug("SetBrightness %s %s %u", sys, name, v);
     return TRUE;
 }
 
