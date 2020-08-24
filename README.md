@@ -236,7 +236,7 @@ The `sessiond-inhibit` script provides a simple interface to acquire a lock
 before running a command and release it when the command returns.
 
 ```
-usage: sessiond-inhibit [-h] [-w WHO] [-y WHY] [command]
+usage: sessiond-inhibit [-h] [-w WHO] [-y WHY] [-s] [command]
 
 With no command, list running inhibitors.
 
@@ -247,6 +247,7 @@ optional arguments:
   -h, --help         show this help message and exit
   -w WHO, --who WHO  Set who is inhibiting
   -y WHY, --why WHY  Set why this inhibitor is running
+  -s, --stop         Stop running inhibitors
 ```
 
 See [sessiond-inhibit(1)](man/sessiond-inhibit.1.pod) for more information.
