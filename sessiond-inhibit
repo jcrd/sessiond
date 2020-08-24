@@ -23,6 +23,16 @@ from dbus.exceptions import DBusException
 from sessiond import Session
 
 
+def get_inhibitors(session):
+    # Sort by timestamp.
+    inh = sorted(session.list_inhibitors().items(),
+                 key=lambda x: x[1][0], reverse=True)
+    if len(inh) == 0:
+        sys.stderr.write('No inhibitors\n')
+        sys.exit(1)
+    return inh
+
+
 if __name__ == '__main__':
     p = ArgumentParser(description='With no command, list running inhibitors.')
     p.add_argument('command', nargs='?', help='Command to run')
@@ -31,6 +41,10 @@ if __name__ == '__main__':
                    help='Set why this inhibitor is running')
     p.add_argument('-s', '--stop', action='store_true',
                    help='Stop running inhibitors')
+    p.add_argument('-i', '--inhibit', action='store_true',
+                   help='Inhibit without a command')
+    p.add_argument('-u', '--uninhibit', nargs='?', const=True, metavar='ID',
+                   help='Uninhibit last inhibitor or by ID')
 
     args = p.parse_args()
     s = Session()
@@ -39,6 +53,14 @@ if __name__ == '__main__':
         n = s.stop_inhibitors()
         if n == 0:
             sys.exit(1)
+    elif args.inhibit:
+        print(s.inhibit(args.who, args.why))
+    elif args.uninhibit:
+        if args.uninhibit is True:
+            # Uninhibit by first ID.
+            args.uninhibit = get_inhibitors(s)[0][0]
+        s.uninhibit(args.uninhibit)
+        print(args.uninhibit)
     elif args.command:
         i = s.inhibit(args.who or args.command, args.why)
         def try_uninhibit():
@@ -53,12 +75,8 @@ if __name__ == '__main__':
             sys.exit(130)
         try_uninhibit()
     else:
-        i = s.list_inhibitors()
-        if len(i) == 0:
-            sys.stderr.write('No inhibitors\n')
-            sys.exit(1)
-        for k, t in i.items():
-            out = "id='{}' who='{}'".format(k, t[0])
-            if t[1]:
-                out += " why='{}'".format(t[1])
+        for (k, t) in get_inhibitors(s):
+            out = "id='{}' time='{}' who='{}'".format(k, t[0], t[1])
+            if t[2]:
+                out += " why='{}'".format(t[2])
             print(out)

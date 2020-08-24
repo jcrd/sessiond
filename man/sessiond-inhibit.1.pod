@@ -32,6 +32,14 @@ Set why this inhibitor is running.
 
 Stop running inhibitors.
 
+=item B<-i>
+
+Inhibit without a command.
+
+=item B<-u> [I<ID>]
+
+Uninhibit last inhibitor or by ID.
+
 =back
 
 =head1 AUTHOR

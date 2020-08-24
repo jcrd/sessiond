@@ -14,7 +14,7 @@
       <arg name='count' type='u' direction='out'/>
     </method>
     <method name='ListInhibitors'>
-      <arg name='inhibitors' type='a{s(ss)}' direction='out'/>
+      <arg name='inhibitors' type='a{s(tss)}' direction='out'/>
     </method>
     <property name='InhibitedHint' type='b' access='read'/>
     <property name='LockedHint' type='b' access='read'/>

@@ -190,9 +190,10 @@ class Session(DBusIFace):
         """
         List running inhibitors.
 
-        :return: A dictionary mapping IDs to tuples of 'who' and 'why' strings
+        :return: A dictionary mapping IDs to tuples of the creation timestamp \
+        and 'who' and 'why' strings
         """
-        return {str(k): (str(s[0]), str(s[1])) for k, s \
+        return {str(k): (int(s[0]), str(s[1]), str(s[2])) for k, s \
                 in self.interface.ListInhibitors().items()}
 
     def lock(self):

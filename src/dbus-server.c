@@ -96,7 +96,7 @@ on_handle_inhibit(DBusSession *session, GDBusMethodInvocation *i,
     DBusServer *s = (DBusServer *)user_data;
     gchar *id = g_uuid_string_random();
 
-    GVariant *inhibit = g_variant_new("(ss)", who, why);
+    GVariant *inhibit = g_variant_new("(tss)", g_get_real_time(), who, why);
     g_variant_ref_sink(inhibit);
     g_hash_table_insert(s->inhibitors, id, inhibit);
 
@@ -120,6 +120,7 @@ on_handle_uninhibit(DBusSession *session, GDBusMethodInvocation *i,
 
     DBusServer *s = (DBusServer *)user_data;
 
+    gint64 timestamp;
     gchar *who;
     gchar *why;
     GVariant *v = g_hash_table_lookup(s->inhibitors, id);
@@ -128,7 +129,7 @@ on_handle_uninhibit(DBusSession *session, GDBusMethodInvocation *i,
                 DBUS_SESSION_ERROR ".Uninhibit", "Inhibitor ID does not exist");
         return TRUE;
     }
-    g_variant_get(v, "(ss)", &who, &why);
+    g_variant_get(v, "(tss)", &timestamp, &who, &why);
 
     g_hash_table_remove(s->inhibitors, id);
     guint n = g_hash_table_size(s->inhibitors);
@@ -154,13 +155,14 @@ on_handle_stop_inhibitors(DBusSession *session, GDBusMethodInvocation *i,
     GHashTableIter iter;
     gpointer k;
     gpointer v;
+    gint64 timestamp;
     gchar *who;
     gchar *why;
 
     g_hash_table_iter_init(&iter, s->inhibitors);
 
     while (g_hash_table_iter_next(&iter, &k, &v)) {
-        g_variant_get(v, "(ss)", &who, &why);
+        g_variant_get(v, "(tss)", &timestamp, &who, &why);
         g_hash_table_iter_remove(&iter);
 
         g_signal_emit(s, signals[UNINHIBIT_SIGNAL], 0, who, why, --n);
@@ -182,7 +184,7 @@ on_handle_list_inhibitors(DBusSession *session, GDBusMethodInvocation *i,
     GVariantBuilder b;
     GVariant *dict;
 
-    g_variant_builder_init(&b, G_VARIANT_TYPE("a{s(ss)}"));
+    g_variant_builder_init(&b, G_VARIANT_TYPE("a{s(tss)}"));
 
     GHashTableIter iter;
     gpointer k;
@@ -191,7 +193,7 @@ on_handle_list_inhibitors(DBusSession *session, GDBusMethodInvocation *i,
     g_hash_table_iter_init(&iter, s->inhibitors);
 
     while (g_hash_table_iter_next(&iter, &k, &v))
-        g_variant_builder_add(&b, "{s@(ss)}", k, v);
+        g_variant_builder_add(&b, "{s@(tss)}", k, v);
 
     dict = g_variant_builder_end(&b);
     dbus_session_complete_list_inhibitors(session, i, dict);
