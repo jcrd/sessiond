@@ -39,10 +39,11 @@ class Unit:
 
     def consists_of(self):
         cmd = 'systemctl --user show -p ConsistsOf --value {}'.format(self.name)
-        return run(cmd.split(), capture_output=True, text=True).stdout.split()
+        return run(cmd.split(), capture_output=True, text=True,
+                   check=True).stdout.split()
 
     def stop(self):
-        run('systemctl --user stop {}'.format(self.name).split())
+        run('systemctl --user stop {}'.format(self.name).split(), check=True)
 
     def exec_start_wait(self):
         execlp('systemctl', 'systemctl', '--user', '--wait', 'start', self.name)
@@ -105,7 +106,7 @@ if __name__ == '__main__':
         if sessiond_session.active():
             sys.stderr.write('A session is already running\n')
             sys.exit(1)
-        run('systemctl --user import-environment'.split())
+        run('systemctl --user import-environment'.split(), check=True)
         sessiond_session.exec_start_wait()
     elif args.cmd == 'stop':
         sessiond_session.stop()
