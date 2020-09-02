@@ -111,20 +111,20 @@ xsource_new(GMainContext *ctx, guint input_mask, GSourceFunc func,
 {
     Display *dpy = XOpenDisplay(NULL);
     if (!dpy) {
-        g_critical("Failed to open X display");
+        g_warning("Failed to open X display");
         return NULL;
     }
 
     int opcode, event, error;
     if (!XQueryExtension(dpy, "XInputExtension", &opcode, &event, &error)) {
-        g_critical("XInputExtension is not available");
+        g_warning("XInputExtension is not available");
         return NULL;
     }
 
     int major = XI_MAJOR_VERSION;
     int minor = XI_MINOR_VERSION;
     if (XIQueryVersion(dpy, &major, &minor) != Success) {
-        g_critical("XInputExtension %i.%i is not supported", major, minor);
+        g_warning("XInputExtension %i.%i is not supported", major, minor);
         return NULL;
     }
 

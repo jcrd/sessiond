@@ -298,7 +298,7 @@ static gboolean
 xsource_cb(UNUSED gpointer user_data)
 {
     if (!xsource->connected) {
-        g_critical("X connection lost");
+        g_warning("X connection lost");
         g_main_loop_quit(main_loop);
         return G_SOURCE_REMOVE;
     }
@@ -490,7 +490,7 @@ main(int argc, char *argv[])
     g_option_context_free(ctx);
 
     if (err) {
-        g_critical("%s", err->message);
+        g_warning("%s", err->message);
         g_error_free(err);
         return EXIT_FAILURE;
     }
