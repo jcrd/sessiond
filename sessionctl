@@ -80,15 +80,21 @@ if __name__ == '__main__':
     subp.add_parser('unlock', help='Unlock the session')
     subp.add_parser('properties', help='List session properties')
 
+    def str_or_int(s):
+        try:
+            return int(s)
+        except ValueError:
+            return s
+
     b = subp.add_parser('backlight', help='Interact with backlights')
     b.add_argument('-l', '--list', action='store_true',
                    help='List backlight names')
     b.add_argument('-g', '--get', metavar='BACKLIGHT',
                    help='Get backlight brightness')
-    b.add_argument('-s', '--set', type=int, nargs=2,
+    b.add_argument('-s', '--set', type=str_or_int, nargs=2,
                    metavar=('BACKLIGHT', 'VALUE'),
                    help='Set backlight brightness')
-    b.add_argument('-i', '--inc', type=int, nargs=2,
+    b.add_argument('-i', '--inc', type=str_or_int, nargs=2,
                    metavar=('BACKLIGHT', 'VALUE'),
                    help='Increment backlight brightness')
 
@@ -125,7 +131,7 @@ if __name__ == '__main__':
         elif args.set:
             Backlight(args.set[0]).set_brightness(args.set[1])
         elif args.inc:
-            Backlight(args.inc[0]).set_brightness(args.inc[1])
+            Backlight(args.inc[0]).inc_brightness(args.inc[1])
         else:
             bls = get_session().backlights
             if len(bls) == 0:
