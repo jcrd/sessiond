@@ -72,4 +72,4 @@ cd python-sessiond
 %{python3_sitelib}/__pycache__/%{name}.*
 
 %changelog
-{{{ git_dir_changelog }}}
+{{{ git_changelog }}}
