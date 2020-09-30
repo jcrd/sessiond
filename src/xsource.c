@@ -26,6 +26,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
 
+#define DEBOUNCE_US (1 * 1000000)
+
 #define XI_MAJOR_VERSION 2
 #define XI_MINOR_VERSION 0
 
@@ -35,6 +37,7 @@ xsource_prepare(GSource *source, gint *timeout)
     XSource *self = (XSource *)source;
     XSync(self->dpy, FALSE);
     *timeout = -1;
+
     return FALSE;
 }
 
@@ -78,13 +81,25 @@ xsource_check(GSource *source)
         XFreeEventData(self->dpy, &c);
     }
 
-    return events > 0;
+    if (events > 0) {
+        self->last_event_time = g_get_monotonic_time();
+        g_source_set_ready_time(source, self->last_event_time + DEBOUNCE_US);
+    }
+
+    return FALSE;
 }
 
 static gboolean
-xsource_dispatch(UNUSED GSource *source, GSourceFunc func, gpointer user_data)
+xsource_dispatch(GSource *source, GSourceFunc func, gpointer user_data)
 {
-    return func(user_data);
+    XSource *self = (XSource *)source;
+
+    if (g_get_monotonic_time() - self->last_event_time >= DEBOUNCE_US) {
+        g_source_set_ready_time(source, -1);
+        return func(user_data);
+    }
+
+    return G_SOURCE_CONTINUE;
 }
 
 static void
@@ -148,6 +163,8 @@ xsource_new(GMainContext *ctx, guint input_mask, GSourceFunc func,
     self->fd = g_source_add_unix_fd(source, ConnectionNumber(dpy),
                                     G_IO_IN | G_IO_HUP | G_IO_ERR);
     self->connected = TRUE;
+
+    self->last_event_time = 0;
 
     g_source_set_callback(source, func, user_data, destroy);
     g_source_attach(source, ctx);

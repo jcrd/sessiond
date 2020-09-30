@@ -41,6 +41,7 @@ typedef struct {
     Display *dpy;
     gpointer fd;
     gboolean connected;
+    gint64 last_event_time;
 } XSource;
 
 extern XSource *
