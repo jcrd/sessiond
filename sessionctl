@@ -24,9 +24,11 @@ from subprocess import run
 from dbus.exceptions import DBusException
 from sessiond import Session, Backlight
 
+sessiond_session = 'sessiond-session.target'
+
 
 class Unit:
-    def __init__(self, name='sessiond-session.target'):
+    def __init__(self, name=sessiond_session):
         self.name = name
 
     def active(self):
@@ -73,7 +75,10 @@ if __name__ == '__main__':
     p = ArgumentParser(description='With no arguments, show session status.')
     subp = p.add_subparsers(dest='cmd')
 
-    subp.add_parser('run', help='Run session')
+    r = subp.add_parser('run', help='Run session')
+    r.add_argument('unit', nargs='?', default=sessiond_session,
+                   help='Main unit to run')
+
     subp.add_parser('stop', help='Stop the running session')
     subp.add_parser('status', help='Show session status')
     subp.add_parser('lock', help='Lock the session')
@@ -106,16 +111,14 @@ if __name__ == '__main__':
         status()
         sys.exit(0)
 
-    sessiond_session = Unit()
-
     if args.cmd == 'run':
-        if sessiond_session.active():
+        if Unit().active():
             sys.stderr.write('A session is already running\n')
             sys.exit(1)
         run('systemctl --user import-environment'.split(), check=True)
-        sessiond_session.exec_start_wait()
+        Unit(args.unit).exec_start_wait()
     elif args.cmd == 'stop':
-        sessiond_session.stop()
+        Unit().stop()
     elif args.cmd == 'status':
         status()
     elif args.cmd == 'lock':
