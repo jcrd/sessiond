@@ -20,11 +20,22 @@ from argparse import ArgumentParser
 from os import execlp
 from pathlib import PurePath
 from subprocess import run
+from time import sleep
 
 from dbus.exceptions import DBusException
 from sessiond import Session, Backlight
 
 sessiond_session = 'sessiond-session.target'
+graphical_session = 'graphical-session.target'
+
+
+def _run(cmd, **kw):
+    return run(cmd.split(), **kw)
+
+
+def consists_of(unit=graphical_session):
+    cmd = 'systemctl --user show -p ConsistsOf --value {}'.format(unit)
+    return _run(cmd, capture_output=True, text=True, check=True).stdout.split()
 
 
 class Unit:
@@ -33,30 +44,53 @@ class Unit:
 
     def active(self):
         cmd = 'systemctl --user -q is-active {}'.format(self.name)
-        return run(cmd.split()).returncode == 0
+        return _run(cmd).returncode == 0
+
+    def failed(self):
+        cmd = 'systemctl --user -q is-failed {}'.format(self.name)
+        return _run(cmd).returncode == 0
 
     def status(self):
         cmd = 'systemctl --user is-active {}'.format(self.name)
-        return run(cmd.split(), capture_output=True, text=True).stdout.rstrip()
-
-    def consists_of(self):
-        cmd = 'systemctl --user show -p ConsistsOf --value {}'.format(self.name)
-        return run(cmd.split(), capture_output=True, text=True,
-                   check=True).stdout.split()
+        return _run(cmd, capture_output=True, text=True).stdout.rstrip()
 
     def stop(self):
-        run('systemctl --user stop {}'.format(self.name).split(), check=True)
+        _run('systemctl --user stop {}'.format(self.name), check=True)
 
-    def exec_start_wait(self):
-        execlp('systemctl', 'systemctl', '--user', '--wait', 'start', self.name)
+    def reset(self):
+        if not self.failed():
+            return
+        _run('systemctl --user reset-failed {}'.format(self.name), check=True)
+
+    def kill(self):
+        _run('systemctl --user kill {}'.format(self.name), check=True)
+
+    def start_wait(self):
+        def check_active():
+            for u in consists_of():
+                if Unit(u).active():
+                    return True
+            return False
+        _run('systemctl --user --wait restart {}'.format(self.name))
+        step = 0.1
+        timeout = 5
+        while check_active():
+            if timeout == 0:
+                for n in consists_of():
+                    u = Unit(n)
+                    if u.active():
+                        u.kill()
+                break
+            sleep(step)
+            timeout -= step
 
 
 def status():
-    g = Unit('graphical-session.target')
+    g = Unit(graphical_session)
     if not g.active():
         sys.stderr.write('Session is not active\n')
         sys.exit(1)
-    units = g.consists_of()
+    units = consists_of()
     n = len(max(units, key=len))
     for u in units:
         print('{u: <{n}} {s}'.format(u=u + ':', n=n + 1, s=Unit(u).status()))
@@ -115,8 +149,10 @@ if __name__ == '__main__':
         if Unit().active():
             sys.stderr.write('A session is already running\n')
             sys.exit(1)
-        run('systemctl --user import-environment'.split(), check=True)
-        Unit(args.unit).exec_start_wait()
+        _run('systemctl --user import-environment', check=True)
+        for u in consists_of():
+            Unit(u).reset()
+        Unit(args.unit).start_wait()
     elif args.cmd == 'stop':
         Unit().stop()
     elif args.cmd == 'status':
