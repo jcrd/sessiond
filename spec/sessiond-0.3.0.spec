@@ -1,11 +1,11 @@
 Name: sessiond
-Version: 0.2.0
+Version: 0.3.0
 Release: 1%{?dist}
 Summary: Standalone X11 session manager for logind
 
 License: GPLv3+
 URL: https://github.com/jcrd/sessiond
-Source0: https://github.com/jcrd/sessiond/archive/v0.2.0.tar.gz
+Source0: https://github.com/jcrd/sessiond/archive/v0.3.0.tar.gz
 
 BuildRequires: meson
 BuildRequires: gcc
@@ -57,6 +57,7 @@ cd python-sessiond
 /usr/lib/systemd/user/sessiond.service
 /usr/lib/systemd/user/user-shutdown.target
 /usr/lib/systemd/user/user-sleep.target
+/usr/lib/systemd/user/user-sleep-finished.target
 %{_mandir}/man1/sessionctl.1.gz
 %{_mandir}/man1/sessiond-inhibit.1.gz
 %{_mandir}/man1/sessiond.1.gz
@@ -70,6 +71,9 @@ cd python-sessiond
 %{python3_sitelib}/__pycache__/%{name}.*
 
 %changelog
+* Sun Nov 1 2020 James Reed <jcrd@tuta.io> - 0.3.0-1
+- Release v0.3.0
+
 * Wed Jun 17 2020 James Reed <jcrd@tuta.io> - 0.2.0-1
 - Release v0.2.0
 
