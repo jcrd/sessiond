@@ -92,8 +92,11 @@ def status():
         sys.exit(1)
     units = consists_of()
     n = len(max(units, key=len))
+    status = {}
     for u in units:
-        print('{u: <{n}} {s}'.format(u=u + ':', n=n + 1, s=Unit(u).status()))
+        status[u] = Unit(u).status()
+    for u, s in status.items():
+        print('{u: <{n}} {s}'.format(u=u + ':', n=n + 1, s=s))
 
 
 def get_session():
