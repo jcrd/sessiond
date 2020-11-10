@@ -1,4 +1,4 @@
 [Unit]
 Description=sessiond session
-Requires=sessiond.service
+Wants=sessiond.service
 BindsTo=graphical-session.target
