@@ -91,6 +91,7 @@ def status():
         sys.stderr.write('Session is not active\n')
         sys.exit(1)
     units = consists_of()
+    units.sort()
     n = len(max(units, key=len))
     status = {}
     for u in units:
