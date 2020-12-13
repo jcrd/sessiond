@@ -33,7 +33,7 @@ class DBusIFace:
             return str(val)
         if isinstance(val, dbus.Boolean):
             return bool(val)
-        if isinstance(val, dbus.UInt64):
+        if isinstance(val, dbus.UInt32) or isinstance(val, dbus.UInt64):
             return int(val)
         if isinstance(val, dbus.Array):
             return list(map(DBusIFace.convert, list(val)))

@@ -170,7 +170,7 @@ if __name__ == '__main__':
             print('{}={}'.format(k, v))
     elif args.cmd == 'backlight':
         if args.get:
-            print(Backlight(args.get))
+            print(Backlight(args.get).brightness)
         elif args.set:
             Backlight(args.set[0]).set_brightness(args.set[1])
         elif args.inc:
