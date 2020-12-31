@@ -1,11 +1,11 @@
 Name: sessiond
-Version: 0.3.0
+Version: 0.3.1
 Release: 1%{?dist}
 Summary: Standalone X11 session manager for logind
 
 License: GPLv3+
 URL: https://github.com/jcrd/sessiond
-Source0: https://github.com/jcrd/sessiond/archive/v0.3.0.tar.gz
+Source0: https://github.com/jcrd/sessiond/archive/v0.3.1.tar.gz
 
 BuildRequires: meson
 BuildRequires: gcc
@@ -71,6 +71,9 @@ cd python-sessiond
 %{python3_sitelib}/__pycache__/%{name}.*
 
 %changelog
+* Thu Dec 31 2020 James Reed <jcrd@tuta.io> - 0.3.1-1
+- Release v0.3.1
+
 * Sun Nov 1 2020 James Reed <jcrd@tuta.io> - 0.3.0-1
 - Release v0.3.0
 
