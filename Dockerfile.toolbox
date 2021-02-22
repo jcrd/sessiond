@@ -14,14 +14,11 @@ RUN dnf install -y valgrind
 # clangd
 RUN dnf install -y clang-tools-extra
 
+RUN dnf install -y hugo
+
 # Install Pod::Markdown perl module to convert .pod manpages to .md for site.
 RUN dnf install -y perl
 RUN curl -L http://cpanmin.us | perl - App::cpanminus
 RUN cpanm Pod::Markdown
 
-# Install bundler ruby gem to test github pages site.
-# Run `make gems && make serve` in gh-pages directory.
-RUN dnf install -y ruby-devel
-RUN dnf install -y rubygem-bundler
-
-RUN pip install sphinx-jekyll-builder
+RUN pip install sphinx-markdown-builder
