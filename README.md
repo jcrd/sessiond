@@ -317,4 +317,4 @@ sessiond is licensed under the GNU General Public License v3.0 or later
 [1]: https://mesonbuild.com
 [2]: https://www.freedesktop.org/software/systemd/man/systemd.special.html#graphical-session.target
 [3]: https://copr.fedorainfracloud.org/coprs/jcrd/sessiond/
-[4]: https://sessiond.org/python/sessiond.html
+[4]: https://sessiond.org/python/
