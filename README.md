@@ -139,8 +139,8 @@ For example, configure `lightdm` to start a sessiond session by setting
 ### Running services
 
 `sessiond-session.target` binds to `graphical-session.target` provided
-by systemd. See the _Special Passive User Units_ section of
-[systemd.special(7)][2] for more information about graphical sessions.
+by systemd. See _graphical-session.target_ in [systemd.special(7)][2]
+for more information about graphical sessions.
 
 To run a service in the graphical session, `<service>.service` should contain:
 
@@ -315,6 +315,6 @@ sessiond is licensed under the GNU General Public License v3.0 or later
 (see [LICENSE](LICENSE)).
 
 [1]: https://mesonbuild.com
-[2]: https://www.freedesktop.org/software/systemd/man/systemd.special.html
+[2]: https://www.freedesktop.org/software/systemd/man/systemd.special.html#graphical-session.target
 [3]: https://copr.fedorainfracloud.org/coprs/jcrd/sessiond/
 [4]: https://sessiond.org/python/sessiond.html
