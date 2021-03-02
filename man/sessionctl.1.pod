@@ -15,9 +15,10 @@ its DBus service.
 
 =over
 
-=item B<run>
+=item B<run> [I<UNIT>]
 
-Run a new session.
+Run a new session, with I<UNIT> as the main unit if provided.
+The default unit is I<sessiond-session.target>.
 
 =item B<stop>
 
