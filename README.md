@@ -15,7 +15,8 @@
     2. [Running services](#running-services)
     3. [Locking the session](#locking-the-session)
     4. [Stopping the session](#stopping-the-session)
-    5. [Inhibiting inactivity](#inhibiting-inactivity)
+    5. [Running a window manager](#running-a-window-manager)
+    6. [Inhibiting inactivity](#inhibiting-inactivity)
 8. [Python package](#python-package)
 9. [Building](#building)
     1. [Dependencies](#dependencies)
@@ -227,6 +228,39 @@ ExecStopPost=/usr/bin/sessionctl stop
 [Install]
 WantedBy=graphical-session.target
 ```
+
+### Running a window manager
+
+To use sessiond alongside a window manager, the session can be started with:
+`sessionctl run window-manager.service`
+
+An example `window-manager.service`:
+```
+[Unit]
+Description=Window manager
+Requires=sessiond-session.target
+After=sessiond.service
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/twm
+ExecStopPost=/usr/bin/sessionctl stop
+Restart=always
+
+[Install]
+WantedBy=graphical-session.target
+```
+
+A custom Desktop Entry can be used to run the window manager and session:
+```
+[Desktop Entry]
+Name=twm
+Comment=Window manager
+TryExec=twm
+Exec=sessionctl run window-manager.service
+Type=Application
+```
+
 ### Inhibiting inactivity
 
 Inhibitor locks can be acquired when the session should be considered active
