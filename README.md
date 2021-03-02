@@ -13,9 +13,9 @@
 7. [Managing the session](#managing-the-session)
     1. [Starting the session](#starting-the-session)
     2. [Running services](#running-services)
-    3. [Locking the session](#locking-the-session)
-    4. [Stopping the session](#stopping-the-session)
-    5. [Running a window manager](#running-a-window-manager)
+    3. [Stopping the session](#stopping-the-session)
+    4. [Running a window manager](#running-a-window-manager)
+    5. [Locking the session](#locking-the-session)
     6. [Inhibiting inactivity](#inhibiting-inactivity)
 8. [Python package](#python-package)
 9. [Building](#building)
@@ -163,43 +163,6 @@ It can then be enabled with `systemctl --user enable <service>`.
 
 See below for example services.
 
-### Locking the session
-
-By default, the session is locked when it becomes idle and before sleeping.
-This is configured in the `[Lock]` section of the configuration file.
-The session can be manually locked by running `sessionctl lock`.
-
-To configure a service to act as the screen locker, include:
-
-```
-[Service]
-ExecStopPost=/usr/bin/sessionctl unlock
-```
-
-so the session is considered unlocked when the locker exits, and:
-
-```
-[Install]
-WantedBy=graphical-lock.target
-```
-
-so the service is started when the session locks. Then enable it.
-
-Below is an example `i3lock.service`:
-
-```
-[Unit]
-Description=Lock X session with i3lock
-PartOf=graphical-session.target
-
-[Service]
-ExecStart=/usr/bin/i3lock -n -c 000000
-ExecStopPost=/usr/bin/sessionctl unlock
-
-[Install]
-WantedBy=graphical-lock.target
-```
-
 ### Stopping the session
 
 The session can be stopped with `sessionctl stop`. This will stop
@@ -259,6 +222,43 @@ Comment=Window manager
 TryExec=twm
 Exec=sessionctl run window-manager.service
 Type=Application
+```
+
+### Locking the session
+
+By default, the session is locked when it becomes idle and before sleeping.
+This is configured in the `[Lock]` section of the configuration file.
+The session can be manually locked by running `sessionctl lock`.
+
+To configure a service to act as the screen locker, include:
+
+```
+[Service]
+ExecStopPost=/usr/bin/sessionctl unlock
+```
+
+so the session is considered unlocked when the locker exits, and:
+
+```
+[Install]
+WantedBy=graphical-lock.target
+```
+
+so the service is started when the session locks. Then enable it.
+
+Below is an example `i3lock.service`:
+
+```
+[Unit]
+Description=Lock X session with i3lock
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/i3lock -n -c 000000
+ExecStopPost=/usr/bin/sessionctl unlock
+
+[Install]
+WantedBy=graphical-lock.target
 ```
 
 ### Inhibiting inactivity
