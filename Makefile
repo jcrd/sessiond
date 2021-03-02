@@ -1,4 +1,4 @@
-URL = git@github.com:jcrd/sessiond
+URL = git@github.com:jcrd/sessiond.org
 
-gh-pages:
-	git clone -b gh-pages --single-branch $(URL) gh-pages
+sessiond.org:
+	git clone --single-branch $(URL) $@
