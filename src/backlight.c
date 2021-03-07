@@ -29,7 +29,11 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include <glib-2.0/glib.h>
 #include <libudev.h>
 
-#define SYSFS_WRITER "/usr/lib/sessiond/sessiond-sysfs-writer"
+#ifndef PREFIX
+#define PREFIX "/usr/local"
+#endif /* PREFIX */
+
+#define SYSFS_WRITER PREFIX "/lib/sessiond/sessiond-sysfs-writer"
 
 static gchar *
 get_sys_path(const char *subsystem, const char *name)

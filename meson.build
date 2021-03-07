@@ -21,6 +21,7 @@ endif
 
 add_project_arguments('-DVERSION="@0@"'.format(version), language : 'c')
 add_project_arguments('-DG_LOG_USE_STRUCTURED', language : 'c')
+add_project_arguments('-DPREFIX="@0@"'.format(get_option('prefix')), language : 'c')
 
 if get_option('dpms').enabled()
   deps += dependency('xext')
