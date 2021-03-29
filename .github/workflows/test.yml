@@ -1,0 +1,18 @@
+name: test
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: supplantr/sessiond:latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Build
+        run: meson builddir && ninja -C builddir
+
+      - name: Test
+        run: meson test -C builddir
