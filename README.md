@@ -1,4 +1,4 @@
-# sessiond [![CircleCI](https://circleci.com/gh/jcrd/sessiond.svg?style=svg)](https://circleci.com/gh/jcrd/sessiond)
+# sessiond ![test](https://github.com/jcrd/sessiond/actions/workflows/test.yml/badge.svg)
 
 ## Contents
 
