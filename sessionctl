@@ -38,6 +38,26 @@ def consists_of(unit=graphical_session):
     return _run(cmd, capture_output=True, text=True, check=True).stdout.split()
 
 
+def stop_session(step=0.1, timeout=5):
+    def check_active():
+        for u in consists_of():
+            if Unit(u).active():
+                return True
+        return False
+
+    Unit().stop()
+
+    while check_active():
+        if timeout == 0:
+            for n in consists_of():
+                u = Unit(n)
+                if u.active():
+                    u.kill()
+            break
+        sleep(step)
+        timeout -= step
+
+
 class Unit:
     def __init__(self, name=sessiond_session):
         self.name = name
@@ -66,23 +86,8 @@ class Unit:
         _run('systemctl --user kill {}'.format(self.name), check=True)
 
     def start_wait(self):
-        def check_active():
-            for u in consists_of():
-                if Unit(u).active():
-                    return True
-            return False
         _run('systemctl --user --wait restart {}'.format(self.name))
-        step = 0.1
-        timeout = 5
-        while check_active():
-            if timeout == 0:
-                for n in consists_of():
-                    u = Unit(n)
-                    if u.active():
-                        u.kill()
-                break
-            sleep(step)
-            timeout -= step
+        stop_session()
 
 
 def status():
@@ -158,7 +163,7 @@ if __name__ == '__main__':
             Unit(u).reset()
         Unit(args.unit).start_wait()
     elif args.cmd == 'stop':
-        Unit().stop()
+        stop_session()
     elif args.cmd == 'status':
         status()
     elif args.cmd == 'lock':
