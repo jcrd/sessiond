@@ -72,7 +72,7 @@ Show sessiond version.
 
 =head1 AUTHOR
 
-James Reed E<lt>jcrd@tuta.ioE<gt>
+James Reed E<lt>jcrd@sessiond.orgE<gt>
 
 =head1 REPORTING BUGS
 

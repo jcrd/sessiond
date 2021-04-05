@@ -11,7 +11,7 @@ setup(
     url='https://github.com/jcrd/sessiond/python-sessiond',
     license='MIT',
     author='James Reed',
-    author_email='jcrd@tuta.io',
+    author_email='jcrd@sessiond.org',
 
     keywords='dbus sessiond',
     classifiers=[
