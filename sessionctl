@@ -17,7 +17,6 @@
 
 import sys
 from argparse import ArgumentParser
-from os import execlp
 from pathlib import PurePath
 from subprocess import run
 from time import sleep
