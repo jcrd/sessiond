@@ -24,15 +24,15 @@ from time import sleep
 from dbus.exceptions import DBusException
 from sessiond import Session, Backlight
 
-sessiond_session = 'sessiond-session.target'
-graphical_session = 'graphical-session.target'
+SESSIOND_SESSION = 'sessiond-session.target'
+GRAPHICAL_SESSION = 'graphical-session.target'
 
 
 def _run(cmd, **kw):
     return run(cmd.split(), **kw)
 
 
-def consists_of(unit=graphical_session):
+def consists_of(unit=GRAPHICAL_SESSION):
     cmd = 'systemctl --user show -p ConsistsOf --value {}'.format(unit)
     return _run(cmd, capture_output=True, text=True, check=True).stdout.split()
 
@@ -58,7 +58,7 @@ def stop_session(step=0.1, timeout=5):
 
 
 class Unit:
-    def __init__(self, name=sessiond_session):
+    def __init__(self, name=SESSIOND_SESSION):
         self.name = name
 
     def active(self):
@@ -90,7 +90,7 @@ class Unit:
 
 
 def status():
-    g = Unit(graphical_session)
+    g = Unit(GRAPHICAL_SESSION)
     if not g.active():
         sys.stderr.write('Session is not active\n')
         sys.exit(1)
@@ -118,7 +118,7 @@ if __name__ == '__main__':
     subp = p.add_subparsers(dest='cmd')
 
     r = subp.add_parser('run', help='Run session')
-    r.add_argument('unit', nargs='?', default=sessiond_session,
+    r.add_argument('unit', nargs='?', default=SESSIOND_SESSION,
                    help='Main unit to run')
 
     subp.add_parser('stop', help='Stop the running session')
