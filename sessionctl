@@ -26,6 +26,7 @@ from sessiond import Session, Backlight
 
 SESSIOND_SESSION = 'sessiond-session.target'
 GRAPHICAL_SESSION = 'graphical-session.target'
+WINDOW_MANAGER_ALIAS = 'window-manager.service'
 
 
 def _run(cmd, **kw):
@@ -44,7 +45,7 @@ def stop_session(step=0.1, timeout=5):
                 return True
         return False
 
-    Unit().stop()
+    Unit(SESSIOND_SESSION).stop()
 
     while check_active():
         if timeout == 0:
@@ -57,8 +58,16 @@ def stop_session(step=0.1, timeout=5):
         timeout -= step
 
 
+def get_window_manager():
+    cmd = 'systemctl --user show -p Id --value {}'.format(WINDOW_MANAGER_ALIAS)
+    wm = _run(cmd, capture_output=True, text=True).stdout.rstrip()
+    if wm == WINDOW_MANAGER_ALIAS:
+        raise ValueError('No window manager is enabled')
+    return wm
+
+
 class Unit:
-    def __init__(self, name=SESSIOND_SESSION):
+    def __init__(self, name):
         self.name = name
 
     def active(self):
@@ -118,8 +127,7 @@ if __name__ == '__main__':
     subp = p.add_subparsers(dest='cmd')
 
     r = subp.add_parser('run', help='Run session')
-    r.add_argument('unit', nargs='?', default=SESSIOND_SESSION,
-                   help='Main unit to run')
+    r.add_argument('service', nargs='?', help='Window manager service to run')
 
     subp.add_parser('stop', help='Stop the running session')
     subp.add_parser('status', help='Show session status')
@@ -154,13 +162,19 @@ if __name__ == '__main__':
         sys.exit(0)
 
     if args.cmd == 'run':
-        if Unit().active():
+        if Unit(SESSIOND_SESSION).active():
             sys.stderr.write('A session is already running\n')
             sys.exit(1)
+        if not args.service:
+            try:
+                args.service = get_window_manager()
+            except ValueError as e:
+                sys.stderr.write(str(e))
+                sys.exit(1)
         _run('systemctl --user import-environment', check=True)
         for u in consists_of():
             Unit(u).reset()
-        Unit(args.unit).start_wait()
+        Unit(args.service).start_wait()
     elif args.cmd == 'stop':
         stop_session()
     elif args.cmd == 'status':

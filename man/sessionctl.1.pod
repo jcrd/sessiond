@@ -15,10 +15,11 @@ its DBus service.
 
 =over
 
-=item B<run> [I<UNIT>]
+=item B<run> [I<SERVICE>]
 
-Run a new session, with I<UNIT> as the main unit if provided.
-The default unit is I<sessiond-session.target>.
+Run a new session, with I<SERVICE> as the window manager service if provided.
+By default, the service installed under the I<window-manager.service> alias is
+used.
 
 =item B<stop>
 
