@@ -20,6 +20,9 @@ manager or desktop environment that does not provide its own session management.
 
 Documentation is available at [sessiond.org](https://sessiond.org/).
 
+See [Session management](https://sessiond.org/session-management/) to get
+started using sessiond.
+
 ## License
 
 sessiond is licensed under the GNU General Public License v3.0 or later
