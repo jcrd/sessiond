@@ -13,6 +13,7 @@ jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
+    container: supplantr/sessiond:latest
     permissions:
       actions: read
       contents: read
