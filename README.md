@@ -1,4 +1,12 @@
-# sessiond ![test](https://github.com/jcrd/sessiond/actions/workflows/test.yml/badge.svg)
+# sessiond
+
+[![test][test-badge]][test]
+[![CodeQL][codeql-badge]][codeql]
+
+[test-badge]: https://github.com/jcrd/sessiond/actions/workflows/test.yml/badge.svg
+[test]: https://github.com/jcrd/sessiond/actions/workflows/test.yml
+[codeql-badge]: https://github.com/jcrd/sessiond/actions/workflows/codeql-analysis.yml/badge.svg
+[codeql]: https://github.com/jcrd/sessiond/actions/workflows/codeql-analysis.yml
 
 ## Overview
 
