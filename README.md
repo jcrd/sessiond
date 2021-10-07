@@ -28,7 +28,7 @@ manager or desktop environment that does not provide its own session management.
 
 Documentation is available at [sessiond.org](https://sessiond.org/).
 
-See [Session management](https://sessiond.org/session-management/) to get
+See the [Getting started](https://sessiond.org/getting-started/) section to get
 started using sessiond.
 
 ## License
