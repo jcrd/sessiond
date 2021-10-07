@@ -1,3 +1,4 @@
 builddir
 .clangd
 sessiond.org
+compile_commands.json
