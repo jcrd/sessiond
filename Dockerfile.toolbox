@@ -14,11 +14,12 @@ RUN dnf install -y valgrind
 # clangd
 RUN dnf install -y clang-tools-extra
 
-RUN dnf install -y hugo
-
 # Install Pod::Markdown perl module to convert .pod manpages to .md for site.
 RUN dnf install -y perl
 RUN curl -L http://cpanmin.us | perl - App::cpanminus
 RUN cpanm Pod::Markdown
 
 RUN pip install sphinx-markdown-builder
+
+RUN dnf copr enable -y dontfreakout/Hugo
+RUN dnf install -y hugo
