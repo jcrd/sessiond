@@ -21,5 +21,5 @@ RUN cpanm Pod::Markdown
 
 RUN pip install sphinx-markdown-builder
 
-RUN dnf copr enable -y dontfreakout/Hugo
+RUN dnf copr enable -y jcrd/hugo-extended
 RUN dnf install -y hugo
