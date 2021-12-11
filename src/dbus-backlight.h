@@ -17,36 +17,20 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "dbus-logind.h"
-#include "dbus-gen.h"
-#include "backlight.h"
+#include "dbus-server.h"
 
 #include <glib-2.0/glib.h>
 
-#define DBUS_NAME "org.sessiond.session1"
-#define DBUS_SESSION_ERROR DBUS_NAME ".Session.Error"
-#define DBUS_PATH "/org/sessiond/session1"
+#define DBUS_BACKLIGHT_ERROR DBUS_NAME ".Backlight.Error"
+#define DBUS_BACKLIGHT_PATH DBUS_PATH "/backlight"
 
-#define DBUS_TYPE_SERVER dbus_server_get_type()
-G_DECLARE_FINAL_TYPE(DBusServer, dbus_server, DBUS, SERVER, GObject);
-
-struct _DBusServer {
-    GObject parent;
-    guint bus_id;
-    GDBusConnection *conn;
-    gboolean name_acquired;
-    DBusSession *session;
-    LogindContext *ctx;
-    GHashTable *inhibitors;
-    GHashTable *backlights;
-    GHashTable *bl_devices;
-};
-
+extern gboolean
+dbus_server_export_backlight(DBusServer *s, DBusBacklight *dbl);
 extern void
-dbus_server_free(DBusServer *s);
+dbus_server_unexport_backlight(DBusServer *s, DBusBacklight *dbl);
 extern void
-dbus_server_emit_active(DBusServer *s);
+dbus_server_add_backlight(DBusServer *s, struct Backlight *bl);
 extern void
-dbus_server_emit_inactive(DBusServer *s, guint i);
-extern DBusServer *
-dbus_server_new(LogindContext *c);
+dbus_server_remove_backlight(DBusServer *s, const char *path);
+extern void
+dbus_server_update_backlight(DBusServer *s, struct Backlight *bl);

@@ -22,6 +22,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "config.h"
 #include "dbus-logind.h"
 #include "dbus-server.h"
+#include "dbus-backlight.h"
 #include "dbus-systemd.h"
 #include "hooks.h"
 #include "timeline.h"

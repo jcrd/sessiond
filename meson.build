@@ -58,6 +58,7 @@ srcs = [
   'src/dbus-logind.c',
   'src/dbus-systemd.c',
   'src/dbus-server.c',
+  'src/dbus-backlight.c',
   'src/hooks.c',
   'src/sessiond.c',
   'src/timeline.c',
