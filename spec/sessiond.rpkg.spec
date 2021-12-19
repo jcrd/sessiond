@@ -1,12 +1,12 @@
-Name: {{{ git_name name="sessiond" }}}
-Version: {{{ git_version lead="$(git tag | sed -n 's/^v//p' | sort --version-sort -r | head -n1)" }}}
+Name: {{{ git_cwd_name name="sessiond" }}}
+Version: {{{ git_cwd_version lead="$(git tag | sed -n 's/^v//p' | sort --version-sort -r | head -n1)" }}}
 Release: 1%{?dist}
 Summary: Standalone X11 session manager for logind
 
 License: GPLv3+
 URL: https://github.com/jcrd/sessiond
-VCS: {{{ git_vcs }}}
-Source0: {{{ git_pack }}}
+VCS: {{{ git_cwd_vcs }}}
+Source0: {{{ git_cwd_pack }}}
 
 BuildRequires: meson
 BuildRequires: gcc
@@ -26,7 +26,7 @@ graphical session to systemd-logind. It can be used alongside a window manager
 or desktop environment that does not provide its own session management.
 
 %prep
-{{{ git_setup_macro }}}
+{{{ git_cwd_setup_macro }}}
 
 %build
 %meson --libdir lib
@@ -72,4 +72,4 @@ cd python-sessiond
 %{python3_sitelib}/__pycache__/%{name}.*
 
 %changelog
-{{{ git_changelog }}}
+{{{ git_cwd_changelog }}}
