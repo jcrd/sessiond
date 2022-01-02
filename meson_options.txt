@@ -1,2 +1,3 @@
 option('dpms', type : 'feature', value : 'enabled')
+option('wireplumber', type : 'feature', value : 'enabled')
 option('backlight_helper', type : 'feature', value : 'disabled')

@@ -7,6 +7,7 @@ RUN dnf install -y libXi-devel
 RUN dnf install -y glib2-devel
 RUN dnf install -y systemd-devel
 RUN dnf install -y dbus-devel
+RUN dnf install -y wireplumber-devel
 RUN dnf install -y python-dbus
 
 RUN dnf install -y valgrind

@@ -101,6 +101,14 @@ The timestamp of the last change to B<IdleHint> in monotonic time.
 
 An array of object paths to exported Backlights.
 
+=item B<AudioSinks>
+
+An array of object paths to exported AudioSinks.
+
+=item B<DefaultAudioSink>
+
+Object path to the default AudioSink.
+
 =item B<Version>
 
 The version of sessiond.
@@ -155,6 +163,21 @@ new backlight.
 
 Emitted when a backlight is removed, with B<path> being the old object path of
 the backlight.
+
+=item B<AddAudioSink> B<path>
+
+Emitted when an audio sink is added, with B<path> being the object path of the
+new audio sink.
+
+=item B<RemoveAudioSink> B<path>
+
+Emitted when an audio sink is removed, with B<path> being the old object path of
+the audio sink.
+
+=item B<ChangeDefaultAudioSink> B<path>
+
+Emitted when the default audio sink changes, with B<path> being the object path
+of the default audio sink.
 
 =back
 
@@ -231,6 +254,103 @@ Current brightness of backlight.
 =item B<MaxBrightness>
 
 Max brightness of backlight.
+
+=back
+
+=head2 AudioSink interface
+
+The B</org/sessiond/session1/audiosink/*> objects implement the
+B<org.sessiond.session1.AudioSink> interface, which exposes the following
+methods, properties, and signals:
+
+=head3 METHODS
+
+=over
+
+=item B<SetVolume>
+
+Set the volume of the audio sink. Takes one argument:
+
+=over
+
+=item I<volume>
+
+A double value.
+
+=back
+
+Returns an error if unable to set volume.
+
+=item B<IncVolume>
+
+Increment the volume of the audio sink. Takes one argument:
+
+=over
+
+=item I<value>
+
+A double value added to the audio sink's current volume.
+
+=back
+
+Returns the new volume value or an error if unable to set volume.
+
+=item B<SetMute>
+
+Set the mute state of the audio sink. Takes one argument:
+
+=over
+
+=item I<mute>
+
+A boolean value indicating the mute state.
+
+=back
+
+Returns an error if unable to set mute state.
+
+=item B<ToggleMute>
+
+Toggle the mute state of the audio sink.
+Returns the new mute state or an error if unable to set mute state.
+
+=back
+
+=head3 PROPERTIES
+
+=over
+
+=item B<Id>
+
+ID of the audio sink.
+
+=item B<Name>
+
+Name of the audio sink.
+
+=item B<Mute>
+
+Mute state of the audio sink.
+
+=item B<Volume>
+
+Volume of the audio sink.
+
+=back
+
+=head3 SIGNALS
+
+=over
+
+=item B<ChangeMute> B<mute>
+
+Emitted when the mute state changes, with the B<mute> argument being the new
+mute state.
+
+=item B<ChangeVolume> B<volume>
+
+Emitted when the volume changes, with the B<volume> argument being the new
+volume value.
 
 =back
 

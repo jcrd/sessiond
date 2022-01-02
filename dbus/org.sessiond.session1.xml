@@ -22,6 +22,8 @@
     <property name='IdleSinceHint' type='t' access='read'/>
     <property name='IdleSinceHintMonotonic' type='t' access='read'/>
     <property name='Backlights' type='ao' access='read'/>
+    <property name='AudioSinks' type='ao' access='read'/>
+    <property name='DefaultAudioSink' type='o' access='read'/>
     <property name='Version' type='s' access='read'/>
     <signal name='Lock'/>
     <signal name='Unlock'/>
@@ -42,6 +44,15 @@
     <signal name='RemoveBacklight'>
       <arg name='path' type='o'/>
     </signal>
+    <signal name='AddAudioSink'>
+      <arg name='path' type='o'/>
+    </signal>
+    <signal name='RemoveAudioSink'>
+      <arg name='path' type='o'/>
+    </signal>
+    <signal name='ChangeDefaultAudioSink'>
+      <arg name='path' type='o'/>
+    </signal>
   </interface>
   <interface name='org.sessiond.session1.Backlight'>
     <method name='SetBrightness'>
@@ -58,5 +69,30 @@
     <property name='DevPath' type='s' access='read'/>
     <property name='MaxBrightness' type='u' access='read'/>
     <property name='Brightness' type='u' access='read'/>
+  </interface>
+  <interface name='org.sessiond.session1.AudioSink'>
+    <method name='SetVolume'>
+      <arg name='volume' type='d' direction='in'/>
+    </method>
+    <method name='IncVolume'>
+      <arg name='value' type='d' direction='in'/>
+      <arg name='volume' type='d' direction='out'/>
+    </method>
+    <method name='SetMute'>
+      <arg name='mute' type='b' direction='in'/>
+    </method>
+    <method name='ToggleMute'>
+      <arg name='mute' type='b' direction='out'/>
+    </method>
+    <property name='Id' type='u' access='read'/>
+    <property name='Name' type='s' access='read'/>
+    <property name='Mute' type='b' access='read'/>
+    <property name='Volume' type='d' access='read'/>
+    <signal name='ChangeMute'>
+      <arg name='mute' type='b'/>
+    </signal>
+    <signal name='ChangeVolume'>
+      <arg name='volume' type='d'/>
+    </signal>
   </interface>
 </node>

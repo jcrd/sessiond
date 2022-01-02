@@ -36,6 +36,8 @@ class DBusIFace:
             return bool(val)
         if isinstance(val, dbus.UInt32) or isinstance(val, dbus.UInt64):
             return int(val)
+        if isinstance(val, dbus.Double):
+            return float(val)
         if isinstance(val, dbus.Array):
             return list(map(DBusIFace.convert, list(val)))
 
@@ -156,6 +158,92 @@ class Backlight(DBusIFace):
         return self.get_property("Brightness")
 
 
+class AudioSink(DBusIFace):
+    """
+    An interface to a sessiond AudioSink object.
+
+    :param id: The audio sink's ID
+    """
+
+    def __init__(self, id):
+        self.as_id = id
+        path = "/org/sessiond/session1/audiosink/{}".format(self.as_id)
+        super().__init__(path, "AudioSink")
+
+    def set_volume(self, v):
+        """
+        Set the audio sink's volume.
+
+        :param v: Volume value
+        :raises dbus.exception.DBusException: Raised if unable to set volume
+        """
+        self.interface.SetVolume(v)
+
+    def inc_volume(self, v):
+        """
+        Increment the audio sink's volume.
+
+        :param v: Volume value by which to increment
+        :return: The new volume value
+        :raises dbus.exception.DBusException: Raised if unable to increment volume
+        """
+        return self.interface.IncVolume(v)
+
+    def set_mute(self, m):
+        """
+        Set the audio sink's mute state.
+
+        :param m: Mute state
+        :raises dbus.exception.DBusException: Raised if unable to set mute state
+        """
+        self.interface.SetMute(m)
+
+    def toggle_mute(self):
+        """
+        Toggle the audio sink's mute state.
+
+        :return: The new mute state
+        :raises dbus.exception.DBusException: Raised if unable to toggle mute state
+        """
+        return self.interface.ToggleMute()
+
+    @property
+    def id(self):
+        """
+        Audio sink's ID.
+
+        :return: Audio sink's ID
+        """
+        return self.get_property("Id")
+
+    @property
+    def name(self):
+        """
+        Audio sink's name.
+
+        :return: Audio sink's name
+        """
+        return self.get_property("Name")
+
+    @property
+    def mute(self):
+        """
+        Audio sink's mute state.
+
+        :return: `True` if muted, `False` otherwise
+        """
+        return self.get_property("Mute")
+
+    @property
+    def volume(self):
+        """
+        Audio sink's volume.
+
+        :return: Audio sink's volume
+        """
+        return self.get_property("Volume")
+
+
 class Session(DBusIFace):
     """
     An interface to sessiond's Session.
@@ -230,6 +318,24 @@ class Session(DBusIFace):
         :return: A list of Backlight DBus object paths
         """
         return self.get_property("Backlights")
+
+    @property
+    def audiosinks(self):
+        """
+        List of audio sinks.
+
+        :return: A list of AudioSink DBus object paths
+        """
+        return self.get_property("AudioSinks")
+
+    @property
+    def default_audiosink(self):
+        """
+        Get the default audio sink.
+
+        :return: The default audio sink's DBus object path
+        """
+        return self.get_property("DefaultAudioSink")
 
     @property
     def idle_hint(self):

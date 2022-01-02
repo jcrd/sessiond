@@ -29,6 +29,11 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "xsource.h"
 #include "version.h"
 
+#ifdef WIREPLUMBER
+#include "dbus-audiosink.h"
+#include "wireplumber.h"
+#endif /* WIREPLUMBER */
+
 #include <locale.h>
 #include <glib-2.0/glib.h>
 #include <glib-2.0/gio/gio.h>
@@ -267,6 +272,27 @@ backlights_cb(BacklightAction a, const char *path, struct Backlight *bl)
     return TRUE;
 }
 
+#ifdef WIREPLUMBER
+static void
+wireplumber_cb(AudioSinkAction a, guint32 id, struct AudioSink *as)
+{
+    switch (a) {
+        case AS_ACTION_ADD:
+            dbus_server_add_audiosink(server, as);
+            break;
+        case AS_ACTION_REMOVE:
+            dbus_server_remove_audiosink(server, id);
+            break;
+        case AS_ACTION_CHANGE:
+            dbus_server_update_audiosink(server, as);
+            break;
+        case AS_ACTION_CHANGE_DEFAULT:
+            dbus_server_update_default_audiosink(server, id);
+            break;
+    }
+}
+#endif /* WIREPLUMBER */
+
 static void
 appear_callback(UNUSED LogindContext *c, UNUSED gpointer data)
 {
@@ -282,6 +308,11 @@ appear_callback(UNUSED LogindContext *c, UNUSED gpointer data)
         backlights = backlights_new(main_ctx, backlights_cb);
 
         server->bl_devices = backlights->devices;
+
+#ifdef WIREPLUMBER
+        g_debug("* Init WirePlumber connection...");
+        server->wp_conn = wireplumber_connect(main_ctx, wireplumber_cb);
+#endif /* WIREPLUMBER */
     }
 
     logind_set_idle_hint(logind_ctx, FALSE);
@@ -456,6 +487,11 @@ cleanup(void)
     timeline_free(&timeline);
     logind_context_free(logind_ctx);
     systemd_context_free(systemd_ctx);
+
+#ifdef WIREPLUMBER
+    wireplumber_disconnect(server->wp_conn);
+#endif /* WIREPLUMBER */
+
     dbus_server_free(server);
     xsource_free(xsource);
     if (main_ctx)

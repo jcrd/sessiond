@@ -62,6 +62,40 @@ Prints the new brightness value.
 
 =back
 
+=item B<audiosink> [I<ID>]
+
+Interact with audio sinks.
+If audio sink I<ID> is given with no options, print volume and mute state.
+If no arguments are given, list audio sinks.
+
+Options:
+
+=over
+
+=item B<-s> I<VALUE>, B<--set> I<VALUE>
+
+Set audio sink volume.
+
+=item B<-i> I<VALUE>, B<--inc> I<VALUE>
+
+Increment audio sink volume.
+Prints the new volume value.
+
+=item B<-m>, B<--mute>
+
+Mute audio sink.
+
+=item B<-u>, B<--unmute>
+
+Unmute audio sink.
+
+=item B<-t>, B<--toggle-mute>
+
+Toggle audio sink mute state.
+Prints the new mute state.
+
+=back
+
 =item B<version>
 
 Show sessiond version.

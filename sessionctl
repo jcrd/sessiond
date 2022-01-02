@@ -22,7 +22,7 @@ from subprocess import run
 from time import sleep
 
 from dbus.exceptions import DBusException
-from sessiond import Session, Backlight
+from sessiond import Session, Backlight, AudioSink
 
 SESSIOND_SESSION = "sessiond-session.target"
 GRAPHICAL_SESSION = "graphical-session.target"
@@ -125,6 +125,50 @@ def get_session():
         sys.exit(1)
 
 
+def add_audiosinks_parser(sp):
+    try:
+        get_session().audiosinks
+    except DBusException:
+        return None
+
+    p = sp.add_parser("audiosink", help="Interact with audio sinks")
+    p.add_argument("id", nargs="?", metavar="ID")
+    p.add_argument(
+        "-s",
+        "--set",
+        type=float,
+        metavar="VALUE",
+        help="Set audio sink volume",
+    )
+    p.add_argument(
+        "-i",
+        "--inc",
+        type=float,
+        metavar="VALUE",
+        help="Increment audio sink volume",
+    )
+    p.add_argument(
+        "-m",
+        "--mute",
+        action="store_true",
+        help="Mute audio sink",
+    )
+    p.add_argument(
+        "-u",
+        "--unmute",
+        action="store_true",
+        help="Unmute audio sink",
+    )
+    p.add_argument(
+        "-t",
+        "--toggle-mute",
+        action="store_true",
+        help="Toggle audio sink mute state",
+    )
+
+    return p
+
+
 if __name__ == "__main__":
     p = ArgumentParser(description="With no arguments, show session status.")
     subp = p.add_subparsers(dest="cmd")
@@ -154,6 +198,8 @@ if __name__ == "__main__":
         metavar="VALUE",
         help="Increment backlight brightness",
     )
+
+    asp = add_audiosinks_parser(subp)
 
     subp.add_parser("version", help="Show sessiond version")
 
@@ -211,5 +257,51 @@ if __name__ == "__main__":
                 sys.exit(1)
             for o in bls:
                 print(PurePath(o).name)
+    elif args.cmd == "audiosink":
+
+        def check_id():
+            if not args.id:
+                sys.stderr.write("Audio sink ID required\n\n")
+                asp.print_help()
+                sys.exit(2)
+
+        def muted(m):
+            return "MUTED" if m else "UNMUTED"
+
+        if args.set:
+            check_id()
+            AudioSink(args.id).set_volume(args.set)
+        elif args.inc:
+            check_id()
+            print(round(AudioSink(args.id).inc_volume(args.inc), 2))
+        elif args.mute:
+            check_id()
+            AudioSink(args.id).set_mute(True)
+        elif args.unmute:
+            check_id()
+            AudioSink(args.id).set_mute(False)
+        elif args.toggle_mute:
+            check_id()
+            print(muted(AudioSink(args.id).toggle_mute()))
+        elif args.id:
+            a = AudioSink(args.id)
+            print(round(a.volume, 2), muted(a.mute))
+        else:
+            s = get_session()
+            if len(s.audiosinks) == 0:
+                sys.stderr.write("No audio sinks\n")
+                sys.exit(1)
+            def_id = 0
+            try:
+                def_id = int(PurePath(s.default_audiosink).name)
+            except ValueError:
+                pass
+            for o in s.audiosinks:
+                a = AudioSink(PurePath(o).name)
+                print(
+                    "{}: {}{}".format(
+                        a.id, a.name, " [DEFAULT]" if a.id == def_id else ""
+                    )
+                )
     elif args.cmd == "version":
         print(get_session().version)

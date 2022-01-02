@@ -66,6 +66,13 @@ srcs = [
   'src/toml/toml.c',
   ]
 
+if get_option('wireplumber').enabled()
+  deps += dependency('wireplumber-0.4')
+  srcs += 'src/dbus-audiosink.c'
+  srcs += 'src/wireplumber.c'
+  add_project_arguments('-DWIREPLUMBER', language : 'c')
+endif
+
 executable('sessiond', sources : srcs, dependencies : deps, install : true)
 
 install_data('sessiond.conf',

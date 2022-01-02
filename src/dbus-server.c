@@ -24,6 +24,10 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "common.h"
 #include "version.h"
 
+#ifdef WIREPLUMBER
+#include "dbus-audiosink.h"
+#endif /* WIREPLUMBER */
+
 #include <stdio.h>
 #include <glib-2.0/glib.h>
 #include <glib-2.0/gio/gio.h>
@@ -323,11 +327,21 @@ on_name_acquired(GDBusConnection *conn, const gchar *name, gpointer user_data)
         err = NULL;
     }
 
-    GList *dbls = g_hash_table_get_values(s->backlights);
-    for (GList *i = dbls; i; i = i->next)
-        if (!EXPORTED(i->data))
-            dbus_server_export_backlight(s, i->data);
-    g_list_free(dbls);
+    GList *lst;
+#define EXPORT_TABLE(name) \
+    lst = g_hash_table_get_values(s->name##s); \
+    for (GList *i = lst; i; i = i->next) \
+        if (!EXPORTED(i->data)) \
+            dbus_server_export_##name(s, i->data); \
+    g_list_free(lst)
+
+    EXPORT_TABLE(backlight);
+
+#ifdef WIREPLUMBER
+    EXPORT_TABLE(audiosink);
+#endif /* WIREPLUMBER */
+
+#undef EXPORT_TABLE
 }
 
 static void
@@ -340,10 +354,20 @@ on_name_lost(GDBusConnection *conn, const gchar *name, gpointer user_data)
 
     g_dbus_interface_skeleton_unexport(G_DBUS_INTERFACE_SKELETON(s->session));
 
-    GList *dbls = g_hash_table_get_values(s->backlights);
-    for (GList *i = dbls; i; i = i->next)
-        dbus_server_unexport_backlight(s, i->data);
-    g_list_free(dbls);
+    GList *lst;
+#define UNEXPORT_TABLE(name) \
+    lst = g_hash_table_get_values(s->name##s); \
+    for (GList *i = lst; i; i = i->next) \
+        dbus_server_unexport_##name(s, i->data); \
+    g_list_free(lst)
+
+    UNEXPORT_TABLE(backlight);
+
+#ifdef WIREPLUMBER
+    UNEXPORT_TABLE(audiosink);
+#endif /* WIREPLUMBER */
+
+#undef UNEXPORT_TABLE
 
     s->bus_id = 0;
 }
@@ -359,6 +383,11 @@ dbus_server_free(DBusServer *s)
         g_object_unref(s->session);
     g_hash_table_destroy(s->backlights);
     g_hash_table_destroy(s->inhibitors);
+
+#ifdef WIREPLUMBER
+    g_hash_table_destroy(s->audiosinks);
+#endif /* WIREPLUMBER */
+
     g_object_unref(s);
 }
 
@@ -407,6 +436,11 @@ dbus_server_new(LogindContext *c)
             g_object_unref);
     s->inhibitors = g_hash_table_new_full(g_str_hash, g_str_equal, NULL,
             (GDestroyNotify)g_variant_unref);
+
+#ifdef WIREPLUMBER
+    s->audiosinks = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL,
+            g_object_unref);
+#endif /* WIREPLUMBER */
 
     s->bus_id = g_bus_own_name(G_BUS_TYPE_SESSION, DBUS_NAME,
             G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT |

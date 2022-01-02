@@ -21,6 +21,10 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "dbus-gen.h"
 #include "backlight.h"
 
+#ifdef WIREPLUMBER
+#include "wireplumber.h"
+#endif /* WIREPLUMBER */
+
 #include <glib-2.0/glib.h>
 
 #define DBUS_NAME "org.sessiond.session1"
@@ -40,6 +44,11 @@ struct _DBusServer {
     GHashTable *inhibitors;
     GHashTable *backlights;
     GHashTable *bl_devices;
+
+#ifdef WIREPLUMBER
+    WpConn *wp_conn;
+    GHashTable *audiosinks;
+#endif /* WIREPLUMBER */
 };
 
 extern void

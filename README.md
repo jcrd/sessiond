@@ -23,6 +23,7 @@ manager or desktop environment that does not provide its own session management.
 * hooks triggered by inactivity or signals
 * a DBus service
     * backlight interaction
+    * audio sink interaction
 * (optional) management of DPMS settings
 
 ## Documentation
