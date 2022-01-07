@@ -24,9 +24,9 @@ from time import sleep
 from dbus.exceptions import DBusException
 from sessiond import Session, Backlight
 
-SESSIOND_SESSION = 'sessiond-session.target'
-GRAPHICAL_SESSION = 'graphical-session.target'
-WINDOW_MANAGER_ALIAS = 'window-manager.service'
+SESSIOND_SESSION = "sessiond-session.target"
+GRAPHICAL_SESSION = "graphical-session.target"
+WINDOW_MANAGER_ALIAS = "window-manager.service"
 
 
 def _run(cmd, **kw):
@@ -34,7 +34,7 @@ def _run(cmd, **kw):
 
 
 def consists_of(unit=GRAPHICAL_SESSION):
-    cmd = 'systemctl --user show -p ConsistsOf --value {}'.format(unit)
+    cmd = "systemctl --user show -p ConsistsOf --value {}".format(unit)
     return _run(cmd, capture_output=True, text=True, check=True).stdout.split()
 
 
@@ -59,10 +59,10 @@ def stop_session(step=0.1, timeout=5):
 
 
 def get_window_manager():
-    cmd = 'systemctl --user show -p Id --value {}'.format(WINDOW_MANAGER_ALIAS)
+    cmd = "systemctl --user show -p Id --value {}".format(WINDOW_MANAGER_ALIAS)
     wm = _run(cmd, capture_output=True, text=True).stdout.rstrip()
     if wm == WINDOW_MANAGER_ALIAS:
-        raise ValueError('No window manager is enabled')
+        raise ValueError("No window manager is enabled")
     return wm
 
 
@@ -71,37 +71,37 @@ class Unit:
         self.name = name
 
     def active(self):
-        cmd = 'systemctl --user -q is-active {}'.format(self.name)
+        cmd = "systemctl --user -q is-active {}".format(self.name)
         return _run(cmd).returncode == 0
 
     def failed(self):
-        cmd = 'systemctl --user -q is-failed {}'.format(self.name)
+        cmd = "systemctl --user -q is-failed {}".format(self.name)
         return _run(cmd).returncode == 0
 
     def status(self):
-        cmd = 'systemctl --user is-active {}'.format(self.name)
+        cmd = "systemctl --user is-active {}".format(self.name)
         return _run(cmd, capture_output=True, text=True).stdout.rstrip()
 
     def stop(self):
-        _run('systemctl --user stop {}'.format(self.name), check=True)
+        _run("systemctl --user stop {}".format(self.name), check=True)
 
     def reset(self):
         if not self.failed():
             return
-        _run('systemctl --user reset-failed {}'.format(self.name), check=True)
+        _run("systemctl --user reset-failed {}".format(self.name), check=True)
 
     def kill(self):
-        _run('systemctl --user kill {}'.format(self.name), check=True)
+        _run("systemctl --user kill {}".format(self.name), check=True)
 
     def start_wait(self):
-        _run('systemctl --user --wait restart {}'.format(self.name))
+        _run("systemctl --user --wait restart {}".format(self.name))
         stop_session()
 
 
 def status():
     g = Unit(GRAPHICAL_SESSION)
     if not g.active():
-        sys.stderr.write('Session is not active\n')
+        sys.stderr.write("Session is not active\n")
         sys.exit(1)
     units = consists_of()
     units.sort()
@@ -110,30 +110,33 @@ def status():
     for u in units:
         status[u] = Unit(u).status()
     for u, s in status.items():
-        print('{u: <{n}} {s}'.format(u=u + ':', n=n + 1, s=s))
+        print("{u: <{n}} {s}".format(u=u + ":", n=n + 1, s=s))
 
 
 def get_session():
     try:
         return Session()
     except DBusException as e:
-        sys.stderr.write('Failed to connect to sessiond DBus service: {}\n'\
-                         .format(e.get_dbus_message()))
+        sys.stderr.write(
+            "Failed to connect to sessiond DBus service: {}\n".format(
+                e.get_dbus_message()
+            )
+        )
         sys.exit(1)
 
 
-if __name__ == '__main__':
-    p = ArgumentParser(description='With no arguments, show session status.')
-    subp = p.add_subparsers(dest='cmd')
+if __name__ == "__main__":
+    p = ArgumentParser(description="With no arguments, show session status.")
+    subp = p.add_subparsers(dest="cmd")
 
-    r = subp.add_parser('run', help='Run session')
-    r.add_argument('service', nargs='?', help='Window manager service to run')
+    r = subp.add_parser("run", help="Run session")
+    r.add_argument("service", nargs="?", help="Window manager service to run")
 
-    subp.add_parser('stop', help='Stop the running session')
-    subp.add_parser('status', help='Show session status')
-    subp.add_parser('lock', help='Lock the session')
-    subp.add_parser('unlock', help='Unlock the session')
-    subp.add_parser('properties', help='List session properties')
+    subp.add_parser("stop", help="Stop the running session")
+    subp.add_parser("status", help="Show session status")
+    subp.add_parser("lock", help="Lock the session")
+    subp.add_parser("unlock", help="Unlock the session")
+    subp.add_parser("properties", help="List session properties")
 
     def str_or_int(s):
         try:
@@ -141,19 +144,27 @@ if __name__ == '__main__':
         except ValueError:
             return s
 
-    b = subp.add_parser('backlight', help='Interact with backlights')
-    b.add_argument('-l', '--list', action='store_true',
-                   help='List backlight names')
-    b.add_argument('-g', '--get', metavar='BACKLIGHT',
-                   help='Get backlight brightness')
-    b.add_argument('-s', '--set', type=str_or_int, nargs=2,
-                   metavar=('BACKLIGHT', 'VALUE'),
-                   help='Set backlight brightness')
-    b.add_argument('-i', '--inc', type=str_or_int, nargs=2,
-                   metavar=('BACKLIGHT', 'VALUE'),
-                   help='Increment backlight brightness')
+    b = subp.add_parser("backlight", help="Interact with backlights")
+    b.add_argument("-l", "--list", action="store_true", help="List backlight names")
+    b.add_argument("-g", "--get", metavar="BACKLIGHT", help="Get backlight brightness")
+    b.add_argument(
+        "-s",
+        "--set",
+        type=str_or_int,
+        nargs=2,
+        metavar=("BACKLIGHT", "VALUE"),
+        help="Set backlight brightness",
+    )
+    b.add_argument(
+        "-i",
+        "--inc",
+        type=str_or_int,
+        nargs=2,
+        metavar=("BACKLIGHT", "VALUE"),
+        help="Increment backlight brightness",
+    )
 
-    subp.add_parser('version', help='Show sessiond version')
+    subp.add_parser("version", help="Show sessiond version")
 
     args = p.parse_args()
 
@@ -161,9 +172,9 @@ if __name__ == '__main__':
         status()
         sys.exit(0)
 
-    if args.cmd == 'run':
+    if args.cmd == "run":
         if Unit(SESSIOND_SESSION).active():
-            sys.stderr.write('A session is already running\n')
+            sys.stderr.write("A session is already running\n")
             sys.exit(1)
         if not args.service:
             try:
@@ -171,22 +182,22 @@ if __name__ == '__main__':
             except ValueError as e:
                 sys.stderr.write(str(e))
                 sys.exit(1)
-        _run('systemctl --user import-environment', check=True)
+        _run("systemctl --user import-environment", check=True)
         for u in consists_of():
             Unit(u).reset()
         Unit(args.service).start_wait()
-    elif args.cmd == 'stop':
+    elif args.cmd == "stop":
         stop_session()
-    elif args.cmd == 'status':
+    elif args.cmd == "status":
         status()
-    elif args.cmd == 'lock':
+    elif args.cmd == "lock":
         get_session().lock()
-    elif args.cmd == 'unlock':
+    elif args.cmd == "unlock":
         get_session().unlock()
-    elif args.cmd == 'properties':
+    elif args.cmd == "properties":
         for k, v in get_session().get_properties().items():
-            print('{}={}'.format(k, v))
-    elif args.cmd == 'backlight':
+            print("{}={}".format(k, v))
+    elif args.cmd == "backlight":
         if args.get:
             print(Backlight(args.get).brightness)
         elif args.set:
@@ -196,9 +207,9 @@ if __name__ == '__main__':
         else:
             bls = get_session().backlights
             if len(bls) == 0:
-                sys.stderr.write('No backlights\n')
+                sys.stderr.write("No backlights\n")
                 sys.exit(1)
             for o in bls:
                 print(PurePath(o).name)
-    elif args.cmd == 'version':
+    elif args.cmd == "version":
         print(get_session().version)

@@ -9,7 +9,7 @@
 
 import dbus
 
-BUS_NAME = 'org.sessiond.session1'
+BUS_NAME = "org.sessiond.session1"
 
 
 class DBusIFace:
@@ -19,6 +19,7 @@ class DBusIFace:
     :param path: DBus object path
     :param iface: DBus interface name
     """
+
     bus = dbus.SessionBus()
 
     @staticmethod
@@ -42,9 +43,10 @@ class DBusIFace:
 
     def __init__(self, path, iface):
         self.obj = DBusIFace.bus.get_object(BUS_NAME, path)
-        self.iface = '{}.{}'.format(BUS_NAME, iface)
-        self.props = dbus.Interface(self.obj,
-                                    dbus_interface='org.freedesktop.DBus.Properties')
+        self.iface = "{}.{}".format(BUS_NAME, iface)
+        self.props = dbus.Interface(
+            self.obj, dbus_interface="org.freedesktop.DBus.Properties"
+        )
         self.interface = dbus.Interface(self.obj, dbus_interface=self.iface)
 
     def get_properties(self):
@@ -53,8 +55,10 @@ class DBusIFace:
 
         :return: A dictionary mapping property names to values
         """
-        return {DBusIFace.convert(k): DBusIFace.convert(v) for k, v in \
-                self.props.GetAll(self.iface).items()}
+        return {
+            DBusIFace.convert(k): DBusIFace.convert(v)
+            for k, v in self.props.GetAll(self.iface).items()
+        }
 
     def get_property(self, name):
         """
@@ -72,10 +76,11 @@ class Backlight(DBusIFace):
 
     :param name: The backlight's name
     """
+
     def __init__(self, name):
         self.name = name
-        path = '/org/sessiond/session1/backlight/{}'.format(self.name)
-        super().__init__(path, 'Backlight')
+        path = "/org/sessiond/session1/backlight/{}".format(self.name)
+        super().__init__(path, "Backlight")
 
     def set_brightness(self, v):
         """
@@ -103,7 +108,7 @@ class Backlight(DBusIFace):
 
         :return: `True` if online, `False` otherwise
         """
-        return self.get_property('Online')
+        return self.get_property("Online")
 
     @property
     def subsystem(self):
@@ -112,7 +117,7 @@ class Backlight(DBusIFace):
 
         :return: Name of backlight's subsystem
         """
-        return self.get_property('Subsystem')
+        return self.get_property("Subsystem")
 
     @property
     def sys_path(self):
@@ -121,7 +126,7 @@ class Backlight(DBusIFace):
 
         :return: Path to the device via sys mount point
         """
-        return self.get_property('SysPath')
+        return self.get_property("SysPath")
 
     @property
     def dev_path(self):
@@ -130,7 +135,7 @@ class Backlight(DBusIFace):
 
         :return: Path to the backlight device without the sys mount point
         """
-        return self.get_property('DevPath')
+        return self.get_property("DevPath")
 
     @property
     def max_brightness(self):
@@ -139,7 +144,7 @@ class Backlight(DBusIFace):
 
         :return: Maximum brightness value
         """
-        return self.get_property('MaxBrightness')
+        return self.get_property("MaxBrightness")
 
     @property
     def brightness(self):
@@ -148,15 +153,16 @@ class Backlight(DBusIFace):
 
         :return: Brightness value
         """
-        return self.get_property('Brightness')
+        return self.get_property("Brightness")
 
 
 class Session(DBusIFace):
     """
     An interface to sessiond's Session.
     """
+
     def __init__(self):
-        super().__init__('/org/sessiond/session1', 'Session')
+        super().__init__("/org/sessiond/session1", "Session")
 
     def inhibit(self, who="", why=""):
         """
@@ -193,8 +199,10 @@ class Session(DBusIFace):
         :return: A dictionary mapping IDs to tuples of the creation timestamp \
         and 'who' and 'why' strings
         """
-        return {str(k): (int(s[0]), str(s[1]), str(s[2])) for k, s \
-                in self.interface.ListInhibitors().items()}
+        return {
+            str(k): (int(s[0]), str(s[1]), str(s[2]))
+            for k, s in self.interface.ListInhibitors().items()
+        }
 
     def lock(self):
         """
@@ -221,7 +229,7 @@ class Session(DBusIFace):
 
         :return: A list of Backlight DBus object paths
         """
-        return self.get_property('Backlights')
+        return self.get_property("Backlights")
 
     @property
     def idle_hint(self):
@@ -230,7 +238,7 @@ class Session(DBusIFace):
 
         :return: `True` if session is idle, `False` otherwise
         """
-        return self.get_property('IdleHint')
+        return self.get_property("IdleHint")
 
     @property
     def inhibited_hint(self):
@@ -239,7 +247,7 @@ class Session(DBusIFace):
 
         :return: `True` if session is inhibited, `False` otherwise
         """
-        return self.get_property('InhibitedHint')
+        return self.get_property("InhibitedHint")
 
     @property
     def locked_hint(self):
@@ -248,7 +256,7 @@ class Session(DBusIFace):
 
         :return: `True` if session is locked, `False` otherwise
         """
-        return self.get_property('LockedHint')
+        return self.get_property("LockedHint")
 
     @property
     def version(self):
@@ -257,7 +265,7 @@ class Session(DBusIFace):
 
         :return: sessiond's version string
         """
-        return self.get_property('Version')
+        return self.get_property("Version")
 
     @property
     def idle_since_hint(self):
@@ -266,7 +274,7 @@ class Session(DBusIFace):
 
         :return: The timestamp
         """
-        return self.get_property('IdleSinceHint')
+        return self.get_property("IdleSinceHint")
 
     @property
     def idle_since_hint_monotonic(self):
@@ -275,4 +283,4 @@ class Session(DBusIFace):
 
         :return: The timestamp
         """
-        return self.get_property('IdleSinceHintMonotonic')
+        return self.get_property("IdleSinceHintMonotonic")
