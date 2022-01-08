@@ -15,6 +15,7 @@ BuildRequires: pkgconfig(glib-2.0)
 BuildRequires: pkgconfig(libudev)
 BuildRequires: pkgconfig(x11)
 BuildRequires: pkgconfig(xi)
+BuildRequires: pkgconfig(xext)
 BuildRequires: pkgconfig(wireplumber-0.4)
 BuildRequires: python3-devel
 BuildRequires: python3-setuptools
