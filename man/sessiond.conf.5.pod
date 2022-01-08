@@ -58,6 +58,11 @@ Must occur before or simultaneously with Off timeout.
 
 DPMS off timeout in seconds to use while session is locked.
 
+=item I<MuteAudio=>
+
+If "true", mute the default audio sink while the session is locked.
+The mute state will be restored when unlocked.
+
 =back
 
 =head2 [DPMS]

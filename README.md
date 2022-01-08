@@ -18,6 +18,7 @@ manager or desktop environment that does not provide its own session management.
 
 * automatic screen locking on session idle and before sleeping
 * automatic backlight dimming on session idle
+* automatic muting of audio while session is locked
 * systemd targets activated by systemd-logind's lock, unlock, sleep,
   and shutdown signals
 * hooks triggered by inactivity or signals

@@ -51,6 +51,8 @@ extern gboolean
 audiosink_set_volume(guint32 id, gdouble v, WpConn *conn);
 extern gboolean
 audiosink_set_mute(guint32 id, gboolean m, WpConn *conn);
+extern gboolean
+audiosink_get_volume_mute(WpConn *conn, guint32 id, gdouble *v, gboolean *m);
 extern WpConn *
 wireplumber_connect(GMainContext *ctx, AudioSinkFunc func);
 extern void

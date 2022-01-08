@@ -45,6 +45,11 @@ this program. If not, see <https://www.gnu.org/licenses/>.
     X("OffSec", uint, lock_off_sec)
 #endif /* DPMS */
 
+#ifdef WIREPLUMBER
+#define WP_LOCK_TABLE_LIST \
+    X("MuteAudio", bool, mute_audio)
+#endif /* WIREPLUMBER */
+
 struct BacklightConf {
     guint dim_sec;
     gint dim_value;
@@ -73,6 +78,10 @@ typedef struct {
     guint lock_suspend_sec;
     guint lock_off_sec;
 #endif /* DPMS */
+#ifdef WIREPLUMBER
+    /* WIREPLUMBER */
+    gboolean mute_audio;
+#endif /* WIREPLUMBER */
 } Config;
 
 extern Config

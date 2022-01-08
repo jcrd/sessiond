@@ -68,22 +68,14 @@ on_disconnect(WpConn *conn)
 static struct AudioSink *
 new_audiosink(WpConn *conn, guint32 id, WpPipewireObject *obj)
 {
-    GVariant *dict = NULL;
-    g_signal_emit_by_name(conn->mixer_api, "get-volume", id, &dict);
-    if (!dict) {
-        g_warning("Failed to get audio sink volume: %d", id);
-        return NULL;
-    }
-
     struct AudioSink *as = g_malloc0(sizeof(struct AudioSink));
 
     as->id = id;
     if (obj)
         as->name = get_object_name(obj);
 
-    g_variant_lookup(dict, "mute", "b", &as->mute);
-    g_variant_lookup(dict, "volume", "d", &as->volume);
-    g_variant_unref(dict);
+    if (!audiosink_get_volume_mute(conn, id, &as->volume, &as->mute))
+        return NULL;
 
     return as;
 }
@@ -171,6 +163,27 @@ audiosink_set_mute(guint32 id, gboolean m, WpConn *conn)
         g_warning("Failed to set audio sink mute state: %d", id);
         return FALSE;
     }
+
+    return TRUE;
+}
+
+gboolean
+audiosink_get_volume_mute(WpConn *conn, guint32 id, gdouble *v, gboolean *m)
+{
+    GVariant *dict = NULL;
+    g_signal_emit_by_name(conn->mixer_api, "get-volume", id, &dict);
+
+    if (!dict) {
+        g_warning("Failed to get audio sink volume: %d", id);
+        return FALSE;
+    }
+
+    if (v)
+        g_variant_lookup(dict, "volume", "d", v);
+    if (m)
+        g_variant_lookup(dict, "mute", "b", m);
+
+    g_variant_unref(dict);
 
     return TRUE;
 }

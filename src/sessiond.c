@@ -130,6 +130,50 @@ set_dpms_locked(gboolean state)
 }
 #endif /* DPMS */
 
+#ifdef WIREPLUMBER
+static void
+wireplumber_cb(AudioSinkAction a, guint32 id, struct AudioSink *as)
+{
+    switch (a) {
+        case AS_ACTION_ADD:
+            dbus_server_add_audiosink(server, as);
+            break;
+        case AS_ACTION_REMOVE:
+            dbus_server_remove_audiosink(server, id);
+            break;
+        case AS_ACTION_CHANGE:
+            dbus_server_update_audiosink(server, as);
+            break;
+        case AS_ACTION_CHANGE_DEFAULT:
+            dbus_server_update_default_audiosink(server, id);
+            break;
+    }
+}
+
+static void
+mute_audio_locked(gboolean state)
+{
+    static guint32 default_id = 0;
+    static gboolean default_mute = TRUE;
+
+    if (!config.mute_audio)
+        return;
+
+    WpConn *conn = server->wp_conn;
+
+    if (state) {
+        default_id = conn->default_id;
+        audiosink_get_volume_mute(conn, default_id, NULL, &default_mute);
+        audiosink_set_mute(default_id, TRUE, conn);
+    } else if (conn->default_id == default_id) {
+        audiosink_set_mute(default_id, default_mute, conn);
+    } else {
+        default_id = 0;
+        default_mute = TRUE;
+    }
+}
+#endif /* WIREPLUMBER */
+
 static void
 set_idle(gboolean state)
 {
@@ -173,6 +217,10 @@ lock_callback(LogindContext *c, gboolean state, UNUSED gpointer data)
 #ifdef DPMS
     set_dpms_locked(state);
 #endif /* DPMS */
+
+#ifdef WIREPLUMBER
+    mute_audio_locked(state);
+#endif /* WIREPLUMBER */
 
     if (config.hooks)
         hooks_run(config.hooks, HOOK_TRIGGER_LOCK, state);
@@ -271,27 +319,6 @@ backlights_cb(BacklightAction a, const char *path, struct Backlight *bl)
 
     return TRUE;
 }
-
-#ifdef WIREPLUMBER
-static void
-wireplumber_cb(AudioSinkAction a, guint32 id, struct AudioSink *as)
-{
-    switch (a) {
-        case AS_ACTION_ADD:
-            dbus_server_add_audiosink(server, as);
-            break;
-        case AS_ACTION_REMOVE:
-            dbus_server_remove_audiosink(server, id);
-            break;
-        case AS_ACTION_CHANGE:
-            dbus_server_update_audiosink(server, as);
-            break;
-        case AS_ACTION_CHANGE_DEFAULT:
-            dbus_server_update_default_audiosink(server, id);
-            break;
-    }
-}
-#endif /* WIREPLUMBER */
 
 static void
 appear_callback(UNUSED LogindContext *c, UNUSED gpointer data)

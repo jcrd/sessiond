@@ -477,6 +477,12 @@ config_load(const gchar *path, const gchar *hooksd, Config *c)
     }
 #endif /* DPMS */
 
+#ifdef WIREPLUMBER
+    if ((tab = toml_table_in(conf, "Lock"))) {
+        WP_LOCK_TABLE_LIST
+    }
+#endif /* WIREPLUMBER */
+
 #undef X
 
     c->backlights = g_hash_table_new_full(g_str_hash, g_str_equal,
