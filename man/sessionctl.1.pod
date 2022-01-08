@@ -41,27 +41,24 @@ Unlock the session.
 
 List sessiond properties.
 
-=item B<backlight>
+=item B<backlight> [I<NAME>]
 
-Interact with backlights. Subcommands:
+Interact with backlights.
+If backlight I<NAME> is given with no options, print brightness.
+If no arguments are given, list backlights.
+
+Options:
 
 =over
 
-=item B<list>
-
-List backlights.
-
-=item B<get> I<BACKLIGHT>
-
-Get backlight brightness.
-
-=item B<set> I<BACKLIGHT> I<VALUE>
+=item B<-s> I<VALUE>, B<--set> I<VALUE>
 
 Set backlight brightness.
 
-=item B<inc> I<BACKLIGHT> I<VALUE>
+=item B<-i> I<VALUE>, B<--inc> I<VALUE>
 
-Increment backlight brightness. Prints the new brightness value.
+Increment backlight brightness.
+Prints the new brightness value.
 
 =back
 

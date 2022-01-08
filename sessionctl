@@ -138,29 +138,20 @@ if __name__ == "__main__":
     subp.add_parser("unlock", help="Unlock the session")
     subp.add_parser("properties", help="List session properties")
 
-    def str_or_int(s):
-        try:
-            return int(s)
-        except ValueError:
-            return s
-
-    b = subp.add_parser("backlight", help="Interact with backlights")
-    b.add_argument("-l", "--list", action="store_true", help="List backlight names")
-    b.add_argument("-g", "--get", metavar="BACKLIGHT", help="Get backlight brightness")
-    b.add_argument(
+    blp = subp.add_parser("backlight", help="Interact with backlights")
+    blp.add_argument("name", nargs="?", metavar="NAME")
+    blp.add_argument(
         "-s",
         "--set",
-        type=str_or_int,
-        nargs=2,
-        metavar=("BACKLIGHT", "VALUE"),
+        type=int,
+        metavar="VALUE",
         help="Set backlight brightness",
     )
-    b.add_argument(
+    blp.add_argument(
         "-i",
         "--inc",
-        type=str_or_int,
-        nargs=2,
-        metavar=("BACKLIGHT", "VALUE"),
+        type=int,
+        metavar="VALUE",
         help="Increment backlight brightness",
     )
 
@@ -198,12 +189,21 @@ if __name__ == "__main__":
         for k, v in get_session().get_properties().items():
             print("{}={}".format(k, v))
     elif args.cmd == "backlight":
-        if args.get:
-            print(Backlight(args.get).brightness)
-        elif args.set:
-            Backlight(args.set[0]).set_brightness(args.set[1])
+
+        def check_name():
+            if not args.name:
+                sys.stderr.write("Backlight NAME required\n\n")
+                blp.print_help()
+                sys.exit(2)
+
+        if args.set:
+            check_name()
+            Backlight(args.name).set_brightness(args.set)
         elif args.inc:
-            print(Backlight(args.inc[0]).inc_brightness(args.inc[1]))
+            check_name()
+            print(Backlight(args.name).inc_brightness(args.inc))
+        elif args.name:
+            print(Backlight(args.name).brightness)
         else:
             bls = get_session().backlights
             if len(bls) == 0:
