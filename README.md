@@ -22,6 +22,7 @@ manager or desktop environment that does not provide its own session management.
   and shutdown signals
 * hooks triggered by inactivity or signals
 * a DBus service
+    * backlight interaction
 * (optional) management of DPMS settings
 
 ## Documentation
