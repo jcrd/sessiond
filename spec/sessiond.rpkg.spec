@@ -64,6 +64,7 @@ cd python-sessiond
 %{_mandir}/man1/sessiond.1.gz
 %{_mandir}/man5/sessiond-hooks.5.gz
 %{_mandir}/man5/sessiond.conf.5.gz
+%{_mandir}/man8/sessiond-dbus.8.gz
 %{_datadir}/sessiond/sessiond.conf
 %{_datadir}/xsessions/sessiond.desktop
 

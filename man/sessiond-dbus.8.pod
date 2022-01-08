@@ -1,0 +1,268 @@
+=head1 NAME
+
+sessiond-dbus - sessiond DBus service information
+
+=head1 SYNOPSIS
+
+DBus service information.
+
+=head1 DESCRIPTION
+
+sessiond provides a DBus service on the session bus at the well-known name
+I<org.sessiond.session1>.
+
+=head2 Session interface
+
+The B</org/sessiond/session1> object implements the
+B<org.sessiond.session1.Session> interface, which exposes the following
+methods, properties, and signals:
+
+=head3 METHODS
+
+=over
+
+=item B<Lock>
+
+Lock the session. Returns an error if the session is already locked.
+
+=item B<Unlock>
+
+Unlock the session. Returns an error if the session is not locked.
+
+=item B<Inhibit>
+
+Inhibit inactivity. The session will always be considered active if at least
+one inhibitor is running. Takes two arguments:
+
+=over
+
+=item I<who>
+
+A string describing who is inhibiting.
+
+=item I<why>
+
+A string describing why the inhibitor is running.
+
+=back
+
+Returns a unique ID used to stop the inhibitor.
+
+=item B<Uninhibit>
+
+Stop an inhibitor. Takes one argument:
+
+=over
+
+=item I<id>
+
+The unique ID of the inhibitor to stop.
+
+=back
+
+Returns an error if the ID is not valid or does not exist.
+
+=item B<StopInhibitors>
+
+Stop running inhibitors. Returns the number of inhibitors stopped.
+
+=item B<ListInhibitors>
+
+List running inhibitors. Returns a dictionary mapping IDs to tuples of the
+creation timestamp and I<who> and I<why> strings.
+
+=back
+
+=head3 PROPERTIES
+
+=over
+
+=item B<InhibitedHint>
+
+The inhibited state of the session.
+
+=item B<LockedHint>
+
+The locked state of the session.
+
+=item B<IdleHint>
+
+The idle state of the session.
+
+=item B<IdleSinceHint>
+
+The timestamp of the last change to B<IdleHint>.
+
+=item B<IdleSinceHintMonotonic>
+
+The timestamp of the last change to B<IdleHint> in monotonic time.
+
+=item B<Backlights>
+
+An array of object paths to exported Backlights.
+
+=item B<Version>
+
+The version of sessiond.
+
+=back
+
+=head3 SIGNALS
+
+=over
+
+=item B<Lock>
+
+Emitted when the session is locked. B<LockedHint> will be true.
+
+=item B<Unlock>
+
+Emitted when the session is unlocked. B<LockedHint> will be false.
+
+=item B<Idle>
+
+Emitted when the session becomes idle. B<IdleHint> will be true.
+
+=item B<Active>
+
+Emitted when activity resumes in an inactive session.
+B<IdleHint> will be false.
+
+=item B<Inactive> B<seconds>
+
+Emitted when the session becomes inactive, with the B<seconds> argument being
+the number of seconds since activity. Its value will be equal to either the
+I<IdleSec> or I<DimSec> configuration option (see B<sessiond.conf>(5)), or the
+I<InactiveSec> option of a hook with an B<Inactive> trigger
+(see B<sessiond-hooks>(5)).
+
+=item B<PrepareForSleep> B<state>
+
+Emitted before and after system sleep, with the B<state> argument being true
+and false respectively.
+
+=item B<PrepareForShutdown> B<state>
+
+Emitted before and after system shutdown, with the B<state> argument being true
+and false respectively.
+
+=item B<AddBacklight> B<path>
+
+Emitted when a backlight is added, with B<path> being the object path of the
+new backlight.
+
+=item B<RemoveBacklight> B<path>
+
+Emitted when a backlight is removed, with B<path> being the old object path of
+the backlight.
+
+=back
+
+=head2 Backlight interface
+
+The B</org/sessiond/session1/backlight/*> objects implement the
+B<org.sessiond.session1.Backlight> interface, which exposes the following
+methods and properties:
+
+=head3 METHODS
+
+=over
+
+=item B<SetBrightness>
+
+Set the brightness of the backlight. Takes one argument:
+
+=over
+
+=item I<brightness>
+
+An unsigned integer value.
+
+=back
+
+Returns an error if unable to set brightness.
+
+=item B<IncBrightness>
+
+Increment the brightness of the backlight. Takes one argument:
+
+=over
+
+=item I<value>
+
+An integer value added to the backlight's current brightness.
+
+=back
+
+Returns the new brightness value or an error if unable to set brightness.
+
+=back
+
+=head3 PROPERTIES
+
+=over
+
+=item B<Online>
+
+True if the backlight is online, false otherwise.
+
+=item B<DevPath>
+
+Path to the backlight device without the sys mount point.
+
+=item B<Name>
+
+Name of the backlight.
+
+=item B<Subsystem>
+
+Subsystem to which the backlight belongs. Possible values are: "backlight" or
+"leds".
+
+=item B<SysPath>
+
+Path to the device via sys mount point. Format is:
+"/sys/class/I<Subsystem>/I<Name>".
+
+=item B<Brightness>
+
+Current brightness of backlight.
+
+=item B<MaxBrightness>
+
+Max brightness of backlight.
+
+=back
+
+=head1 INTROSPECTION
+
+=over
+
+=item For complete introspection data, use B<gdbus>(1):
+
+B<gdbus> introspect --session --dest I<org.sessiond.session1> --object-path
+I</org/sessiond/session1>
+
+=back
+
+=head1 DEBUGGING
+
+Running sessiond with the environment variable I<G_MESSAGES_DEBUG> set to "all"
+will print debug messages.
+
+=head1 AUTHOR
+
+James Reed E<lt>jcrd@sessiond.orgE<gt>
+
+=head1 REPORTING BUGS
+
+Bugs and issues can be reported here: L<https://github.com/jcrd/sessiond/issues>
+
+=head1 COPYRIGHT
+
+Copyright 2018-2020 James Reed. sessiond is licensed under the
+GNU General Public License v3.0 or later.
+
+=head1 SEE ALSO
+
+B<gdbus>(1), B<systemd-logind.service>(8)

@@ -96,6 +96,7 @@ manpages = {
   'sessiond': '1',
   'sessiond.conf': '5',
   'sessiond-hooks': '5',
+  'sessiond-dbus': '8',
   'sessionctl': '1',
   'sessiond-inhibit': '1',
   }
