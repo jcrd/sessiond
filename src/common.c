@@ -43,7 +43,7 @@ spawn_exec(gchar **argv)
         g_free(std_err);
     }
 
-    g_spawn_check_exit_status(status, &err);
+    g_spawn_check_wait_status(status, &err);
 
     if (err) {
     error:
