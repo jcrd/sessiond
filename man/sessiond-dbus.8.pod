@@ -365,11 +365,6 @@ I</org/sessiond/session1>
 
 =back
 
-=head1 DEBUGGING
-
-Running sessiond with the environment variable I<G_MESSAGES_DEBUG> set to "all"
-will print debug messages.
-
 =head1 AUTHOR
 
 James Reed E<lt>jcrd@sessiond.orgE<gt>
