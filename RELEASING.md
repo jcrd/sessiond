@@ -9,3 +9,4 @@
 6. Commit with `Update version to $VERSION`
 7. Tag release
 8. Push commits and tag
+9. Bump download version on sessiond.org
