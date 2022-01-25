@@ -1,6 +1,6 @@
 Name: sessiond
 Version: 0.6.0
-Release: 2%{?dist}
+Release: 3%{?dist}
 Summary: Standalone X11 session manager for logind
 
 License: GPLv3+
@@ -65,6 +65,7 @@ cd python-sessiond
 %{_mandir}/man1/sessiond.1.gz
 %{_mandir}/man5/sessiond-hooks.5.gz
 %{_mandir}/man5/sessiond.conf.5.gz
+%{_mandir}/man8/sessiond-dbus.8.gz
 %{_datadir}/sessiond/sessiond.conf
 %{_datadir}/xsessions/sessiond.desktop
 
@@ -73,6 +74,10 @@ cd python-sessiond
 %{python3_sitelib}/__pycache__/%{name}.*
 
 %changelog
+* Mon Jan 24 2022 James Reed <james@twiddlingbits.net> - 0.6.0-3
+- Add missing file declaration
+- Third time's a charm...
+
 * Mon Jan 24 2022 James Reed <james@twiddlingbits.net> - 0.6.0-2
 - Add missing build requirements
 
