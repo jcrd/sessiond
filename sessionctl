@@ -132,11 +132,6 @@ def get_session():
 
 
 def add_audiosinks_parser(sp):
-    try:
-        get_session().audiosinks
-    except DBusException:
-        return None
-
     p = sp.add_parser("audiosink", help="Interact with audio sinks")
     p.add_argument("id", nargs="?", metavar="ID")
     p.add_argument(
@@ -268,6 +263,16 @@ if __name__ == "__main__":
             for o in bls:
                 print(PurePath(o).name)
     elif args.cmd == "audiosink":
+        try:
+            s = get_session()
+            assert s.audiosinks
+        except DBusException:
+            sys.stderr.write(
+                "sessiond {} does not support audio sinks\n".format(
+                    s.version
+                )
+            )
+            sys.exit(1)
 
         def check_id():
             if not args.id:
