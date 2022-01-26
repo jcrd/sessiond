@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License along with
 # this program. If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import sys
 from argparse import ArgumentParser
 from pathlib import PurePath
@@ -27,6 +28,11 @@ from sessiond import Session, Backlight, AudioSink
 SESSIOND_SESSION = "sessiond-session.target"
 GRAPHICAL_SESSION = "graphical-session.target"
 WINDOW_MANAGER_ALIAS = "window-manager.service"
+
+
+def log_error(msg):
+    sys.stderr.write(msg)
+    logging.error(msg)
 
 
 def _run(cmd, **kw):
@@ -117,8 +123,8 @@ def get_session():
     try:
         return Session()
     except DBusException as e:
-        sys.stderr.write(
-            "Failed to connect to sessiond DBus service: {}\n".format(
+        log_error(
+            "Failed to connect to sessiond DBus service: {}".format(
                 e.get_dbus_message()
             )
         )
@@ -170,6 +176,10 @@ def add_audiosinks_parser(sp):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        filename=".sessionctl.log", filemode="w", encoding="utf-8", level=logging.ERROR
+    )
+
     p = ArgumentParser(description="With no arguments, show session status.")
     subp = p.add_subparsers(dest="cmd")
 
@@ -211,13 +221,13 @@ if __name__ == "__main__":
 
     if args.cmd == "run":
         if Unit(SESSIOND_SESSION).active():
-            sys.stderr.write("A session is already running\n")
+            log_error("A session is already running")
             sys.exit(1)
         if not args.service:
             try:
                 args.service = get_window_manager()
             except ValueError as e:
-                sys.stderr.write(str(e))
+                log_error(str(e))
                 sys.exit(1)
         _run("systemctl --user import-environment", check=True)
         for u in consists_of():
