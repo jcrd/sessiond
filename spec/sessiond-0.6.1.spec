@@ -1,11 +1,11 @@
 Name: sessiond
-Version: 0.6.0
-Release: 3%{?dist}
+Version: 0.6.1
+Release: 1%{?dist}
 Summary: Standalone X11 session manager for logind
 
 License: GPLv3+
 URL: https://github.com/jcrd/sessiond
-Source0: https://github.com/jcrd/sessiond/archive/v0.6.0.tar.gz
+Source0: https://github.com/jcrd/sessiond/archive/v0.6.1.tar.gz
 
 BuildRequires: meson
 BuildRequires: gcc
@@ -74,6 +74,9 @@ cd python-sessiond
 %{python3_sitelib}/__pycache__/%{name}.*
 
 %changelog
+* Wed Jan 26 2022 James Reed <james@twiddlingbits.net> - 0.6.1-1
+- Release v0.6.1 hotfix
+
 * Mon Jan 24 2022 James Reed <james@twiddlingbits.net> - 0.6.0-3
 - Add missing file declaration
 - Third time's a charm...
