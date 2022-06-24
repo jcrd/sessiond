@@ -1,4 +1,4 @@
-# sessiond
+# [<img src="https://sessiond.org/favicon/favicon.svg" width="32">][sessiond.org] sessiond
 
 [![test][test-badge]][test]
 [![CodeQL][codeql-badge]][codeql]
@@ -7,6 +7,8 @@
 [test]: https://github.com/jcrd/sessiond/actions/workflows/test.yml
 [codeql-badge]: https://github.com/jcrd/sessiond/actions/workflows/codeql-analysis.yml/badge.svg
 [codeql]: https://github.com/jcrd/sessiond/actions/workflows/codeql-analysis.yml
+
+[sessiond.org]: https://sessiond.org/
 
 ## Overview
 
@@ -33,7 +35,7 @@ It also provides a DBus service with interfaces to backlights and audio sinks.
 
 ## Documentation
 
-Documentation is available at [sessiond.org](https://sessiond.org/).
+Documentation is available at [sessiond.org][sessiond.org].
 
 See the [Getting started](https://sessiond.org/getting-started/) section to get
 started using sessiond.
