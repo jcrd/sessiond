@@ -2,11 +2,14 @@
 
 [![test][test-badge]][test]
 [![CodeQL][codeql-badge]][codeql]
+[![Copr build status][copr-badge]][copr]
 
 [test-badge]: https://github.com/jcrd/sessiond/actions/workflows/test.yml/badge.svg
 [test]: https://github.com/jcrd/sessiond/actions/workflows/test.yml
 [codeql-badge]: https://github.com/jcrd/sessiond/actions/workflows/codeql-analysis.yml/badge.svg
 [codeql]: https://github.com/jcrd/sessiond/actions/workflows/codeql-analysis.yml
+[copr-badge]: https://copr.fedorainfracloud.org/coprs/jcrd/sessiond/package/sessiond/status_image/last_build.png
+[copr]: https://copr.fedorainfracloud.org/coprs/jcrd/sessiond/package/sessiond/
 
 [sessiond.org]: https://sessiond.org/
 
@@ -29,8 +32,8 @@ It also provides a DBus service with interfaces to backlights and audio sinks.
   and shutdown signals
 * hooks triggered by inactivity or signals
 * a DBus service
-    * backlight interaction
-    * audio sink interaction
+  * backlight interaction
+  * audio sink interaction
 * (optional) management of DPMS settings
 
 ## Documentation
