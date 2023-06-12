@@ -1,0 +1,26 @@
+baseURL = "https://jcrd.github.io/sessiond/"
+languageCode = "en-us"
+title = "sessiond"
+theme = "geekdoc"
+
+pluralizeListTitles = false
+enableGitInfo = true
+
+# Geekdoc required configuration
+pygmentsUseClasses = true
+pygmentsCodeFences = true
+disablePathToLower = true
+
+[markup.tableOfContents]
+startLevel = 2
+endLevel = 4
+
+[params]
+geekdocLogo = "favicon/favicon.ico"
+geekdocMenuBundle = true
+geekdocNextPrev = false
+geekdocSearch = false
+geekdocBreadcrumb = false
+
+[minify]
+disableHTML = true

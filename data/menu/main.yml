@@ -1,0 +1,57 @@
+---
+main:
+  - name: Getting started
+    ref: "/getting-started.md"
+
+  - name: Usage
+    ref: "/usage.md"
+    sub:
+      - name: Starting the session
+        ref: "/usage.md"
+        anchor: "starting-the-session"
+      - name: Running a window manager
+        ref: "/usage.md"
+        anchor: "running-a-window-manager"
+      - name: Running services
+        ref: "/usage.md"
+        anchor: "running-services"
+      - name: Manually stopping the session
+        ref: "/usage.md"
+        anchor: "manually-stopping-the-session"
+      - name: Locking the session
+        ref: "/usage.md"
+        anchor: "locking-the-session"
+      - name: Inhibiting inactivity
+        ref: "/usage.md"
+        anchor: "inhibiting-inactivity"
+
+  - name: Configuration
+    ref: "/configuration.md"
+
+  - name: DBus service
+    ref: "/dbus-service.md"
+
+  - name: systemd targets
+    ref: "/systemd-targets.md"
+
+  - name: Python API
+    ref: "/python.md"
+
+  - name: Building
+    ref: "/building.md"
+
+  - name: Manpages
+    ref: "/man"
+    sub:
+      - name: sessiond.1
+        ref: "/man/sessiond.1.md"
+      - name: sessionctl.1
+        ref: "/man/sessionctl.1.md"
+      - name: sessiond-inhibit.1
+        ref: "/man/sessiond-inhibit.1.md"
+      - name: sessiond.conf.5
+        ref: "/man/sessiond.conf.5.md"
+      - name: sessiond-hooks.5
+        ref: "/man/sessiond-hooks.5.md"
+      - name: sessiond-dbus.8
+        ref: "/man/sessiond-dbus.8.md"

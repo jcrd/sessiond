@@ -1,0 +1,5 @@
+---
+title: Manpages
+---
+
+{{< toc-tree >}}

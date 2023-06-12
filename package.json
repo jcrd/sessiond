@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "js-beautify": "^1.14.0"
+  }
+}

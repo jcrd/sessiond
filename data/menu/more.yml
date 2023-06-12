@@ -1,0 +1,21 @@
+---
+more:
+  - name: Report issue
+    ref: "https://github.com/jcrd/sessiond/issues"
+    external: true
+    icon: "gdoc_fire"
+
+  - name: Releases
+    ref: "https://github.com/jcrd/sessiond/releases"
+    external: true
+    icon: "gdoc_download"
+
+  - name: Support this project
+    ref: "https://ko-fi.com/jcrd_dev"
+    external: true
+    icon: "gdoc_heart"
+
+  - name: website source
+    ref: "https://github.com/jcrd/sessiond.org"
+    external: true
+    icon: "gdoc_link"
