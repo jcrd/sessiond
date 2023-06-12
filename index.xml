@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Overview on sessiond</title><link>https://jcrd.github.io/sessiond/</link><description>Recent content in Overview on sessiond</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><atom:link href="https://jcrd.github.io/sessiond/index.xml" rel="self" type="application/rss+xml"/><item><title>Building</title><link>https://jcrd.github.io/sessiond/building/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://jcrd.github.io/sessiond/building/</guid><description>Dependencies meson &amp;gt;= 0.47.0 [build] perl [build] glib &amp;gt;= 2.52 [build] libx11 [build] libxi [build] libxext (optional, for DPMS support) [build] libwireplumber-0.4 (optional, for audio sink support) [build] python3-setuptools [build] python3 [runtime] dbus-python [runtime] Ensure the above build dependencies are satisfied and configure the build with meson:
+meson builddir &amp;amp;&amp;amp; cd builddir Inside the build directory, meson configure will list all options set with -D. For example, to disable the DPMS feature, run:</description></item><item><title>Configuration</title><link>https://jcrd.github.io/sessiond/configuration/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://jcrd.github.io/sessiond/configuration/</guid><description>sessiond looks for a configuration file at $XDG_CONFIG_HOME/sessiond/sessiond.conf or falls back to $HOME/.config/sessiond/sessiond.conf if $XDG_CONFIG_HOME is unset.
+The default configuration is included at /usr/share/sessiond/sessiond.conf.
+See sessiond.conf(5) for descriptions of the options.
+Hooks Hook files with the .hook suffix are read from $XDG_CONFIG_HOME/sessiond/hooks.d or $HOME/.config/sessiond/hooks.d.
+Hooks provide functionality similar to systemd targets but can also be triggered by a period of inactivity.
+See sessiond-hooks(5) for more information.</description></item><item><title>DBus service</title><link>https://jcrd.github.io/sessiond/dbus-service/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://jcrd.github.io/sessiond/dbus-service/</guid><description>sessiond provides a DBus service on the session bus at the well-known name org.sessiond.session1.
+See sessiond-dbus(8) for descriptions of methods, properties, and signals.
+For complete introspection data, use gdbus:
+gdbus introspect --session --dest org.sessiond.session1 --object-path /org/sessiond/session1 sessionctl The sessionctl script is provided to run a sessiond session and interact with its DBus service.
+usage: sessionctl [-h] {run,stop,status,lock,unlock,properties,backlight,audiosink,version} ... With no arguments, show session status. positional arguments: {run,stop,status,lock,unlock,properties,backlight,audiosink,version} run Run session stop Stop the running session status Show session status lock Lock the session unlock Unlock the session properties List session properties backlight Interact with backlights audiosink Interact with audio sinks version Show sessiond version options: -h, --help show this help message and exit See sessionctl(1) for more information.</description></item><item><title>Getting started</title><link>https://jcrd.github.io/sessiond/getting-started/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://jcrd.github.io/sessiond/getting-started/</guid><description>Installation Packages If a package is available for your distro, install it using the instructions below:
+Fedora (copr)
+dnf copr enable jcrd/sessiond dnf install sessiond Arch Linux (AUR)
+git clone https://aur.archlinux.org/sessiond.git cd sessiond makepkg -si From source Follow the instructions below to build sessiond from source. See Building for a complete list of dependencies.
+Download and extract the latest release, then enter the created directory: curl -L https://github.com/jcrd/sessiond/archive/refs/tags/v0.6.1.tar.gz | tar -xz -C sessiond cd sessiond Initiate the build process with meson and ninja: meson builddir ninja -C builddir Install the built package: sudo ninja -C builddir install Install the Python package: cd python-sessiond sudo python3 setup.</description></item><item><title>Python API</title><link>https://jcrd.github.io/sessiond/python/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://jcrd.github.io/sessiond/python/</guid><description>class sessiond.AudioSink(id) property id() inc_volume(v) property mute() property name() set_mute(m) set_volume(v) toggle_mute() property volume() class sessiond.Backlight(name) property brightness() property dev_path() inc_brightness(v) property max_brightness() property online() set_brightness(v) property subsystem() property sys_path() class sessiond.DBusIFace(path, iface) static convert(val) get_properties() get_property(name) class sessiond.Session() property audiosinks() property backlights() property default_audiosink() property idle_hint() property idle_since_hint() property idle_since_hint_monotonic() inhibit(who=&amp;rsquo;&amp;rsquo;, why=&amp;rsquo;') property inhibited_hint() list_inhibitors() lock() property locked_hint() stop_inhibitors() uninhibit(id) unlock() property version() python-sessiond API class sessiond.AudioSink(id) An interface to a sessiond AudioSink object.</description></item><item><title>sessionctl.1</title><link>https://jcrd.github.io/sessiond/man/sessionctl.1/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://jcrd.github.io/sessiond/man/sessionctl.1/</guid><description>NAME sessionctl - standalone X session manager client
+SYNOPSIS sessionctl [command]
+DESCRIPTION sessionctl is responsible for running a sessiond session and interacting with its DBus service.
+COMMANDS run [SERVICE]
+Run a new session, with SERVICE as the window manager service if provided. By default, the service installed under the window-manager.service alias is used.
+stop
+Stop the running session.
+status
+Show session status.
+lock
+Lock the session.
+unlock
+Unlock the session.</description></item><item><title>sessiond-dbus.8</title><link>https://jcrd.github.io/sessiond/man/sessiond-dbus.8/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://jcrd.github.io/sessiond/man/sessiond-dbus.8/</guid><description>NAME sessiond-dbus - sessiond DBus service information
+SYNOPSIS DBus service information.
+DESCRIPTION sessiond provides a DBus service on the session bus at the well-known name org.sessiond.session1.
+Session interface The /org/sessiond/session1 object implements the org.sessiond.session1.Session interface, which exposes the following methods, properties, and signals:
+METHODS Lock
+Lock the session. Returns an error if the session is already locked.
+Unlock
+Unlock the session. Returns an error if the session is not locked.</description></item><item><title>sessiond-hooks.5</title><link>https://jcrd.github.io/sessiond/man/sessiond-hooks.5/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://jcrd.github.io/sessiond/man/sessiond-hooks.5/</guid><description>NAME sessiond-hooks - sessiond hook file format
+SYNOPSIS [Hook] Trigger=Lock|Idle|Sleep|Shutdown|Inactive InactiveSec=&amp;lt;seconds&amp;gt; (Inactive only) ExecStart=&amp;lt;command&amp;gt; ExecStop=&amp;lt;command&amp;gt; (Lock|Idle|Inactive only) DESCRIPTION sessiond provides the ability to define hooks that are triggered by events. The &amp;ldquo;Inactive&amp;rdquo; event is unique to hooks. It allows commands to be run after a period of inactivity. It is more general than the &amp;ldquo;Idle&amp;rdquo; event, which occurs after IdleSec (see sessiond.conf(5)) seconds of inactivity.
+Hooks can be specified in the configuration file using the section &amp;ldquo;[[Hook]]&amp;rdquo;.</description></item><item><title>sessiond-inhibit.1</title><link>https://jcrd.github.io/sessiond/man/sessiond-inhibit.1/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://jcrd.github.io/sessiond/man/sessiond-inhibit.1/</guid><description>NAME sessiond-inhibit - manage sessiond inhibitors
+SYNOPSIS sessiond-inhibit [options] [COMMAND]
+DESCRIPTION sessiond-inhibit creates an inhibitor lock before running COMMAND and releases it when the command returns. If no command is provided, it lists running inhibitors.
+OPTIONS -h
+Show help message.
+-w WHO
+Set who is inhibiting.
+-y WHY
+Set why this inhibitor is running.
+-s
+Stop running inhibitors.
+-i
+Inhibit without a command.
+-u [ID]
+Uninhibit last inhibitor or by ID.</description></item><item><title>sessiond.1</title><link>https://jcrd.github.io/sessiond/man/sessiond.1/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://jcrd.github.io/sessiond/man/sessiond.1/</guid><description>NAME sessiond - standalone X session manager
+SYNOPSIS sessiond [OPTIONS]
+DESCRIPTION sessiond is a standalone X session manager that reports the idle status of a session to systemd-logind.service(8) and handles its lock, unlock, sleep, and shutdown signals. sessiond also provides hooks triggered by inactivity or a signal, automatic backlight dimming on idle, and optional management of DPMS settings.
+OPTIONS -h, &amp;ndash;help
+Show help options.
+-c, &amp;ndash;config=CONFIG
+Path to config file.</description></item><item><title>sessiond.conf.5</title><link>https://jcrd.github.io/sessiond/man/sessiond.conf.5/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://jcrd.github.io/sessiond/man/sessiond.conf.5/</guid><description>NAME sessiond.conf - sessiond configuration file format
+SYNOPSIS XDG_CONFIG_HOME/sessiond/sessiond.conf or HOME/.config/sessiond/sessiond.conf
+DESCRIPTION This file configures the X session manager sessiond(1). Its syntax is toml v0.5.0. See: https://github.com/toml-lang/toml/tree/v0.5.0.
+OPTIONS [Idle] Inputs=
+A list (of the format [&amp;ldquo;item&amp;rdquo;, &amp;ldquo;item&amp;rdquo;]) of input event types used to determine activity. Values are &amp;ldquo;motion&amp;rdquo;, &amp;ldquo;button-press&amp;rdquo;, &amp;ldquo;button-release&amp;rdquo;, &amp;ldquo;key-press&amp;rdquo;, &amp;ldquo;key-release&amp;rdquo;.
+IdleSec=
+Seconds the session must be inactive before considered idle.
+[Lock] OnIdle=
+If &amp;ldquo;true&amp;rdquo;, lock the session when it becomes idle.</description></item><item><title>systemd targets</title><link>https://jcrd.github.io/sessiond/systemd-targets/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://jcrd.github.io/sessiond/systemd-targets/</guid><description>sessiond provides the following systemd targets:
+Target Started when graphical-lock.target session is locked graphical-unlock.target session is unlocked graphical-idle.target session becomes idle graphical-unidle.target session resumes activity user-sleep.target system sleeps user-sleep-finished.target system resumes from sleeps user-shutdown.target system shuts down</description></item><item><title>Usage</title><link>https://jcrd.github.io/sessiond/usage/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://jcrd.github.io/sessiond/usage/</guid><description>Starting the session Running a window manager Running services Manually stopping the session Locking the session Inhibiting inactivity Starting the session A sessiond-based session should be started via a display manager, using the provided sessiond session desktop entry.
+For example, configure lightdm to start a sessiond session by setting user-session=sessiond in /etc/lightdm/lightdm.conf.
+Running a window manager To use sessiond alongside a window manager, the window manager service must include:</description></item></channel></rss>

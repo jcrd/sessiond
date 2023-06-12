@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Manpages on sessiond</title><link>https://jcrd.github.io/sessiond/man/</link><description>Recent content in Manpages on sessiond</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><atom:link href="https://jcrd.github.io/sessiond/man/index.xml" rel="self" type="application/rss+xml"/><item><title>sessionctl.1</title><link>https://jcrd.github.io/sessiond/man/sessionctl.1/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://jcrd.github.io/sessiond/man/sessionctl.1/</guid><description>NAME sessionctl - standalone X session manager client
+SYNOPSIS sessionctl [command]
+DESCRIPTION sessionctl is responsible for running a sessiond session and interacting with its DBus service.
+COMMANDS run [SERVICE]
+Run a new session, with SERVICE as the window manager service if provided. By default, the service installed under the window-manager.service alias is used.
+stop
+Stop the running session.
+status
+Show session status.
+lock
+Lock the session.
+unlock
+Unlock the session.</description></item><item><title>sessiond-dbus.8</title><link>https://jcrd.github.io/sessiond/man/sessiond-dbus.8/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://jcrd.github.io/sessiond/man/sessiond-dbus.8/</guid><description>NAME sessiond-dbus - sessiond DBus service information
+SYNOPSIS DBus service information.
+DESCRIPTION sessiond provides a DBus service on the session bus at the well-known name org.sessiond.session1.
+Session interface The /org/sessiond/session1 object implements the org.sessiond.session1.Session interface, which exposes the following methods, properties, and signals:
+METHODS Lock
+Lock the session. Returns an error if the session is already locked.
+Unlock
+Unlock the session. Returns an error if the session is not locked.</description></item><item><title>sessiond-hooks.5</title><link>https://jcrd.github.io/sessiond/man/sessiond-hooks.5/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://jcrd.github.io/sessiond/man/sessiond-hooks.5/</guid><description>NAME sessiond-hooks - sessiond hook file format
+SYNOPSIS [Hook] Trigger=Lock|Idle|Sleep|Shutdown|Inactive InactiveSec=&amp;lt;seconds&amp;gt; (Inactive only) ExecStart=&amp;lt;command&amp;gt; ExecStop=&amp;lt;command&amp;gt; (Lock|Idle|Inactive only) DESCRIPTION sessiond provides the ability to define hooks that are triggered by events. The &amp;ldquo;Inactive&amp;rdquo; event is unique to hooks. It allows commands to be run after a period of inactivity. It is more general than the &amp;ldquo;Idle&amp;rdquo; event, which occurs after IdleSec (see sessiond.conf(5)) seconds of inactivity.
+Hooks can be specified in the configuration file using the section &amp;ldquo;[[Hook]]&amp;rdquo;.</description></item><item><title>sessiond-inhibit.1</title><link>https://jcrd.github.io/sessiond/man/sessiond-inhibit.1/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://jcrd.github.io/sessiond/man/sessiond-inhibit.1/</guid><description>NAME sessiond-inhibit - manage sessiond inhibitors
+SYNOPSIS sessiond-inhibit [options] [COMMAND]
+DESCRIPTION sessiond-inhibit creates an inhibitor lock before running COMMAND and releases it when the command returns. If no command is provided, it lists running inhibitors.
+OPTIONS -h
+Show help message.
+-w WHO
+Set who is inhibiting.
+-y WHY
+Set why this inhibitor is running.
+-s
+Stop running inhibitors.
+-i
+Inhibit without a command.
+-u [ID]
+Uninhibit last inhibitor or by ID.</description></item><item><title>sessiond.1</title><link>https://jcrd.github.io/sessiond/man/sessiond.1/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://jcrd.github.io/sessiond/man/sessiond.1/</guid><description>NAME sessiond - standalone X session manager
+SYNOPSIS sessiond [OPTIONS]
+DESCRIPTION sessiond is a standalone X session manager that reports the idle status of a session to systemd-logind.service(8) and handles its lock, unlock, sleep, and shutdown signals. sessiond also provides hooks triggered by inactivity or a signal, automatic backlight dimming on idle, and optional management of DPMS settings.
+OPTIONS -h, &amp;ndash;help
+Show help options.
+-c, &amp;ndash;config=CONFIG
+Path to config file.</description></item><item><title>sessiond.conf.5</title><link>https://jcrd.github.io/sessiond/man/sessiond.conf.5/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://jcrd.github.io/sessiond/man/sessiond.conf.5/</guid><description>NAME sessiond.conf - sessiond configuration file format
+SYNOPSIS XDG_CONFIG_HOME/sessiond/sessiond.conf or HOME/.config/sessiond/sessiond.conf
+DESCRIPTION This file configures the X session manager sessiond(1). Its syntax is toml v0.5.0. See: https://github.com/toml-lang/toml/tree/v0.5.0.
+OPTIONS [Idle] Inputs=
+A list (of the format [&amp;ldquo;item&amp;rdquo;, &amp;ldquo;item&amp;rdquo;]) of input event types used to determine activity. Values are &amp;ldquo;motion&amp;rdquo;, &amp;ldquo;button-press&amp;rdquo;, &amp;ldquo;button-release&amp;rdquo;, &amp;ldquo;key-press&amp;rdquo;, &amp;ldquo;key-release&amp;rdquo;.
+IdleSec=
+Seconds the session must be inactive before considered idle.
+[Lock] OnIdle=
+If &amp;ldquo;true&amp;rdquo;, lock the session when it becomes idle.</description></item></channel></rss>
