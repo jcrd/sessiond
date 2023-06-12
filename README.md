@@ -1,4 +1,4 @@
-# [<img src="https://sessiond.org/favicon/favicon.svg" width="32">][sessiond.org] sessiond
+# [<img src="https://sessiond.org/favicon/favicon.svg" width="32">][site] sessiond
 
 [![test][test-badge]][test]
 [![CodeQL][codeql-badge]][codeql]
@@ -10,8 +10,6 @@
 [codeql]: https://github.com/jcrd/sessiond/actions/workflows/codeql-analysis.yml
 [copr-badge]: https://copr.fedorainfracloud.org/coprs/jcrd/sessiond/package/sessiond/status_image/last_build.png
 [copr]: https://copr.fedorainfracloud.org/coprs/jcrd/sessiond/package/sessiond/
-
-[sessiond.org]: https://sessiond.org/
 
 ## Overview
 
@@ -38,12 +36,14 @@ It also provides a DBus service with interfaces to backlights and audio sinks.
 
 ## Documentation
 
-Documentation is available at [sessiond.org][sessiond.org].
+Documentation is available at [here][site].
 
-See the [Getting started](https://sessiond.org/getting-started/) section to get
+See the [Getting started](https://jcrd.github.io/sessiond/getting-started/) section to get
 started using sessiond.
 
 ## License
 
 sessiond is licensed under the GNU General Public License v3.0 or later
 (see [LICENSE](LICENSE)).
+
+[site]: https://jcrd.github.io/sessiond/
