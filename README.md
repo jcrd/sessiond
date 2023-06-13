@@ -1,4 +1,4 @@
-# [<img src="https://sessiond.org/favicon/favicon.svg" width="32">][site] sessiond
+# [<img src="https://jcrd.github.io/sessiond/favicon/favicon.svg" width="32">][site] sessiond
 
 [![test][test-badge]][test]
 [![CodeQL][codeql-badge]][codeql]
