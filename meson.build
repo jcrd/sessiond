@@ -68,6 +68,7 @@ srcs = [
 
 if get_option('wireplumber').enabled()
   deps += dependency('wireplumber-0.4')
+  deps += dependency('libpipewire-0.3')
   srcs += 'src/dbus-audiosink.c'
   srcs += 'src/wireplumber.c'
   add_project_arguments('-DWIREPLUMBER', language : 'c')
